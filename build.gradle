@@ -15,6 +15,14 @@ java {
     }
 }
 
+sourceSets {
+    main {
+        java {
+            srcDirs = ["src/main/java", "src/generated"]
+        }
+    }
+}
+
 repositories {
     mavenCentral()
 }
@@ -40,20 +48,16 @@ tasks.named('test') {
 }
 
 
-String dbUser = System.properties["db-user"] ?: "root"
-String dbPasswd = System.properties["db-passwd"] ?: "passwd"
-String url = System.properties["db-url"] ?: "localhost:3306"
-
 jooq {
     version = "3.19.5"
     configurations {
-        sakilaDB {
+        lockrDB {
             generationTool {
                 jdbc {
                     driver = 'com.mysql.cj.jdbc.Driver'
-                    url = "jdbc:mysql://${dbUser}"
-                    user = "${dbUser}"
-                    password = "${dbPasswd}"
+                    url = 'jdbc:mysql://localhost:3306'
+                    user = "root"
+                    password = "1234"
                 }
 
                 generator {
@@ -64,7 +68,7 @@ jooq {
                         unsignedTypes = true
                         schemata {
                             schema {
-                                inputSchema = 'sakila'
+                                inputSchema = 'lockr'
                             }
                         }
                         forcedTypes {
@@ -97,7 +101,6 @@ jooq {
                         directory = 'src/generated'
                     }
 
-                    // jooq-custom 내부의 설정
                     strategy.name = 'jooq.custom.generator.JPrefixGeneratorStrategy'
                 }
             }

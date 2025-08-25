@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: lockr
+  datasource:
+    url: jdbc:mysql://localhost:3306/lockr
+    username: root
+    password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jooq:
+    sql-dialect: mysql
+logging:
+  level:
+    root: DEBUG
