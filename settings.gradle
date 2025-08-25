@@ -1,1 +1,2 @@
 rootProject.name = 'lockr'
+include("jooq-custom")
