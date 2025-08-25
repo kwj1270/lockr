@@ -1,4 +1,4 @@
-package com.official.lockr.config.global.http;
+package com.official.lockr.global.http;
 
 public interface HttpLoggingRepository {
     void save(String rootGuid,

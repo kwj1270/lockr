@@ -1,4 +1,4 @@
-package com.official.lockr.config.domain;
+package com.official.lockr.domain;
 
 import jakarta.annotation.Nonnull;
 import org.springframework.context.annotation.Profile;

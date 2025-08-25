@@ -1,9 +1,9 @@
-package com.official.lockr.config.global.mvc;
+package com.official.lockr.global.mvc;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.f4b6a3.ulid.UlidCreator;
-import com.official.lockr.config.global.http.HttpLoggingRepository;
+import com.official.lockr.global.http.HttpLoggingRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

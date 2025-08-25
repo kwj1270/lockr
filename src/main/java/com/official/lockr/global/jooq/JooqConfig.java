@@ -1,4 +1,4 @@
-package com.official.lockr.config.global.jooq;
+package com.official.lockr.global.jooq;
 
 import org.jooq.conf.ExecuteWithoutWhere;
 import org.springframework.boot.autoconfigure.jooq.DefaultConfigurationCustomizer;

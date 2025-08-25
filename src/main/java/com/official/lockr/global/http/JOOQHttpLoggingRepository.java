@@ -1,4 +1,4 @@
-package com.official.lockr.config.global.http;
+package com.official.lockr.global.http;
 
 import com.github.f4b6a3.ulid.UlidCreator;
 import org.apache.logging.log4j.util.Strings;
