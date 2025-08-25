@@ -1,13 +1,15 @@
 spring:
   application:
     name: lockr
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
   datasource:
-    url: jdbc:mysql://localhost:3306/lockr
-    username: root
-    password: 1234
+    url: jdbc:mysql://${LOCKR_DATA_SOURCE_URL:localhost:3306/lockr}
+    username: ${LOCKR_DATA_SOURCE_USER_NAME:root}
+    password: ${LOCKR_DATA_SOURCE_PASSWORD:1234}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jooq:
     sql-dialect: mysql
 logging:
   level:
-    root: DEBUG
+    root: INFO
