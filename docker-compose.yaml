@@ -9,3 +9,22 @@ services:
       - MYSQL_ROOT_PASSWORD=1234
     volumes:
       - ./infra/mysql/initdb.d:/docker-entrypoint-initdb.d
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./infra/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./infra/grafana/dashboards:/etc/grafana/provisioning/dashboards
+    links:
+      - prometheus
+    environment:
+      - GF_INSTALL_PLUGINS=redis-datasource
