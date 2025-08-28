@@ -28,9 +28,10 @@ classDiagram
         id: Long
         userId: String
         authorizationType: AuthorizationType
+        deviceId: String
+        deviceInfo: String
         ipAddress: String
         userAgent: String
-        deviceInfo: String
         createdAt: Timestamp
     }
 
