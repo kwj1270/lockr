@@ -9,32 +9,33 @@ classDiagram
         <<AggregateRoot>>
         id: String
         userId: String
-        providerId: String
-        providerType: ProviderType
-        providerAdditionalInfo: Json
+        authorizationId: String
+        authorizationType: AuthorizationType
+        authorizationAdditionalInfo: Json
         createdAt: TimeStamp
         updatedAt: TimeStamp
         deletedAt: Timestamp
     }
 
-    class ProviderType {
+    class AuthorizationType {
         <<enumeration>>
         GOOGLE
         APPLE
         TEST
     }
 
-    class SignInHistory {
+    class SignIn {
         id: Long
         userId: String
-        providerType: ProviderType
+        authorizationType: AuthorizationType
+        deviceId: String
+        deviceInfo: String
         ipAddress: String
         userAgent: String
-        deviceInfo: String
         createdAt: Timestamp
     }
 
-    class UserSession {
+    class SignInSession {
         id: String
         userId: String
         deviceId: String 
