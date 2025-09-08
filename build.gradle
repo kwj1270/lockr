@@ -1,8 +1,18 @@
+import org.jooq.meta.jaxb.ForcedType
+import org.jooq.meta.jaxb.Generate
+import org.jooq.meta.jaxb.Strategy
+
+buildscript {
+    ext {
+        jooqVersion = '3.19.5'
+    }
+}
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.5'
     id 'io.spring.dependency-management' version '1.1.7'
-    id 'nu.studer.jooq' version '9.0'
+    id 'dev.monosoul.jooq-docker' version "7.0.22"
 }
 
 group = 'com.official.lockr'
@@ -30,22 +40,32 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+
     implementation 'io.micrometer:micrometer-registry-prometheus'
     implementation 'com.github.f4b6a3:ulid-creator:5.2.3'
 
     implementation('org.springframework.boot:spring-boot-starter-jooq') {
-        exclude group: 'org.jooq:jooq'}
+        exclude group: 'org.jooq:jooq'
+    }
 
-    implementation "org.jooq:jooq:3.19.5"
-    implementation 'org.flywaydb:flyway-core'
-    implementation 'org.flywaydb:flyway-mysql'
     runtimeOnly 'com.mysql:mysql-connector-j'
 
-    jooqGenerator project(':jooq-custom')
-    jooqGenerator "org.jooq:jooq:3.19.5"
-    jooqGenerator "org.jooq:jooq-meta:3.19.5"
+    jooqCodegen project(':jooq-custom')
+    jooqCodegen "org.jooq:jooq:${jooqVersion}"
+    jooqCodegen "org.jooq:jooq-meta:${jooqVersion}"
+    jooqCodegen "org.jooq:jooq-codegen:${jooqVersion}"
+    jooqCodegen 'org.flywaydb:flyway-core:10.8.1'
+    jooqCodegen 'org.flywaydb:flyway-mysql:10.8.1'
+    implementation 'org.flywaydb:flyway-core:10.8.1'
+    implementation 'org.flywaydb:flyway-mysql:10.8.1'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.testcontainers:testcontainers:1.21.3'
+    testImplementation 'org.testcontainers:junit-jupiter:1.21.3'
+    testImplementation 'org.testcontainers:mysql:1.21.3'
+    testImplementation 'io.rest-assured:rest-assured:5.5.6'
+    testImplementation 'io.rest-assured:json-path:5.5.6'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
@@ -53,63 +73,60 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-
 jooq {
-    version = "3.19.5"
-    configurations {
-        lockrDB {
-            generationTool {
-                jdbc {
-                    driver = 'com.mysql.cj.jdbc.Driver'
-                    url = 'jdbc:mysql://localhost:3306'
-                    user = "root"
-                    password = "1234"
-                }
+    version = "${jooqVersion}"
+    withContainer {
+        image {
+            name = "mysql:8.0.29"
+            envVars = [
+                    MYSQL_ROOT_PASSWORD: "1234",
+                    MYSQL_DATABASE     : "lockr"
+            ]
+        }
 
-                generator {
-                    name = 'org.jooq.codegen.DefaultGenerator'
-
-                    database {
-                        name = 'org.jooq.meta.mysql.MySQLDatabase'
-                        unsignedTypes = true
-                        schemata {
-                            schema {
-                                inputSchema = 'lockr'
-                            }
-                        }
-                        forcedTypes {
-                            forcedType {
-                                userType = 'java.lang.Long'
-                                includeTypes = 'int unsigned'
-                            }
-
-                            forcedType {
-                                userType = 'java.lang.Integer'
-                                includeTypes = 'tinyint unsigned'
-                            }
-
-                            forcedType {
-                                userType = 'java.lang.Integer'
-                                includeTypes = 'smallint unsigned'
-                            }
-                        }
-                    }
-
-                    generate {
-                        daos = true
-                        records = true
-                        fluentSetters = true
-                        javaTimeTypes = true
-                        deprecated = false
-                    }
-
-                    target {
-                        directory = 'src/generated'
-                    }
-
-                    strategy.name = 'jooq.custom.generator.JPrefixGeneratorStrategy'
-                }
+        db {
+            username = "root"
+            password = "1234"
+            name = "lockr"
+            port = 3306
+            jdbc {
+                schema = "jdbc:mysql"
+                driverClassName = "com.mysql.cj.jdbc.Driver"
             }
+        }
+    }
+}
+
+
+tasks {
+    generateJooqClasses {
+        schemas.set(["lockr"])
+        outputDirectory.set(project.layout.projectDirectory.dir("src/generated"))
+        includeFlywayTable.set(false)
+
+        usingJavaConfig {
+            generate = new Generate()
+                    .withJavaTimeTypes(true)
+                    .withDeprecated(false)
+                    .withDaos(true)
+                    .withFluentSetters(true)
+                    .withRecords(true)
+
+            withStrategy(
+                    new Strategy().withName("jooq.custom.generator.JPrefixGeneratorStrategy")
+            )
+
+            database.withForcedTypes(
+                    new ForcedType()
+                            .withUserType("java.lang.Long")
+                            .withTypes("int unsigned"),
+                    new ForcedType()
+                            .withUserType("java.lang.Integer")
+                            .withTypes("tinyint unsigned"),
+                    new ForcedType()
+                            .withUserType("java.lang.Integer")
+                            .withTypes("smallint unsigned")
+            )
         }
     }
 }
