@@ -10,7 +10,7 @@ classDiagram
         id: String
         userId: String
         authorizationId: String
-        authorizationType: AuthorizationType
+        providerType: AuthorizationType
         authorizationAdditionalInfo: Json
         createdAt: TimeStamp
         updatedAt: TimeStamp
@@ -27,7 +27,7 @@ classDiagram
     class SignIn {
         id: Long
         userId: String
-        authorizationType: AuthorizationType
+        providerType: AuthorizationType
         deviceId: String
         deviceInfo: String
         ipAddress: String
