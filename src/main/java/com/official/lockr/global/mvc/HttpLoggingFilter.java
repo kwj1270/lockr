@@ -2,7 +2,6 @@ package com.official.lockr.global.mvc;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.f4b6a3.ulid.UlidCreator;
 import com.official.lockr.global.http.HttpLoggingRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -25,37 +24,48 @@ import java.util.stream.Collectors;
 @Component
 public class HttpLoggingFilter extends OncePerRequestFilter {
 
-    private static final List<String> IP_HEADER_CANDIDATES = Arrays.asList(
-            "X-Forwarded-For",
-            "Proxy-Client-IP",
-            "WL-Proxy-Client-IP",
-            "HTTP_CLIENT_IP",
-            "HTTP_X_FORWARDED_FOR"
+    private static final List<String> IP_HEADERS = Arrays.asList(
+            "X-Forwarded-For", "Proxy-Client-IP",
+            "WL-Proxy-Client-IP", "HTTP_CLIENT_IP", "HTTP_X_FORWARDED_FOR"
     );
 
+    private static final List<String> STANDARD_HEADERS = Arrays.asList(
+            "authorization", "user-agent", "accept-language",
+            "x-request-id", "x-forwarded-for", "x-root-guid", "x-child-guid"
+    );
+
+    private final HttpHeaderContext headerContext;
     private final HttpLoggingRepository httpLoggingRepository;
     private final ObjectMapper objectMapper;
 
-    public HttpLoggingFilter(final HttpLoggingRepository httpLoggingRepository, final ObjectMapper objectMapper) {
+    public HttpLoggingFilter(
+            final HttpLoggingRepository httpLoggingRepository,
+            final ObjectMapper objectMapper,
+            final HttpHeaderContext headerContext
+    ) {
+        this.headerContext = headerContext;
         this.httpLoggingRepository = httpLoggingRepository;
         this.objectMapper = objectMapper;
     }
 
     @Override
-    protected void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response, final FilterChain filterChain
+    protected void doFilterInternal(
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            final FilterChain filterChain
     ) throws ServletException, IOException {
-        final String rootGuid = getRootGuid(request);
-        final String childGuid = getChildGuid(rootGuid, request);
-        MDC.put("traceId", rootGuid);
+        populateRequestHeaderContext(request);
+        MDC.put("traceId", headerContext.getRootGuid());
 
         final var contentCachingRequestWrapper = new ContentCachingRequestWrapper(request);
         final var contentCachingResponseWrapper = new ContentCachingResponseWrapper(response);
-        saveHttpRequest(rootGuid, childGuid, contentCachingRequestWrapper);
+        saveHttpRequest(headerContext.getRootGuid(), headerContext.getChildGuid(), contentCachingRequestWrapper);
 
         try {
             filterChain.doFilter(contentCachingRequestWrapper, contentCachingResponseWrapper);
         } finally {
-            saveHttpResponse(rootGuid, childGuid, contentCachingRequestWrapper, contentCachingResponseWrapper);
+            contentCachingResponseWrapper.copyBodyToResponse();
+            saveHttpResponse(headerContext.getRootGuid(), headerContext.getChildGuid(), contentCachingRequestWrapper, contentCachingResponseWrapper);
         }
     }
 
@@ -121,26 +131,11 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
     }
 
     private String getClientIpAddress(final HttpServletRequest request) {
-        return IP_HEADER_CANDIDATES.stream()
+        return IP_HEADERS.stream()
                 .map(request::getHeader)
                 .filter(ipAddress -> ipAddress != null && !ipAddress.isEmpty() && !"unknown".equalsIgnoreCase(ipAddress))
                 .findFirst()
                 .orElse(request.getRemoteAddr());
-    }
-
-    private String getRootGuid(final HttpServletRequest request) {
-        final String rootGuid = request.getHeader("X-ROOT-GUID");
-        return Strings.isNotBlank(rootGuid) ? rootGuid : UlidCreator.getUlid().toString();
-    }
-
-    private String getChildGuid(final String rootGuid, final HttpServletRequest request) {
-        final String childGuid = request.getHeader("X-CHILD-GUID");
-        if (Strings.isBlank(childGuid)) {
-            return rootGuid + "0001";
-        }
-        final String numericPart = childGuid.substring(childGuid.length() - 4);
-        final int nextNumber = Integer.parseInt(numericPart) + 1;
-        return rootGuid + String.format("%04d", nextNumber);
     }
 
     private String getContentAsString(final byte[] content, final String characterEncoding) {
@@ -170,6 +165,32 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
             } catch (JsonProcessingException ex) {
                 return "{}";
             }
+        }
+    }
+
+    private void populateRequestHeaderContext(final HttpServletRequest request) {
+        try {
+            headerContext.setRootGuid(request.getHeader("X-ROOT-GUID"));
+            headerContext.setChildGuid(request.getHeader("X-CHILD-GUID"));
+            headerContext.setAppVersion(request.getHeader("X-APP-VERSION"));
+            headerContext.setIpAddress(getClientIpAddress(request));
+            headerContext.setDeviceId(request.getHeader("X-DEVICE-ID"));
+            headerContext.setDeviceInfo(request.getHeader("X-DEVICE-INFO"));
+            headerContext.setAuthorization(request.getHeader("Authorization"));
+            headerContext.setUserAgent(request.getHeader("User-Agent"));
+            headerContext.setAcceptLanguage(request.getHeader("Accept-Language"));
+            headerContext.setXRequestId(request.getHeader("X-Request-ID"));
+            headerContext.setXForwardedFor(getClientIpAddress(request));
+
+            // 기타 커스텀 헤더들도 저장
+            Collections.list(request.getHeaderNames())
+                    .forEach(headerName -> {
+                        if (!STANDARD_HEADERS.contains(headerName.toLowerCase())) {
+                            headerContext.addCustomHeader(headerName, request.getHeader(headerName));
+                        }
+                    });
+        } catch (Exception e) {
+            logger.warn("Failed to populate RequestHeaderContext", e);
         }
     }
 }
