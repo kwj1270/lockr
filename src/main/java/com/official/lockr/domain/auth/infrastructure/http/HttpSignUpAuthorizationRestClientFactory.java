@@ -1,6 +1,6 @@
 package com.official.lockr.domain.auth.infrastructure.http;
 
-import com.official.lockr.global.mvc.HttpHeaderPropagationInterceptor;
+import com.official.lockr.global.http.HttpHeaderPropagationInterceptor;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
