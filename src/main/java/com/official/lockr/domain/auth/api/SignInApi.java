@@ -5,7 +5,8 @@ import com.official.lockr.domain.auth.api.dto.OidcLoginHttpRequest;
 import com.official.lockr.domain.auth.application.auth.ProcessSignInUseCase;
 import com.official.lockr.domain.auth.application.oidc.RetrieveOidcProviderIdUseCase;
 import com.official.lockr.domain.auth.domain.auth.SignIn;
-import com.official.lockr.global.mvc.HttpHeaderContext;
+import com.official.lockr.global.http.HttpHeaderContext;
+import com.official.lockr.global.http.HttpHeaderContextThreadLocal;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,15 +21,15 @@ public class SignInApi {
     private static final String BEARER = "BEARER ";
     private static final String BLANK = "";
 
-    private final HttpHeaderContext requestHeaderContext;
+    private final HttpHeaderContextThreadLocal httpHeaderContextThreadLocal;
     private final RetrieveOidcProviderIdUseCase retrieveOidcProviderIdUseCase;
     private final ProcessSignInUseCase processSignInUseCase;
 
-    public SignInApi(final HttpHeaderContext requestHeaderContext,
+    public SignInApi(final HttpHeaderContextThreadLocal httpHeaderContextThreadLocal,
                      final RetrieveOidcProviderIdUseCase retrieveOidcProviderIdUseCase,
                      final ProcessSignInUseCase processSignInUseCase
     ) {
-        this.requestHeaderContext = requestHeaderContext;
+        this.httpHeaderContextThreadLocal = httpHeaderContextThreadLocal;
         this.retrieveOidcProviderIdUseCase = retrieveOidcProviderIdUseCase;
         this.processSignInUseCase = processSignInUseCase;
     }
@@ -38,14 +39,16 @@ public class SignInApi {
             @RequestBody final OidcLoginHttpRequest request,
             final HttpSession session
     ) {
-        final String idToken = requestHeaderContext.getAuthorization().replace(BEARER, BLANK);
+        final HttpHeaderContext httpHeaderContext = httpHeaderContextThreadLocal.get();
+        final String idToken = httpHeaderContext.authorization().replace(BEARER, BLANK);
         final String providerId = retrieveOidcProviderIdUseCase.retrieve(idToken, request.providerType());
         final SignIn signIn = processSignInUseCase.process(
-                providerId, request.providerType(),
-                requestHeaderContext.getDeviceId(),
-                requestHeaderContext.getDeviceInfo(),
-                requestHeaderContext.getIpAddress(),
-                requestHeaderContext.getUserAgent()
+                providerId,
+                request.providerType(),
+                httpHeaderContext.deviceId(),
+                httpHeaderContext.deviceInfo(),
+                httpHeaderContext.ipAddress(),
+                httpHeaderContext.userAgent()
         );
         syncSession(session, signIn);
         return ResponseEntity.ok().body("null");
@@ -56,12 +59,14 @@ public class SignInApi {
             @RequestBody final AdminLoginHttpRequest request,
             final HttpSession session
     ) {
+        final HttpHeaderContext httpHeaderContext = httpHeaderContextThreadLocal.get();
         final SignIn signIn = processSignInUseCase.process(
-                request.providerId(), request.providerType(),
-                requestHeaderContext.getDeviceId(),
-                requestHeaderContext.getDeviceInfo(),
-                requestHeaderContext.getIpAddress(),
-                requestHeaderContext.getUserAgent()
+                request.providerId(),
+                request.providerType(),
+                httpHeaderContext.deviceId(),
+                httpHeaderContext.deviceInfo(),
+                httpHeaderContext.ipAddress(),
+                httpHeaderContext.userAgent()
         );
         syncSession(session, signIn);
         return ResponseEntity.ok().body("null");
