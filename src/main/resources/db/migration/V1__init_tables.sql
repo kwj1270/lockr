@@ -1,8 +1,7 @@
 -- auto-generated definition
-create table http_log
+CREATE TABLE http_log
 (
-    id          varchar(128) not null comment '고유한 로그 ID (UUID)'
-        primary key,
+    id          varchar(128) not null comment '고유한 로그 ID (UUID)' primary key,
     root_guid   varchar(128) not null comment '루트 GUID (ULID)',
     child_guid  varchar(128) not null comment '자식 GUID (ULID)',
     tx_date     varchar(24)  not null comment '로그 기록 날짜',
@@ -14,24 +13,17 @@ create table http_log
     status_code smallint     not null comment 'HTTP 응답 상태 코드 (200, 404, 500 등)',
     headers     json         null comment '요청 헤더 정보',
     body        json         null comment '요청 본문 (민감 정보 마스킹 필요)'
-)
-    collate = utf8mb4_unicode_ci;
+) COLLATE = utf8mb4_unicode_ci;
 
-create index idx_child_guid
-    on http_log (child_guid);
+CREATE INDEX idx_http_log_child_guid ON http_log (child_guid);
 
-create index idx_client_ip
-    on http_log (client_ip);
+CREATE INDEX idx_http_log_client_ip ON http_log (client_ip);
 
-create index idx_root_guid
-    on http_log (root_guid);
+CREATE INDEX idx_http_log_root_guid ON http_log (root_guid);
 
-create index idx_tx_date
-    on http_log (tx_date);
+CREATE INDEX idx_http_log_tx_date ON http_log (tx_date);
 
-create index idx_tx_time
-    on http_log (tx_time);
+CREATE INDEX idx_http_log_tx_time ON http_log (tx_time);
 
-create index idx_user_id
-    on http_log (user_id);
+CREATE INDEX idx_http_log_user_id ON http_log (user_id);
 
