@@ -1,5 +1,5 @@
 -- sign_ins definition
-CREATE TABLE `sign_ins`
+CREATE TABLE `sign_in`
 (
     `id`            CHAR(128)      NOT NULL COMMENT '로그인 고유 ID (ULID)',
     `user_id`       CHAR(128)      NOT NULL COMMENT '사용자 고유 ID (ULID)',
@@ -14,5 +14,5 @@ CREATE TABLE `sign_ins`
 )
 COLLATE = utf8mb4_unicode_ci;
 
-CREATE INDEX `idx_sign_ins_user_id` ON `sign_ins` (`user_id`);
-CREATE INDEX `idx_provider_id_type` ON `sign_ins` (`provider_id`, `provider_type`);
+CREATE INDEX `idx_sign_ins_user_id` ON `sign_in` (`user_id`);
+CREATE INDEX `idx_provider_id_type` ON `sign_in` (`provider_id`, `provider_type`);

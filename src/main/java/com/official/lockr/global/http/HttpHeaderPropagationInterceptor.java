@@ -12,10 +12,10 @@ import java.io.IOException;
 @Component
 public class HttpHeaderPropagationInterceptor implements ClientHttpRequestInterceptor {
 
-    private final HttpHeaderContextThreadLocal httpHeaderContextThreadLocal;
+    private final HttpHeaders httpHeaders;
 
-    public HttpHeaderPropagationInterceptor(final HttpHeaderContextThreadLocal httpHeaderContextThreadLocal) {
-        this.httpHeaderContextThreadLocal = httpHeaderContextThreadLocal;
+    public HttpHeaderPropagationInterceptor(final HttpHeaders httpHeaders) {
+        this.httpHeaders = httpHeaders;
     }
 
     @Override
@@ -29,7 +29,7 @@ public class HttpHeaderPropagationInterceptor implements ClientHttpRequestInterc
     }
 
     private void propagateHeaders(final HttpRequest request) {
-        final HttpHeaderContext headerContext = httpHeaderContextThreadLocal.get();
+        final HttpHeaderContext headerContext = httpHeaders.get();
         try {
             addHeaderIfNotBlank(request, "X-ROOT-GUID", headerContext.rootGuid());
             addHeaderIfNotBlank(request, "X-CHILD-GUID", headerContext.childGuid());
@@ -44,6 +44,8 @@ public class HttpHeaderPropagationInterceptor implements ClientHttpRequestInterc
             addHeaderIfNotBlank(request, "X-APP-VERSION", headerContext.ipAddress());
         } catch (Exception e) {
             System.err.println("Failed to propagate headers: " + e.getMessage());
+        } finally {
+            httpHeaders.set(headerContext.increaseChildGuid());
         }
     }
 

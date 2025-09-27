@@ -4,18 +4,18 @@ import com.github.f4b6a3.ulid.UlidCreator;
 import org.apache.logging.log4j.util.Strings;
 import org.jooq.Configuration;
 import org.jooq.JSON;
-import org.jooq.generated.tables.daos.HttpLogsDao;
-import org.jooq.generated.tables.pojos.HttpLogs;
+import org.jooq.generated.tables.daos.HttpLogDao;
+import org.jooq.generated.tables.pojos.HttpLogEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class JOOQHttpLoggingRepository implements HttpLoggingRepository {
 
-    private final HttpLogsDao httpLogsDao;
+    private final HttpLogDao httpLogDao;
 
     public JOOQHttpLoggingRepository(final Configuration configuration) {
-        this.httpLogsDao = new HttpLogsDao(configuration);
+        this.httpLogDao = new HttpLogDao(configuration);
     }
 
     @Transactional
@@ -32,7 +32,7 @@ public class JOOQHttpLoggingRepository implements HttpLoggingRepository {
                      final String headers,
                      final String body
     ) {
-        final HttpLogs httpLogs = new HttpLogs(
+        final HttpLogEntity httpLogs = new HttpLogEntity(
                 UlidCreator.getUlid().toString(),
                 rootGuid,
                 childGuid,
@@ -46,6 +46,6 @@ public class JOOQHttpLoggingRepository implements HttpLoggingRepository {
                 Strings.isBlank(headers) ? JSON.valueOf("{}") : JSON.valueOf(headers),
                 Strings.isBlank(body) ? JSON.valueOf("{}") : JSON.valueOf(body)
         );
-        httpLogsDao.insert(httpLogs);
+        httpLogDao.insert(httpLogs);
     }
 }

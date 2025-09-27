@@ -1,0 +1,19 @@
+#### 로그인
+POST http://127.0.0.1:8080/api/v1/auth/sign_in/admin
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+{
+  "providerId": "1",
+  "providerType": "TEST"
+}
+> {%
+    client.global.set("SESSION_COOKIE", response.headers.valueOf("Set-Cookie"));
+%}
+
+#### 로그인 정보 조회
+GET http://127.0.0.1:8080/api/v1/auth/profile
+Cookie: {{SESSION_COOKIE}}
+

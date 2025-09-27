@@ -13,6 +13,9 @@ public record HttpHeaderContext(
         String deviceInfo, String ipAddress, String appVersion
 ) {
 
+    private static final String BEARER = "BEARER ";
+    private static final String BLANK = "";
+
     private static final List<String> IP_HEADERS = Arrays.asList(
             "X-Forwarded-For", "Proxy-Client-IP",
             "WL-Proxy-Client-IP", "HTTP_CLIENT_IP", "HTTP_X_FORWARDED_FOR"
@@ -95,5 +98,16 @@ public record HttpHeaderContext(
 
     private String maskSensitiveData(String data) {
         return data != null && data.length() > 10 ? data.substring(0, 10) + "***" : data;
+    }
+
+    public String authorizationPlain() {
+        return authorization.replace(BEARER, BLANK);
+    }
+
+    public HttpHeaderContext increaseChildGuid() {
+        return new HttpHeaderContext(
+                rootGuid, childGuid, authorization, userAgent, acceptLanguage,
+                xRequestId, xForwardedFor, deviceId, deviceInfo, ipAddress, appVersion
+        );
     }
 }
