@@ -103,4 +103,11 @@ public record HttpHeaderContext(
     public String authorizationPlain() {
         return authorization.replace(BEARER, BLANK);
     }
+
+    public HttpHeaderContext increaseChildGuid() {
+        return new HttpHeaderContext(
+                rootGuid, childGuid, authorization, userAgent, acceptLanguage,
+                xRequestId, xForwardedFor, deviceId, deviceInfo, ipAddress, appVersion
+        );
+    }
 }

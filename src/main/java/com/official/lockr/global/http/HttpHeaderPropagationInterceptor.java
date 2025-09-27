@@ -44,6 +44,8 @@ public class HttpHeaderPropagationInterceptor implements ClientHttpRequestInterc
             addHeaderIfNotBlank(request, "X-APP-VERSION", headerContext.ipAddress());
         } catch (Exception e) {
             System.err.println("Failed to propagate headers: " + e.getMessage());
+        } finally {
+            httpHeaders.set(headerContext.increaseChildGuid());
         }
     }
 

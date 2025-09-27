@@ -5,14 +5,12 @@ import com.official.lockr.domain.auth.api.dto.OidcLoginHttpRequest;
 import com.official.lockr.domain.auth.application.auth.ProcessSignInUseCase;
 import com.official.lockr.domain.auth.application.oidc.RetrieveOidcProviderIdUseCase;
 import com.official.lockr.domain.auth.domain.auth.SignIn;
+import com.official.lockr.domain.auth.domain.auth.SignInSession;
 import com.official.lockr.global.http.HttpHeaderContext;
 import com.official.lockr.global.http.HttpHeaders;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RequestMapping("/api/v1")
 @RestController
@@ -69,7 +67,13 @@ public class SignInApi {
         return ResponseEntity.ok().body("null");
     }
 
+    @GetMapping("/auth/profile")
+    public ResponseEntity<SignInSession> profile(final HttpSession session) {
+        final SignInSession signIn = (SignInSession) session.getAttribute("signIn");
+        return ResponseEntity.ok(signIn);
+    }
+
     private void syncSession(final HttpSession session, final SignIn signIn) {
-        session.setAttribute("signIn", signIn);
+        session.setAttribute("signIn", new SignInSession(signIn));
     }
 }
