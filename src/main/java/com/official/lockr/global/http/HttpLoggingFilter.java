@@ -24,16 +24,16 @@ import java.util.stream.Collectors;
 @Component
 public class HttpLoggingFilter extends OncePerRequestFilter {
 
-    private final HttpHeaderContextThreadLocal httpHeaderContextThreadLocal;
+    private final HttpHeaders httpHeaders;
     private final HttpLoggingRepository httpLoggingRepository;
     private final ObjectMapper objectMapper;
 
     public HttpLoggingFilter(
-            final HttpHeaderContextThreadLocal httpHeaderContextThreadLocal,
+            final HttpHeaders httpHeaders,
             final HttpLoggingRepository httpLoggingRepository,
             final ObjectMapper objectMapper
     ) {
-        this.httpHeaderContextThreadLocal = httpHeaderContextThreadLocal;
+        this.httpHeaders = httpHeaders;
         this.httpLoggingRepository = httpLoggingRepository;
         this.objectMapper = objectMapper;
     }
@@ -46,7 +46,7 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         final HttpHeaderContext headerContext = new HttpHeaderContext(request);
-        httpHeaderContextThreadLocal.set(headerContext);
+        httpHeaders.set(headerContext);
 
         final var contentCachingRequestWrapper = new ContentCachingRequestWrapper(request);
         final var contentCachingResponseWrapper = new ContentCachingResponseWrapper(response);

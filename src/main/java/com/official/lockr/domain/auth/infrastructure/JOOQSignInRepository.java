@@ -4,8 +4,8 @@ import com.official.lockr.domain.auth.domain.auth.ProviderType;
 import com.official.lockr.domain.auth.domain.auth.SignIn;
 import com.official.lockr.domain.auth.domain.auth.SignInRepository;
 import org.jooq.Configuration;
-import org.jooq.generated.tables.daos.SignInsDao;
-import org.jooq.generated.tables.pojos.SignIns;
+import org.jooq.generated.tables.daos.SignInDao;
+import org.jooq.generated.tables.pojos.SignInEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,16 +14,16 @@ import java.time.ZoneId;
 @Repository
 public class JOOQSignInRepository implements SignInRepository {
 
-    private final SignInsDao signInsDao;
+    private final SignInDao signInsDao;
 
     public JOOQSignInRepository(final Configuration configuration) {
-        this.signInsDao = new SignInsDao(configuration);
+        this.signInsDao = new SignInDao(configuration);
     }
 
-    @Transactional()
+    @Transactional
     @Override
     public SignIn save(final SignIn signIn) {
-        final SignIns entity = new SignIns(
+        final SignInEntity entity = new SignInEntity(
                 signIn.getId(),
                 signIn.getUserId(),
                 signIn.getProviderId(),

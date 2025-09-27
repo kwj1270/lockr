@@ -3,7 +3,7 @@ package com.official.lockr.global.http;
 import org.springframework.stereotype.Component;
 
 @Component
-public class HttpHeaderContextThreadLocal {
+public class HttpHeaders {
 
     private final InheritableThreadLocal<HttpHeaderContext> inheritableThreadLocal = new InheritableThreadLocal<>();
 
