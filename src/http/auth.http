@@ -12,8 +12,3 @@ X-DEVICE-INFO: web
 > {%
     client.global.set("SESSION_COOKIE", response.headers.valueOf("Set-Cookie"));
 %}
-
-#### 로그인 정보 조회
-GET http://127.0.0.1:8080/api/v1/
-Cookie: {{SESSION_COOKIE}}
-

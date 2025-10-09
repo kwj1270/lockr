@@ -29,9 +29,8 @@ public class Team {
         this.deletedAt = deletedAt;
     }
 
-    public void addMember(final Member president) {
-        president.setTeamId(this.id);
-        members.add(president);
+    public void addMember(final Member member) {
+        members.add(member);
     }
 
     public String getId() {

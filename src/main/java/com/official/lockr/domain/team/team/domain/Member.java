@@ -1,23 +1,23 @@
 package com.official.lockr.domain.team.team.domain;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Objects;
 
 public class Member {
 
     private final String id;
     private final String userId;
-    private final List<MemberRole> roles;
-    private String teamId;
+    private final MemberRole role;
+    private final String teamId;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
     private final LocalDateTime deletedAt;
 
-    public Member(final String id, final String userId, final List<MemberRole> roles, final LocalDateTime createdAt, final LocalDateTime updatedAt, final LocalDateTime deletedAt) {
+    public Member(final String id, final String userId, final MemberRole role, final String teamId, final LocalDateTime createdAt, final LocalDateTime updatedAt, final LocalDateTime deletedAt) {
         this.id = id;
         this.userId = userId;
-        this.roles = roles;
+        this.role = role;
+        this.teamId = teamId;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.deletedAt = deletedAt;
@@ -31,8 +31,8 @@ public class Member {
         return userId;
     }
 
-    public List<MemberRole> getRoles() {
-        return roles;
+    public MemberRole getRole() {
+        return role;
     }
 
     public String getTeamId() {
@@ -51,10 +51,6 @@ public class Member {
         return deletedAt;
     }
 
-    void setTeamId(final String teamId) {
-        this.teamId = teamId;
-    }
-
     @Override
     public boolean equals(final Object o) {
         if (o == null || getClass() != o.getClass()) return false;
@@ -67,7 +63,11 @@ public class Member {
         return Objects.hashCode(id);
     }
 
-    public static Member president(final String memberId, final String userId) {
-        return new Member(memberId, userId, List.of(MemberRole.PLAYER, MemberRole.PRESIDENT), LocalDateTime.now(), LocalDateTime.now(), null);
+    public static Member president(final String memberId, final String userId, final String teamId) {
+        return new Member(memberId, userId, MemberRole.PRESIDENT, teamId, LocalDateTime.now(), LocalDateTime.now(), null);
+    }
+
+    public static Member player(final String memberId, final String userId, final String teamId) {
+        return new Member(memberId, userId, MemberRole.PLAYER, teamId, LocalDateTime.now(), LocalDateTime.now(), null);
     }
 }

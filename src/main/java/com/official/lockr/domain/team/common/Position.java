@@ -1,4 +1,4 @@
-package com.official.lockr.domain.team.player;
+package com.official.lockr.domain.team.common;
 
 public enum Position {
     ST,
@@ -20,5 +20,9 @@ public enum Position {
     LCB,
     RCB,
     SW,
-    GK
+    GK;
+
+    public static Object of(final String name) {
+        return valueOf(name);
+    }
 }
