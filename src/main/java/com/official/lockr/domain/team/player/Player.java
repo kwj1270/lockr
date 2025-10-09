@@ -1,5 +1,7 @@
 package com.official.lockr.domain.team.player;
 
+import com.official.lockr.domain.team.common.Position;
+
 public class Player {
 
     private final String memberId;

@@ -1,6 +1,6 @@
 package com.official.lockr.domain.team.squard;
 
-import com.official.lockr.domain.team.player.Position;
+import com.official.lockr.domain.team.common.Position;
 
 public class SquadEntry {
 

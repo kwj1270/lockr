@@ -5,14 +5,12 @@ public class Stat {
     private final String birth;
     private final String height;
     private final String weight;
-    private final String leftFoot;
-    private final String rightFoot;
+    private final String foot;
 
-    public Stat(final String birth, final String height, final String weight, final String leftFoot, final String rightFoot) {
+    public Stat(final String birth, final String height, final String weight, final String foot) {
         this.birth = birth;
         this.height = height;
         this.weight = weight;
-        this.leftFoot = leftFoot;
-        this.rightFoot = rightFoot;
+        this.foot = foot;
     }
 }

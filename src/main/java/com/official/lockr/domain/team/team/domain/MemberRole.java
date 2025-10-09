@@ -2,9 +2,9 @@ package com.official.lockr.domain.team.team.domain;
 
 public enum MemberRole {
     PLAYER,
-    PRESIDENT,
-    VICE_PRESIDENT,
-    TREASURER,
+    COACH,
     MANAGER,
-    COACH
+    TREASURER,
+    VICE_PRESIDENT,
+    PRESIDENT,
 }
