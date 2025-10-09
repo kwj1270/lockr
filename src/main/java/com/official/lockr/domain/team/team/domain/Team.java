@@ -61,6 +61,10 @@ public class Team {
         return deletedAt;
     }
 
+    public boolean isExistedMember(final String userId) {
+        return this.members.stream().anyMatch(it -> it.isSame(userId));
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (o == null || getClass() != o.getClass()) return false;

@@ -51,6 +51,10 @@ public class Member {
         return deletedAt;
     }
 
+    public boolean isSame(final String userId) {
+        return this.userId.equals(userId);
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (o == null || getClass() != o.getClass()) return false;
