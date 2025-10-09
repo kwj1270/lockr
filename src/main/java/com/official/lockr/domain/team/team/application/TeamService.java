@@ -38,6 +38,9 @@ public class TeamService implements FoundTeamUseCase, RegisterTeamMemberUseCase 
         if (Objects.isNull(team)) {
             throw new IllegalStateException();
         }
+        if(team.isExistedMember(command.userId())) {
+            return team;
+        }
         team.addMember(player(UlidCreator.getUlid().toString(), command.userId(), team.getId()));
         return teamRepository.save(team);
     }
