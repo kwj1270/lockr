@@ -1,4 +1,4 @@
-#### 로그인
+#### 팀 창단
 POST http://127.0.0.1:8080/api/v1/teams
 Cookie: {{SESSION_COOKIE}}
 Content-Type: application/json
@@ -14,7 +14,7 @@ X-DEVICE-INFO: web
     client.global.set("TEAM_ID", response.body.id);
 %}
 
-#### 로그인 정보 조회
+#### 일반 선수 생성
 // @no-cookie-jar
 POST http://127.0.0.1:8080/api/v1/admin/auth/sign_in
 Content-Type: application/json
