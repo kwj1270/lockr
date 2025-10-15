@@ -7,24 +7,30 @@ import java.util.List;
 public class Entry extends AggregateRoot {
 
     private final String id;
+    private final String name;
     private final String squadId;
-    private final List<EntryPlayer> entryPlayers;
+    private final EntryPlayers entryPlayers;
 
-    public Entry(final String id, final String squadId, final List<EntryPlayer> entryPlayers) {
+    public Entry(final String id, final String name, final String squadId, final List<EntryPlayer> players) {
         this.id = id;
+        this.name = name;
         this.squadId = squadId;
-        this.entryPlayers = entryPlayers;
+        this.entryPlayers = new EntryPlayers(players);
+    }
+
+    public void substitutePlayer(final String outPlayerId, final String inPlayerId) {
+        entryPlayers.substitute(outPlayerId, inPlayerId);
     }
 
     public String getId() {
         return id;
     }
 
-    public String getSquadId() {
-        return squadId;
+    public String getName() {
+        return name;
     }
 
-    public List<EntryPlayer> getEntryPlayers() {
-        return entryPlayers;
+    public String getSquadId() {
+        return squadId;
     }
 }
