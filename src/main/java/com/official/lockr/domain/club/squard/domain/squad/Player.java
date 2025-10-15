@@ -3,8 +3,8 @@ package com.official.lockr.domain.club.squard.domain.squad;
 import com.official.lockr.domain.club.common.Foot;
 import com.official.lockr.domain.club.common.Position;
 import com.official.lockr.domain.club.squard.domain.RecruitmentInfo;
-import com.official.lockr.domain.club.squard.domain.vo.BackNumber;
-import com.official.lockr.domain.club.squard.domain.vo.PlayerType;
+import com.official.lockr.domain.club.squard.domain.squad.vo.BackNumber;
+import com.official.lockr.domain.club.squard.domain.squad.vo.PlayerRole;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,7 +23,7 @@ public class Player {
     private final String weight;
     private final Foot foot;
     private final BackNumber backNumber;
-    private final PlayerType playerType;
+    private final PlayerRole playerRole;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
     private final LocalDateTime deletedAt;
@@ -40,7 +40,7 @@ public class Player {
                   final String weight,
                   final Foot foot,
                   final BackNumber backNumber,
-                  final PlayerType playerType,
+                  final PlayerRole playerRole,
                   final LocalDateTime createdAt, final LocalDateTime updatedAt, final LocalDateTime deletedAt
     ) {
         this.id = id;
@@ -55,7 +55,7 @@ public class Player {
         this.weight = weight;
         this.foot = foot;
         this.backNumber = backNumber;
-        this.playerType = playerType;
+        this.playerRole = playerRole;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.deletedAt = deletedAt;
@@ -64,7 +64,7 @@ public class Player {
     public static Player init(final String id, final String squadId, final String memberId, final BackNumber backNumber) {
         return new Player(
                 id, squadId, memberId, null, null, null, null, null, null, null, null, backNumber,
-                PlayerType.BASIC, LocalDateTime.now(), LocalDateTime.now(), null
+                PlayerRole.BASIC, LocalDateTime.now(), LocalDateTime.now(), null
         );
     }
 
@@ -82,7 +82,7 @@ public class Player {
                 recruitmentInfo.getWeight(),
                 recruitmentInfo.getFoot(),
                 backNumber,
-                PlayerType.BASIC,
+                PlayerRole.BASIC,
                 LocalDateTime.now(),
                 LocalDateTime.now(),
                 null);
@@ -144,8 +144,8 @@ public class Player {
         return nationality;
     }
 
-    public PlayerType getPlayerType() {
-        return playerType;
+    public PlayerRole getPlayerRole() {
+        return playerRole;
     }
 
     public String getProfileImage() {

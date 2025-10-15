@@ -10,17 +10,17 @@ import java.util.UUID;
 import static java.util.Objects.isNull;
 
 @Service
-public class IndividualUserContractService implements SignRepresentativeContractUseCase, SignIndividualUserContractUseCase {
+public class ContractService implements SignRepresentativeContractUseCase, SignIndividualUserContractUseCase {
 
     private final Representatives representatives;
     private final ResumeRepository resumeRepository;
     private final ContractRepository contractRepository;
     private final IndividualUsers individualUsers;
 
-    public IndividualUserContractService(final Representatives representatives,
-                                         final ResumeRepository resumeRepository,
-                                         final ContractRepository contractRepository,
-                                         final IndividualUsers individualUsers
+    public ContractService(final Representatives representatives,
+                           final ResumeRepository resumeRepository,
+                           final ContractRepository contractRepository,
+                           final IndividualUsers individualUsers
     ) {
         this.representatives = representatives;
         this.resumeRepository = resumeRepository;

@@ -5,8 +5,8 @@ import com.official.lockr.domain.club.common.Position;
 import com.official.lockr.domain.club.squard.domain.squad.Player;
 import com.official.lockr.domain.club.squard.domain.squad.Squad;
 import com.official.lockr.domain.club.squard.domain.squad.SquadRepository;
-import com.official.lockr.domain.club.squard.domain.vo.BackNumber;
-import com.official.lockr.domain.club.squard.domain.vo.PlayerType;
+import com.official.lockr.domain.club.squard.domain.squad.vo.BackNumber;
+import com.official.lockr.domain.club.squard.domain.squad.vo.PlayerRole;
 import com.official.lockr.global.ddd.DomainEventPublisher;
 import jakarta.annotation.Nullable;
 import org.jooq.Configuration;
@@ -134,7 +134,7 @@ public class JOOQSquadRepository implements SquadRepository {
                 PLAYERS.WEIGHT,
                 PLAYERS.FOOT,
                 PLAYERS.BACK_NUMBER,
-                PLAYERS.PLAYER_TYPE,
+                PLAYERS.PLAYER_ROLE,
                 PLAYERS.CREATED_AT,
                 PLAYERS.UPDATED_AT,
                 PLAYERS.DELETED_AT
@@ -156,7 +156,7 @@ public class JOOQSquadRepository implements SquadRepository {
                     player.getWeight(),
                     Objects.nonNull(player.getFoot()) ? player.getFoot().name() : null,
                     player.getBackNumber().getValue(),
-                    player.getPlayerType().name(),
+                    player.getPlayerRole().name(),
                     player.getCreatedAt(),
                     player.getUpdatedAt(),
                     player.getDeletedAt()
@@ -173,7 +173,7 @@ public class JOOQSquadRepository implements SquadRepository {
                 .set(PLAYERS.WEIGHT, excluded(PLAYERS.WEIGHT))
                 .set(PLAYERS.FOOT, excluded(PLAYERS.FOOT))
                 .set(PLAYERS.BACK_NUMBER, excluded(PLAYERS.BACK_NUMBER))
-                .set(PLAYERS.PLAYER_TYPE, excluded(PLAYERS.PLAYER_TYPE))
+                .set(PLAYERS.PLAYER_ROLE, excluded(PLAYERS.PLAYER_ROLE))
                 .set(PLAYERS.UPDATED_AT, excluded(PLAYERS.UPDATED_AT))
                 .set(PLAYERS.DELETED_AT, excluded(PLAYERS.DELETED_AT))
                 .execute();
@@ -216,7 +216,7 @@ public class JOOQSquadRepository implements SquadRepository {
                 entity.getWeight(),
                 Objects.nonNull(entity.getFoot()) ? Foot.valueOf(entity.getFoot()) : null,
                 new BackNumber(entity.getBackNumber()),
-                PlayerType.valueOf(entity.getPlayerType()),
+                PlayerRole.valueOf(entity.getPlayerRole()),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt(),
                 entity.getDeletedAt()

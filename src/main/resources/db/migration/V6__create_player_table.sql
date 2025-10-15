@@ -22,7 +22,7 @@ CREATE TABLE `players`
     `weight`        VARCHAR(10)  NULL COMMENT '몸무게',
     `foot`          VARCHAR(10)  NULL COMMENT '주발' CHECK (foot IN ('LEFT', 'RIGHT', 'BOTH')),
     `back_number`   INT          NOT NULL COMMENT '등번호',
-    `player_type`   VARCHAR(20)  NOT NULL DEFAULT 'BASIC' COMMENT '선수 역할' CHECK (player_type IN ('BASIC', 'VICE_CAPTAIN', 'CAPTAIN')),
+    `player_role`   VARCHAR(20)  NOT NULL DEFAULT 'BASIC' COMMENT '선수 역할' CHECK (player_role IN ('BASIC', 'VICE_CAPTAIN', 'CAPTAIN')),
     `created_at`    DATETIME(6)  NOT NULL COMMENT '생성 시각',
     `updated_at`    DATETIME(6)  NOT NULL COMMENT '변경 시각',
     `deleted_at`    DATETIME(6)  NULL COMMENT '삭제 시각'

@@ -1,4 +1,4 @@
-package com.official.lockr.domain.club.squard.domain.vo;
+package com.official.lockr.domain.club.squard.domain.squad.vo;
 
 public class BackNumber {
 
