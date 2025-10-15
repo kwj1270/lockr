@@ -7,11 +7,11 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 @Component
-public class PlayerEventConsumer {
+public class SquadEventConsumer {
 
     private final AddPlayerUseCase addPlayerUseCase;
 
-    public PlayerEventConsumer(final AddPlayerUseCase addPlayerUseCase) {
+    public SquadEventConsumer(final AddPlayerUseCase addPlayerUseCase) {
         this.addPlayerUseCase = addPlayerUseCase;
     }
 

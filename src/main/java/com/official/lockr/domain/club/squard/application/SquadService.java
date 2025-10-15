@@ -5,7 +5,7 @@ import com.official.lockr.domain.club.squard.domain.*;
 import com.official.lockr.domain.club.squard.domain.squad.Player;
 import com.official.lockr.domain.club.squard.domain.squad.Squad;
 import com.official.lockr.domain.club.squard.domain.squad.SquadRepository;
-import com.official.lockr.domain.club.squard.domain.vo.BackNumber;
+import com.official.lockr.domain.club.squard.domain.squad.vo.BackNumber;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
