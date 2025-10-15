@@ -127,11 +127,14 @@ tasks {
                             .withUserType("java.lang.Long")
                             .withTypes("int unsigned"),
                     new ForcedType()
+                            .withUserType("java.lang.Boolean")
+                            .withTypes("(?i:tinyint\\(1\\))"),
+                    new ForcedType()
                             .withUserType("java.lang.Integer")
                             .withTypes("tinyint unsigned"),
                     new ForcedType()
                             .withUserType("java.lang.Integer")
-                            .withTypes("smallint unsigned")
+                            .withTypes("smallint unsigned"),
             )
         }
     }

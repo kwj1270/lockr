@@ -4,6 +4,7 @@ CREATE TABLE `resumes`
     id                      VARCHAR(255) NOT NULL PRIMARY KEY,
     team_id                 VARCHAR(255) NOT NULL,
     user_id                 VARCHAR(255) NOT NULL,
+    profile_image           VARCHAR(255) NOT NULL,
     birth                   VARCHAR(255) NOT NULL,
     weight                  VARCHAR(255) NOT NULL,
     height                  VARCHAR(255) NOT NULL,
@@ -28,13 +29,17 @@ CREATE INDEX idx_resume_created_at ON `resumes` (created_at);
 -- Contract table for storing signed contracts between users and teams
 CREATE TABLE `contracts`
 (
-    id                     VARCHAR(255) NOT NULL PRIMARY KEY,
-    team_id                VARCHAR(255) NOT NULL,
-    individual_user_id     VARCHAR(255) NOT NULL,
-    representative_user_id VARCHAR(255) NOT NULL,
-    representative_role    VARCHAR(255) NOT NULL,
-    created_at             TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    deleted_at             TIMESTAMP    NULL
+    id                      VARCHAR(255) NOT NULL PRIMARY KEY,
+    team_id                 VARCHAR(255) NOT NULL,
+    individual_user_id      VARCHAR(255) NOT NULL,
+    individual_user_agree   BOOLEAN      NOT NULL,
+    individual_user_sign_at TIMESTAMP    NULL,
+    representative_user_id  VARCHAR(255) NOT NULL,
+    representative_role     VARCHAR(255) NOT NULL,
+    representative_agree    BOOLEAN      NOT NULL,
+    representative_sign_at  TIMESTAMP    NULL,
+    created_at              TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted_at              TIMESTAMP    NULL
 ) COLLATE = utf8mb4_unicode_ci;
 
 CREATE INDEX idx_contract_team_id ON `contracts` (team_id);
