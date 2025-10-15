@@ -1,22 +1,37 @@
 package com.official.lockr.domain.club.squard.domain.entry;
 
-import com.official.lockr.domain.club.common.Position;
+import java.util.Objects;
 
-public class EntryPlayer {
+public abstract class EntryPlayer {
 
-    private final String entryId;
-    private final String playerId;
-    private final String profileImage;
-    private final String name;
-    private final Position position;
-    private final EntryType entryType;
+    protected final String entryId;
+    protected final String playerId;
 
-    public EntryPlayer(final String entryId, final String playerId, final String name, final String profileImage, final EntryType entryType, final Position position) {
+    protected EntryPlayer(final String entryId,
+                          final String playerId) {
         this.entryId = entryId;
         this.playerId = playerId;
-        this.name = name;
-        this.profileImage = profileImage;
-        this.entryType = entryType;
-        this.position = position;
+    }
+
+    public String getEntryId() {
+        return entryId;
+    }
+
+    public String getPlayerId() {
+        return playerId;
+    }
+
+    public abstract EntryType getEntryType();
+
+    @Override
+    public boolean equals(final Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        final EntryPlayer that = (EntryPlayer) o;
+        return Objects.equals(getPlayerId(), that.getPlayerId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(getPlayerId());
     }
 }
