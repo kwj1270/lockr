@@ -16,7 +16,7 @@ Detailed logs are necessary for tracking user activity, debugging errors, and mo
 
 모든 수신 HTTP 요청과 해당 응답을 별도의 데이터베이스 테이블(예: `http_log`)에 기록하기로 결정합니다. 로그 항목에는 요청 URL, 메서드, 헤더, 본문, 응답 상태 코드, 응답 본문, 사용자 식별자(인증된 경우), 타임스탬프, 처리 시간 등의 주요 정보가 포함됩니다. 비밀번호나 인증 토큰과 같은 민감한 정보는 기록 전에 반드시 마스킹 처리해야 합니다.
 
-We have decided to log all incoming HTTP requests and their corresponding responses to a dedicated database table (e.g., `http_log`). The log entry will include key information such as the request URL, method, headers, body, response status code, response body, user identifier (if authenticated), timestamp, and duration. Sensitive information like passwords or authentication tokens must be masked before logging.
+We have decided to log all incoming HTTP requests and their corresponding responses to a dedicated database table (e.g., `http_log`). The log tacticalBoard will include key information such as the request URL, method, headers, body, response status code, response body, user identifier (if authenticated), timestamp, and duration. Sensitive information like passwords or authentication tokens must be masked before logging.
 
 ## 결과 Consequences
 

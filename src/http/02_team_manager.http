@@ -1,0 +1,102 @@
+#### 일반 선수 생성
+// @no-cookie-jar
+POST http://127.0.0.1:8080/api/v1/admin/auth/sign_in
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+{
+  "providerId": "2",
+  "providerType": "TEST"
+}
+> {%
+    client.global.set("SESSION_COOKIE_2", response.headers.valueOf("Set-Cookie"));
+%}
+
+#### 입단 신청
+POST http://127.0.0.1:8080/api/v1/teams/{{TEAM_ID}}/resume
+Cookie: {{SESSION_COOKIE_2}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 2
+X-DEVICE-INFO: web
+
+{
+  "profileImage": "https://cataas.com/cat",
+  "birth": "1998-07-15",
+  "height": "180",
+  "weight": "75",
+  "name": "홍길동",
+  "email": "gildong@example.com",
+  "address": "서울특별시 강남구 테헤란로 123",
+  "phone": "010-1234-5678",
+  "emergencyContactPhone": "010-8765-4321",
+  "nationality": "KOR",
+  "preferredPosition": [
+    "CF",
+    "RW"
+  ],
+  "dominantFoot": "RIGHT",
+  "advantages": "스피드와 결정력 우수",
+  "disadvantages": "수비 시 위치선정 보완 필요"
+}
+> {%
+    client.global.set("RESUME_ID", response.body.id);
+%}
+
+#### 계약 - 대표
+POST http://127.0.0.1:8080/api/v1/teams/{{TEAM_ID}}/contract
+Cookie: {{SESSION_COOKIE}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+{
+  "resumeId": "{{RESUME_ID}}",
+  "agree": true
+}
+> {%
+    client.global.set("CONTRACT_ID", response.body.id);
+%}
+
+
+#### 계약 - 개인
+POST http://127.0.0.1:8080/api/v1/teams/{{TEAM_ID}}/contract/sign
+Cookie: {{SESSION_COOKIE_2}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+{
+  "contractId": "{{CONTRACT_ID}}",
+  "agree": true
+}
+
+### 팀 조회(일단 스쿼드로 조회)
+GET http://127.0.0.1:8080/api/v1/teams/{{TEAM_ID}}/squads
+Cookie: {{SESSION_COOKIE}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+> {%
+    client.global.set("SQUAD_ID", response.body.id);
+    client.global.set("PLAYER_ID_2", response.body.players[1].memberId);
+%}
+
+
+#### 매니저 임명
+POST http://127.0.0.1:8080/api/v1/teams/{{TEAM_ID}}/manager
+Cookie: {{SESSION_COOKIE}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+{
+  "targetMemberId": "{{PLAYER_ID_2}}"
+}
