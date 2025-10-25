@@ -7,7 +7,7 @@ public class Member {
 
     private final String id;
     private final String userId;
-    private final MemberRole role;
+    private MemberRole role;
     private final String teamId;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
@@ -53,6 +53,22 @@ public class Member {
 
     public boolean isSame(final String userId) {
         return this.userId.equals(userId);
+    }
+
+    public boolean isPresident() {
+        return role.isPresident();
+    }
+
+    public boolean isManager() {
+        return role.isManager();
+    }
+
+    public void assignPlayerRole() {
+        role = MemberRole.PLAYER;
+    }
+
+    public void assignManagerRole() {
+        role = MemberRole.MANAGER;
     }
 
     @Override

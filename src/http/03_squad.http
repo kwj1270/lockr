@@ -1,0 +1,54 @@
+### 스쿼드 조회
+GET http://127.0.0.1:8080/api/v1/teams/{{TEAM_ID}}/squads
+Cookie: {{SESSION_COOKIE_2}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+> {%
+    client.global.set("SQUAD_ID", response.body.id);
+    client.global.set("SQUAD_PLAYER_ID", response.body.players[2].id);
+%}
+
+#### 전술 보드 생성
+POST http://127.0.0.1:8080/api/v1/squads/{{SQUAD_ID}}/boards
+Cookie: {{SESSION_COOKIE_2}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+{
+  "name": "4-3-3 Formation"
+}
+> {%
+    client.global.set("TACTICAL_BOARD_ID", response.body.id);
+%}
+
+###
+POST http://127.0.0.1:8080/api/v1/squads/{{SQUAD_ID}}/boards/{{TACTICAL_BOARD_ID}}/player
+Cookie: {{SESSION_COOKIE_2}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+{
+  "squadPlayerId": "{{SQUAD_PLAYER_ID}}",
+  "squadPlayerType": "FIELD",
+  "x": 40,
+  "y": 80
+}
+
+###
+POST http://127.0.0.1:8080/api/v1/squads/{{SQUAD_ID}}/boards/{{TACTICAL_BOARD_ID}}/formation
+Cookie: {{SESSION_COOKIE_2}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+{
+  "formationName": "3-5-2"
+}

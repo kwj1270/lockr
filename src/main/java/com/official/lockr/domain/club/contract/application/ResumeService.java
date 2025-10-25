@@ -7,6 +7,7 @@ import com.official.lockr.domain.club.contract.application.command.ApplyResumeCo
 import com.official.lockr.domain.club.contract.application.command.CancelResumeCommand;
 import com.official.lockr.domain.club.contract.domain.Resume;
 import com.official.lockr.domain.club.contract.domain.ResumeRepository;
+import com.official.lockr.global.util.UlidUtils;
 import org.springframework.stereotype.Service;
 
 import static java.util.Objects.isNull;
@@ -42,7 +43,7 @@ public class ResumeService implements ApplyResumeUseCase, CancelResumeUseCase {
 
     private static Resume resume(final ApplyResumeCommand applyResumeCommand) {
         return Resume.create(
-                UlidCreator.getUlid().toString(),
+                UlidUtils.generateUlid(),
                 applyResumeCommand.teamId(),
                 applyResumeCommand.userId(),
                 applyResumeCommand.profileImage(),

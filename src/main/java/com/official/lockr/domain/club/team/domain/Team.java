@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class Team extends AggregateRoot {
 
@@ -66,7 +67,27 @@ public class Team extends AggregateRoot {
     }
 
     public boolean isExistedMember(final String userId) {
-        return this.members.stream().anyMatch(it -> it.isSame(userId));
+        return members.stream().anyMatch(it -> it.isSame(userId));
+    }
+
+    public boolean isNotPresident(final String userId) {
+        return members.stream().filter(it -> it.isSame(userId))
+                .noneMatch(Member::isPresident);
+    }
+
+    public boolean hasNotMember(final String memberId) {
+        return members.stream().noneMatch(it -> it.getId().equals(memberId));
+    }
+
+    public void assignManger(final String memberId) {
+        members.stream()
+                .filter(Member::isManager)
+                .findFirst()
+                .ifPresent(Member::assignPlayerRole);
+        members.stream()
+                .filter(it -> it.getId().equals(memberId))
+                .findFirst()
+                .ifPresent(Member::assignManagerRole);
     }
 
     @Override
@@ -80,4 +101,5 @@ public class Team extends AggregateRoot {
     public int hashCode() {
         return Objects.hashCode(getId());
     }
+
 }

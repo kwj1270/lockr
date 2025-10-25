@@ -1,9 +1,9 @@
 package com.official.lockr.domain.users.application;
 
-import com.github.f4b6a3.ulid.UlidCreator;
 import com.official.lockr.domain.users.application.command.SaveUsersCommand;
 import com.official.lockr.domain.users.domain.Users;
 import com.official.lockr.domain.users.domain.UsersRepository;
+import com.official.lockr.global.util.UlidUtils;
 import org.springframework.stereotype.Service;
 
 
@@ -18,7 +18,7 @@ public class UsersService implements SaveUsersUsecase {
 
     @Override
     public Users save(final SaveUsersCommand command) {
-        final String id = UlidCreator.getUlid().toString();
+        final String id = UlidUtils.generateUlid();
         final Users users = Users.init(id, command.providerId(), command.providerType());
         return usersRepository.save(users);
     }
