@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 
 @RestController
-@RequestMapping("/api/v1/teams/{teamId}/resume")
+@RequestMapping("/api/v1/clubs/{clubId}/resume")
 public class ResumeApi {
 
     private final ApplyResumeUseCase applyResumeUseCase;
@@ -28,22 +28,22 @@ public class ResumeApi {
 
     @PostMapping
     public ResponseEntity<Resume> apply(
-            @PathVariable("teamId") final String teamId,
+            @PathVariable("clubId") final String clubId,
             @RequestBody final ApplyResumeRequest request,
             final HttpSession httpSession
     ) {
         final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
-        final Resume resume = applyResumeUseCase.apply(request.toCommand(teamId, signIn.userId()));
-        return ResponseEntity.created(URI.create("/api/v1/team/" + teamId + "/" + resume.getId())).body(resume);
+        final Resume resume = applyResumeUseCase.apply(request.toCommand(clubId, signIn.userId()));
+        return ResponseEntity.created(URI.create("/api/v1/clubs/" + clubId + "/" + resume.getId())).body(resume);
     }
 
     @PostMapping("/cancel")
     public ResponseEntity<Void> cancel(
-            @PathVariable("teamId") final String teamId,
+            @PathVariable("clubId") final String clubId,
             final HttpSession httpSession
     ) {
         final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
-        cancelResumeUseCase.cancel(new CancelResumeCommand(teamId, signIn.userId()));
+        cancelResumeUseCase.cancel(new CancelResumeCommand(clubId, signIn.userId()));
         return ResponseEntity.ok().build();
     }
 }

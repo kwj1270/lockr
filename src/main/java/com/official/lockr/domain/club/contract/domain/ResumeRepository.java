@@ -5,7 +5,7 @@ import jakarta.annotation.Nullable;
 public interface ResumeRepository {
     @Nullable Resume find(final String id);
 
-    @Nullable Resume findByUserId(final String teamId, final String userId);
+    @Nullable Resume findByUserId(final String clubId, final String userId);
 
     Resume save(final Resume resume);
 }

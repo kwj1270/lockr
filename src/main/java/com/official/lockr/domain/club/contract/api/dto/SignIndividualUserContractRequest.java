@@ -7,7 +7,7 @@ public record SignIndividualUserContractRequest(
         boolean agree
 ) {
 
-    public SignIndividualUserCommand toCommand(final String teamId, final String userId) {
-        return new SignIndividualUserCommand(contractId, teamId, userId, agree);
+    public SignIndividualUserCommand toCommand(final String clubId, final String userId) {
+        return new SignIndividualUserCommand(contractId, clubId, userId, agree);
     }
 }

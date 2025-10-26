@@ -30,7 +30,7 @@ public class ContractService implements SignRepresentativeContractUseCase, SignI
 
     @Override
     public Contract sign(final SignRepresentativeContractCommand signRepresentativeContractCommand) {
-        final Representative representative = representatives.find(signRepresentativeContractCommand.teamId(), signRepresentativeContractCommand.userId());
+        final Representative representative = representatives.find(signRepresentativeContractCommand.clubId(), signRepresentativeContractCommand.userId());
         if (isNull(representative)) {
             throw new IllegalArgumentException();
         }
@@ -51,14 +51,14 @@ public class ContractService implements SignRepresentativeContractUseCase, SignI
         if (isNull(contract) || contract.isInvalid() || contract.isConcluded()) {
             throw new IllegalStateException();
         }
-        contract.sign(signIndividualUserCommand.teamId(), signIndividualUserCommand.userId(), signIndividualUserCommand.agree());
+        contract.sign(signIndividualUserCommand.clubId(), signIndividualUserCommand.userId(), signIndividualUserCommand.agree());
         return contractRepository.save(contract);
     }
 
     private static Contract contract(final Representative representative, final Resume resume, final boolean representativeAgree) {
         return Contract.create(
                 UUID.randomUUID().toString(),
-                resume.getTeamId(), resume.getUserId(),
+                resume.getClubId(), resume.getUserId(),
                 representative.getUserId(), representative.getMemberRole(), representativeAgree
         );
     }

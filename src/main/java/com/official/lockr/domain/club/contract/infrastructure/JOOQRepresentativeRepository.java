@@ -2,7 +2,7 @@ package com.official.lockr.domain.club.contract.infrastructure;
 
 import com.official.lockr.domain.club.contract.domain.Representative;
 import com.official.lockr.domain.club.contract.domain.Representatives;
-import com.official.lockr.domain.club.team.domain.MemberRole;
+import com.official.lockr.domain.club.club.domain.MemberRole;
 import jakarta.annotation.Nullable;
 import org.jooq.Configuration;
 import org.jooq.generated.tables.MembersJOOQEntity;
@@ -21,11 +21,11 @@ public class JOOQRepresentativeRepository implements Representatives {
 
     @Nullable
     @Override
-    public Representative find(final String teamId, final String userId) {
+    public Representative find(final String clubId, final String userId) {
         return membersDao.ctx()
                 .selectFrom(MembersJOOQEntity.MEMBERS)
                 .where(
-                        MembersJOOQEntity.MEMBERS.TEAM_ID.eq(teamId),
+                        MembersJOOQEntity.MEMBERS.CLUB_ID.eq(clubId),
                         MembersJOOQEntity.MEMBERS.USER_ID.eq(userId),
                         MembersJOOQEntity.MEMBERS.MEMBER_ROLE.in(
                                 MemberRole.PRESIDENT.name(),

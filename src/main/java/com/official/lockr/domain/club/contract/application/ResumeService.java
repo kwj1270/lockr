@@ -1,6 +1,5 @@
 package com.official.lockr.domain.club.contract.application;
 
-import com.github.f4b6a3.ulid.UlidCreator;
 import com.official.lockr.domain.club.common.Foot;
 import com.official.lockr.domain.club.common.Position;
 import com.official.lockr.domain.club.contract.application.command.ApplyResumeCommand;
@@ -24,7 +23,7 @@ public class ResumeService implements ApplyResumeUseCase, CancelResumeUseCase {
 
     @Override
     public Resume apply(final ApplyResumeCommand applyResumeCommand) {
-        final Resume existed = resumeRepository.findByUserId(applyResumeCommand.teamId(), applyResumeCommand.userId());
+        final Resume existed = resumeRepository.findByUserId(applyResumeCommand.clubId(), applyResumeCommand.userId());
         if (nonNull(existed) && existed.isActive()) {
             return existed;
         }
@@ -33,7 +32,7 @@ public class ResumeService implements ApplyResumeUseCase, CancelResumeUseCase {
 
     @Override
     public void cancel(final CancelResumeCommand cancelResumeCommand) {
-        final Resume resume = resumeRepository.findByUserId(cancelResumeCommand.teamId(), cancelResumeCommand.userId());
+        final Resume resume = resumeRepository.findByUserId(cancelResumeCommand.clubId(), cancelResumeCommand.userId());
         if (isNull(resume)) {
             return;
         }
@@ -44,7 +43,7 @@ public class ResumeService implements ApplyResumeUseCase, CancelResumeUseCase {
     private static Resume resume(final ApplyResumeCommand applyResumeCommand) {
         return Resume.create(
                 UlidUtils.generateUlid(),
-                applyResumeCommand.teamId(),
+                applyResumeCommand.clubId(),
                 applyResumeCommand.userId(),
                 applyResumeCommand.profileImage(),
                 applyResumeCommand.birth(),

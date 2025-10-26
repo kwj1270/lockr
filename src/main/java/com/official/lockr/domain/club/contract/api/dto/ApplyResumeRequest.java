@@ -21,9 +21,9 @@ public record ApplyResumeRequest(
         String advantages,
         String disadvantages
 ) {
-    public ApplyResumeCommand toCommand(final String teamId, final String userId) {
+    public ApplyResumeCommand toCommand(final String clubId, final String userId) {
         return new ApplyResumeCommand(
-                teamId, userId, profileImage, birth, height, weight, name, email, address, phone, emergencyContactPhone,
+                clubId, userId, profileImage, birth, height, weight, name, email, address, phone, emergencyContactPhone,
                 nationality, preferredPosition, dominantFoot, advantages, disadvantages
         );
     }

@@ -6,9 +6,9 @@ public record SignRepresentativeContractRequest(
         String resumeId,
         boolean agree
 ) {
-    public SignRepresentativeContractCommand toCommand(final String teamId, final String userId) {
+    public SignRepresentativeContractCommand toCommand(final String clubId, final String userId) {
         return new SignRepresentativeContractCommand(
-                teamId, userId, resumeId, agree
+                clubId, userId, resumeId, agree
         );
     }
 }

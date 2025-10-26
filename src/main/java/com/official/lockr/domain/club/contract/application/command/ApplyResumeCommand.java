@@ -3,7 +3,7 @@ package com.official.lockr.domain.club.contract.application.command;
 import java.util.List;
 
 public record ApplyResumeCommand(
-        String teamId,
+        String clubId,
         String userId,
         String profileImage,
         String birth,

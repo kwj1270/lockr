@@ -7,8 +7,8 @@ X-DEVICE-ID: 1
 X-DEVICE-INFO: web
 
 {
-  "name": "team",
-  "description": "test team"
+  "name": "club",
+  "description": "test club"
 }
 > {%
     client.global.set("TEAM_ID", response.body.id);

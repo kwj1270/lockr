@@ -11,7 +11,7 @@ import static java.util.Objects.isNull;
 public class Contract extends AggregateRoot {
 
     private final String id;
-    private final String teamId;
+    private final String clubId;
     private final String individualUserId;
     private boolean individualUserAgree;
     private LocalDateTime individualUserSignedAt;
@@ -23,7 +23,7 @@ public class Contract extends AggregateRoot {
     private final LocalDateTime deletedAt;
 
     public Contract(final String id,
-                    final String teamId,
+                    final String clubId,
                     final String individualUserId,
                     final boolean individualUserAgree,
                     final LocalDateTime individualUserSignedAt,
@@ -34,7 +34,7 @@ public class Contract extends AggregateRoot {
                     final LocalDateTime createdAt,
                     final LocalDateTime deletedAt) {
         this.id = id;
-        this.teamId = teamId;
+        this.clubId = clubId;
         this.individualUserId = individualUserId;
         this.individualUserAgree = individualUserAgree;
         this.individualUserSignedAt = individualUserSignedAt;
@@ -50,8 +50,8 @@ public class Contract extends AggregateRoot {
         return id;
     }
 
-    public String getTeamId() {
-        return teamId;
+    public String getClubId() {
+        return clubId;
     }
 
     public String getIndividualUserId() {
@@ -98,8 +98,8 @@ public class Contract extends AggregateRoot {
         return representativeSignedAt;
     }
 
-    public void sign(final String teamId, final String userId, final boolean agree) {
-        if (!(this.teamId.equals(teamId) && this.individualUserId.equals(userId))) {
+    public void sign(final String clubId, final String userId, final boolean agree) {
+        if (!(this.clubId.equals(clubId) && this.individualUserId.equals(userId))) {
             throw new IllegalArgumentException();
         }
         this.individualUserAgree = agree;
@@ -126,14 +126,14 @@ public class Contract extends AggregateRoot {
     }
 
     public static Contract create(final String id,
-                                  final String teamId,
+                                  final String clubId,
                                   final String individualUserId,
                                   final String representativeUserId,
                                   final String representativeUserRole,
                                   final boolean representativeAgree
     ) {
         return new Contract(
-                id, teamId,
+                id, clubId,
                 individualUserId, false, null,
                 representativeUserId, representativeUserRole, representativeAgree, LocalDateTime.now(),
                 LocalDateTime.now(), null
