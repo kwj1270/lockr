@@ -5,7 +5,7 @@ import com.official.lockr.domain.game.common.Position;
 
 import java.util.Objects;
 
-public class BenchPlayer extends Player {
+public class BenchPlayer extends GamePlayer {
 
     private final Position position;
 
@@ -19,8 +19,8 @@ public class BenchPlayer extends Player {
     }
 
     @Override
-    public PlayerType getEntryType() {
-        return PlayerType.BENCH;
+    public GamePlayerType getEntryType() {
+        return GamePlayerType.BENCH;
     }
 
     public Position getPosition() {

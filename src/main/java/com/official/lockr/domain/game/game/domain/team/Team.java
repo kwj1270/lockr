@@ -1,9 +1,9 @@
 package com.official.lockr.domain.game.game.domain.team;
 
-import com.official.lockr.domain.game.game.domain.team.player.Bench;
-import com.official.lockr.domain.game.game.domain.team.player.Field;
-import com.official.lockr.domain.game.game.domain.team.player.Player;
-import com.official.lockr.domain.game.game.domain.team.player.Entry;
+import com.official.lockr.domain.game.game.domain.team.player.BenchPlayers;
+import com.official.lockr.domain.game.game.domain.team.player.FieldPlayers;
+import com.official.lockr.domain.game.game.domain.team.player.GamePlayer;
+import com.official.lockr.domain.game.game.domain.team.player.Lineup;
 import com.official.lockr.domain.game.game.domain.team.record.Records;
 import com.official.lockr.domain.game.common.Score;
 
@@ -17,30 +17,30 @@ public class Team {
 
     private final String id;
     private final String teamId;
-    private Entry entry;
+    private Lineup lineup;
     private Score score;
     private Records records;
 
-    public Team(final String id, final String teamId, final List<Player> entryPlayers, final Score score, final Records records) {
-        this(id, teamId, new Entry(entryPlayers), score, records);
+    public Team(final String id, final String teamId, final List<GamePlayer> entryGamePlayers, final Score score, final Records records) {
+        this(id, teamId, new Lineup(entryGamePlayers), score, records);
     }
 
     public Team(final String id, final String teamId,
-                final Entry entry, final Score score, final Records records) {
+                final Lineup lineup, final Score score, final Records records) {
         this.id = id;
         this.teamId = teamId;
-        this.entry = entry;
+        this.lineup = lineup;
         this.score = score;
         this.records = records;
     }
 
-    public void registerEntry(final Field field, final Bench bench) {
-        this.entry = new Entry(field, bench);
+    public void registerEntry(final FieldPlayers fieldPlayers, final BenchPlayers benchPlayers) {
+        this.lineup = new Lineup(fieldPlayers, benchPlayers);
     }
 
     public void substitute(final String outPlayerId, final String inPlayerId, final int minute) {
         this.records = records.substitute(outPlayerId, inPlayerId, minute);
-        entry.substitute(outPlayerId, inPlayerId, minute);
+        lineup.substitute(outPlayerId, inPlayerId, minute);
     }
 
     public void finishedGame(final int totalMinutes) {
@@ -48,11 +48,11 @@ public class Team {
     }
 
     public void yellowCard(final String playerId, final int minute) {
-        entry.yellowCard(playerId, minute);
+        lineup.yellowCard(playerId, minute);
     }
 
     public void redCard(final String playerId, final int minute) {
-        entry.redCard(playerId, minute);
+        lineup.redCard(playerId, minute);
     }
 
     public String getId() {
@@ -76,11 +76,11 @@ public class Team {
     }
 
     public boolean hasPlayerToBeSentOff(final String playerId) {
-        return entry.hasPlayerToBeSentOff(playerId);
+        return lineup.hasPlayerToBeSentOff(playerId);
     }
 
     public boolean isRegisteredEntry() {
-        return entry.isRegistered();
+        return lineup.isRegistered();
     }
 
     public int scoreValue() {
