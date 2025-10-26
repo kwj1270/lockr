@@ -10,7 +10,7 @@ Accepted
 
 복잡한 비즈니스 도메인을 소프트웨어로 정확하게 모델링하고, 모든 팀원이 동일한 이해를 공유하는 것은 어려운 과제입니다. 비즈니스 로직이 기술적인 코드에 얽매이면, 시스템의 유지보수성과 확장성이 저하될 수 있습니다. 특히 모듈러 모놀리스 아키텍처에서는 각 모듈의 경계를 명확하게 정의할 기준이 필요합니다.
 
-Accurately modeling a complex business domain in software and ensuring all team members share the same understanding is a significant challenge. When business logic becomes entangled with technical code, the system's maintainability and scalability can degrade. Especially within a modular monolith architecture, a clear standard is needed to define the boundaries of each module.
+Accurately modeling a complex business domain in software and ensuring all club members share the same understanding is a significant challenge. When business logic becomes entangled with technical code, the system's maintainability and scalability can degrade. Especially within a modular monolith architecture, a clear standard is needed to define the boundaries of each module.
 
 ## 결정 Decision
 

@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 public record ConcludedContractEvent(
         String id,
-        String teamId,
+        String clubId,
         String individualUserId,
         boolean individualUserAgree,
         LocalDateTime individualUserSignedAt,
@@ -20,7 +20,7 @@ public record ConcludedContractEvent(
 ) implements DomainEvent {
     public ConcludedContractEvent(final Contract contract) {
         this(
-                contract.getId(), contract.getTeamId(), contract.getIndividualUserId(), contract.isIndividualUserAgree(), contract.getIndividualUserSignedAt(),
+                contract.getId(), contract.getClubId(), contract.getIndividualUserId(), contract.isIndividualUserAgree(), contract.getIndividualUserSignedAt(),
                 contract.getRepresentativeUserId(), contract.getRepresentativeUserRole(), contract.isRepresentativeUserAgree(), contract.getRepresentativeSignedAt(),
                 contract.getCreatedAt(), contract.getDeletedAt()
         );

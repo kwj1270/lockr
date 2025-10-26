@@ -36,11 +36,11 @@ public class JOOQResumeRepository implements ResumeRepository {
 
     @Nullable
     @Override
-    public Resume findByUserId(final String teamId, final String userId) {
+    public Resume findByUserId(final String clubId, final String userId) {
         return resumesDao.ctx()
                 .selectFrom(RESUMES)
                 .where(
-                        RESUMES.TEAM_ID.eq(teamId),
+                        RESUMES.CLUB_ID.eq(clubId),
                         RESUMES.USER_ID.eq(userId)
                 )
                 .fetchOptional()
@@ -52,7 +52,7 @@ public class JOOQResumeRepository implements ResumeRepository {
     public Resume save(final Resume resume) {
         final ResumesEntity resumesEntity = new ResumesEntity(
                 resume.getId(),
-                resume.getTeamId(),
+                resume.getClubId(),
                 resume.getUserId(),
                 resume.getProfileImage(),
                 resume.getBirth(),
@@ -78,7 +78,7 @@ public class JOOQResumeRepository implements ResumeRepository {
     private static Resume domain(final ResumesEntity resumesEntity) {
         return new Resume(
                 resumesEntity.getId(),
-                resumesEntity.getTeamId(),
+                resumesEntity.getClubId(),
                 resumesEntity.getUserId(),
                 resumesEntity.getProfileImage(),
                 resumesEntity.getBirth(),
@@ -102,7 +102,7 @@ public class JOOQResumeRepository implements ResumeRepository {
     private static Resume domain(final ResumesRecord resumesRecord) {
         return new Resume(
                 resumesRecord.getId(),
-                resumesRecord.getTeamId(),
+                resumesRecord.getClubId(),
                 resumesRecord.getUserId(),
                 resumesRecord.getProfileImage(),
                 resumesRecord.getBirth(),

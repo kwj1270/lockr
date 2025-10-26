@@ -9,7 +9,7 @@ public class RelayEvent {
     private final String gameId;
     private final int phase;
     private final RelayEventType eventType;
-    private final String teamId;
+    private final String clubId;
     private final String playerId;
     private final String playerName;
     private final String relatedPlayerId;
@@ -20,7 +20,7 @@ public class RelayEvent {
     private final int awayScore;
 
     public RelayEvent(final String id, final String gameId, final int phase,
-                      final RelayEventType eventType, final String teamId, final String playerId,
+                      final RelayEventType eventType, final String clubId, final String playerId,
                       final String playerName, final String relatedPlayerId, final String relatedPlayerName,
                       final int minute, final Integer addMinute, final int homeScore, final int awayScore
     ) {
@@ -28,7 +28,7 @@ public class RelayEvent {
         this.gameId = gameId;
         this.phase = phase;
         this.eventType = eventType;
-        this.teamId = teamId;
+        this.clubId = clubId;
         this.playerId = playerId;
         this.playerName = playerName;
         this.relatedPlayerId = relatedPlayerId;
@@ -51,8 +51,8 @@ public class RelayEvent {
         return eventType;
     }
 
-    public String getTeamId() {
-        return teamId;
+    public String getClubId() {
+        return clubId;
     }
 
     public String getPlayerId() {

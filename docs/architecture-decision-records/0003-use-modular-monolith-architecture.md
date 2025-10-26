@@ -27,4 +27,4 @@ We have decided to adopt a Modular Monolith architecture. This architecture main
 - Reduces development and operational complexity in the early stages with a single codebase and deployment pipeline.
 - Code is clearly separated by business domain, increasing cohesion and reducing coupling.
 - Provides a structure that makes it easier to transition individual modules into independent microservices if the system needs to scale in the future.
-- Requires discipline from the development team to strictly maintain module boundaries.
+- Requires discipline from the development club to strictly maintain module boundaries.

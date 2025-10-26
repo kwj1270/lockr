@@ -10,7 +10,7 @@ import java.util.Objects;
 public class Resume {
 
     private final String id;
-    private final String teamId;
+    private final String clubId;
     private final String userId;
     private final String profileImage;
     private final String birth;
@@ -29,12 +29,12 @@ public class Resume {
     private final LocalDateTime createdAt;
     private LocalDateTime deletedAt;
 
-    public Resume(final String id, final String teamId, final String userId, final String profileImage, final String birth, final String weight,
+    public Resume(final String id, final String clubId, final String userId, final String profileImage, final String birth, final String weight,
                   final String height, final String name, final String email, final String address, final String phone,
                   final String emergencyContactPhone, final String nationality, final List<Position> preferredPosition,
                   final Foot foot, final String advantages, final String disadvantages, final LocalDateTime createdAt, final LocalDateTime deletedAt) {
         this.id = id;
-        this.teamId = teamId;
+        this.clubId = clubId;
         this.userId = userId;
         this.profileImage = profileImage;
         this.birth = birth;
@@ -58,8 +58,8 @@ public class Resume {
         return id;
     }
 
-    public String getTeamId() {
-        return teamId;
+    public String getClubId() {
+        return clubId;
     }
 
     public String getUserId() {
@@ -130,11 +130,11 @@ public class Resume {
         return profileImage;
     }
 
-    public static Resume create(final String id, final String teamId, final String userId, final String profileImage, final String birth, final String weight,
+    public static Resume create(final String id, final String clubId, final String userId, final String profileImage, final String birth, final String weight,
                                 final String height, final String name, final String email, final String address, final String phone,
                                 final String emergencyContactPhone, final String nationality, final List<Position> preferredPosition,
                                 final Foot foot, final String advantages, final String disadvantages) {
-        return new Resume(id, teamId, userId, profileImage, birth, weight, height, name, email, address, phone, emergencyContactPhone, nationality, preferredPosition, foot, advantages, disadvantages, LocalDateTime.now(), null);
+        return new Resume(id, clubId, userId, profileImage, birth, weight, height, name, email, address, phone, emergencyContactPhone, nationality, preferredPosition, foot, advantages, disadvantages, LocalDateTime.now(), null);
     }
 
     public boolean isActive() {

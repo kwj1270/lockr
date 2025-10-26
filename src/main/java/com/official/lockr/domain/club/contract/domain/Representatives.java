@@ -4,5 +4,5 @@ import jakarta.annotation.Nullable;
 
 public interface Representatives {
     @Nullable
-    Representative find(final String teamId, final String userId);
+    Representative find(final String clubId, final String userId);
 }

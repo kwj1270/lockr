@@ -34,7 +34,7 @@ public class JOOQContractRepository implements ContractRepository {
         }
         return new Contract(
                 entity.getId(),
-                entity.getTeamId(),
+                entity.getClubId(),
                 entity.getIndividualUserId(),
                 entity.getIndividualUserAgree(),
                 entity.getIndividualUserSignAt(),
@@ -59,7 +59,7 @@ public class JOOQContractRepository implements ContractRepository {
         return contractsDao.ctx()
                 .insertInto(CONTRACTS)
                 .set(CONTRACTS.ID, contract.getId())
-                .set(CONTRACTS.TEAM_ID, contract.getTeamId())
+                .set(CONTRACTS.CLUB_ID, contract.getClubId())
                 .set(CONTRACTS.INDIVIDUAL_USER_ID, contract.getIndividualUserId())
                 .set(CONTRACTS.INDIVIDUAL_USER_AGREE, contract.isIndividualUserAgree())
                 .set(CONTRACTS.INDIVIDUAL_USER_SIGN_AT, contract.getIndividualUserSignedAt())
@@ -70,7 +70,7 @@ public class JOOQContractRepository implements ContractRepository {
                 .set(CONTRACTS.CREATED_AT, contract.getCreatedAt())
                 .set(CONTRACTS.DELETED_AT, contract.getDeletedAt())
                 .onDuplicateKeyUpdate()
-                .set(CONTRACTS.TEAM_ID, contract.getTeamId())
+                .set(CONTRACTS.CLUB_ID, contract.getClubId())
                 .set(CONTRACTS.INDIVIDUAL_USER_ID, contract.getIndividualUserId())
                 .set(CONTRACTS.INDIVIDUAL_USER_AGREE, contract.isIndividualUserAgree())
                 .set(CONTRACTS.INDIVIDUAL_USER_SIGN_AT, contract.getIndividualUserSignedAt())
