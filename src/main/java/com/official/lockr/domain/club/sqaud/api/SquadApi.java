@@ -1,8 +1,8 @@
 package com.official.lockr.domain.club.sqaud.api;
 
 import com.official.lockr.domain.auth.domain.auth.SignInSession;
-import com.official.lockr.domain.club.sqaud.domain.squad.Squad;
-import com.official.lockr.domain.club.sqaud.domain.squad.SquadRepository;
+import com.official.lockr.domain.club.sqaud.domain.Squad;
+import com.official.lockr.domain.club.sqaud.domain.SquadRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

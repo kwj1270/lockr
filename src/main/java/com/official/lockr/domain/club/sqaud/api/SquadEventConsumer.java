@@ -1,7 +1,7 @@
 package com.official.lockr.domain.club.sqaud.api;
 
-import com.official.lockr.domain.club.sqaud.application.usecase.AddSquadPlayerUseCase;
-import com.official.lockr.domain.club.sqaud.application.dto.AddSquadPlayerCommand;
+import com.official.lockr.domain.club.sqaud.application.usecase.AddPlayerUseCase;
+import com.official.lockr.domain.club.sqaud.application.dto.AddPlayerCommand;
 import com.official.lockr.domain.club.club.domain.event.AddedMemberEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -9,14 +9,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class SquadEventConsumer {
 
-    private final AddSquadPlayerUseCase addSquadPlayerUseCase;
+    private final AddPlayerUseCase addPlayerUseCase;
 
-    public SquadEventConsumer(final AddSquadPlayerUseCase addSquadPlayerUseCase) {
-        this.addSquadPlayerUseCase = addSquadPlayerUseCase;
+    public SquadEventConsumer(final AddPlayerUseCase addPlayerUseCase) {
+        this.addPlayerUseCase = addPlayerUseCase;
     }
 
     @EventListener
     public void create(final AddedMemberEvent event) {
-        addSquadPlayerUseCase.addSquadPlayer(new AddSquadPlayerCommand(event.clubId(), event.userId(), event.id()));
+        addPlayerUseCase.addPlayer(new AddPlayerCommand(event.clubId(), event.userId(), event.id()));
     }
 }
