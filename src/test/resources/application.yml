@@ -28,16 +28,16 @@ spring:
         enabled: false
   docker:
     compose:
-      enabled: true  # Docker Compose 자동 시작 활성화
-      file: docker-compose.yaml  # Docker Compose 파일 경로
-      lifecycle-management: start_only  # 애플리케이션 종료 시 컨테이너 유지
-      # start_and_stop: 애플리케이션 종료 시 컨테이너도 중지
-      # start_only: 애플리케이션 종료해도 컨테이너 유지 (기본값)
+      skip:
+        in-tests: false
+      enabled: true
+      file: docker-compose.yaml
+      lifecycle-management: start_only
       start:
-        command: up  # docker compose up 명령 실행
+        command: up
       stop:
-        command: down  # docker compose down 명령 실행 (lifecycle-management가 start_and_stop일 때만)
-        timeout: 10s  # 컨테이너 중지 타임아웃
+        command: down
+        timeout: 10s
 management:
   server:
     port: ${METRIC_SERVER_PORT:18080}
