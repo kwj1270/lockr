@@ -1,6 +1,7 @@
 package com.official.lockr.domain.club.club.domain;
 
 import com.official.lockr.domain.club.club.domain.event.AddedMemberEvent;
+import com.official.lockr.domain.club.club.domain.event.FoundClubEvent;
 import com.official.lockr.global.ddd.AggregateRoot;
 
 import java.time.LocalDateTime;
@@ -11,6 +12,7 @@ import java.util.Objects;
 public class Club extends AggregateRoot {
 
     private final String id;
+    private final String foundUserId;
     private final String name;
     private final String description;
     private List<Member> members;
@@ -18,12 +20,13 @@ public class Club extends AggregateRoot {
     private final LocalDateTime updatedAt;
     private final LocalDateTime deletedAt;
 
-    public Club(final String id, final String name, final String description) {
-        this(id, name, description, new ArrayList<>(), LocalDateTime.now(), LocalDateTime.now(), null);
+    public Club(final String id, final String foundUserId, final String name, final String description) {
+        this(id, foundUserId, name, description, new ArrayList<>(), LocalDateTime.now(), LocalDateTime.now(), null);
     }
 
-    public Club(final String id, final String name, final String description, final List<Member> members, final LocalDateTime createdAt, final LocalDateTime updatedAt, final LocalDateTime deletedAt) {
+    public Club(final String id, final String foundUserId, final String name, final String description, final List<Member> members, final LocalDateTime createdAt, final LocalDateTime updatedAt, final LocalDateTime deletedAt) {
         this.id = id;
+        this.foundUserId = foundUserId;
         this.name = name;
         this.description = description;
         this.members = members;
@@ -39,6 +42,10 @@ public class Club extends AggregateRoot {
 
     public String getId() {
         return id;
+    }
+
+    public String getFoundUserId() {
+        return foundUserId;
     }
 
     public String getName() {
@@ -101,4 +108,9 @@ public class Club extends AggregateRoot {
         return Objects.hashCode(getId());
     }
 
+    public static Club init(final String id, final String foundUserId, final String name, final String description) {
+        final Club club = new Club(id, foundUserId, name, description);
+        club.addEvent(new FoundClubEvent(club.id, club.name, club.description, club.createdAt));
+        return club;
+    }
 }

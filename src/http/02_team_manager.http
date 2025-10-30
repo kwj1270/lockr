@@ -86,7 +86,7 @@ X-DEVICE-INFO: web
 > {%
     client.global.set("SQUAD_ID", response.body.id);
     client.global.set("CLUB_ID", response.body.clubId);
-    client.global.set("PLAYER_ID_3", response.body.squadPlayers[1].memberId);
+    client.global.set("PLAYER_ID_2", response.body.squadPlayers[1].memberId);
 %}
 
 

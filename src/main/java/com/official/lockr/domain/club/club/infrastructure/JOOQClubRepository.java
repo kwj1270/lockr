@@ -65,6 +65,7 @@ public class JOOQClubRepository implements ClubRepository {
         clubsDao.ctx()
                 .insertInto(CLUBS)
                 .set(CLUBS.ID, club.getId())
+                .set(CLUBS.FOUND_USER_ID, club.getFoundUserId())
                 .set(CLUBS.NAME, club.getName())
                 .set(CLUBS.DESCRIPTION, club.getDescription())
                 .set(CLUBS.CREATED_AT, club.getCreatedAt())
@@ -167,6 +168,7 @@ public class JOOQClubRepository implements ClubRepository {
     private static Club domain(final ClubsEntity teamsEntity, final List<Member> members) {
         return new Club(
                 teamsEntity.getId(),
+                teamsEntity.getFoundUserId(),
                 teamsEntity.getName(),
                 teamsEntity.getDescription(),
                 members,
@@ -191,6 +193,7 @@ public class JOOQClubRepository implements ClubRepository {
     private Club domain(final ClubsRecord teamsRecord, final List<Member> members) {
         return new Club(
                 teamsRecord.getId(),
+                teamsRecord.getFoundUserId(),
                 teamsRecord.getName(),
                 teamsRecord.getDescription(),
                 members,

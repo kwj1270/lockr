@@ -33,6 +33,7 @@ public class ClubApi {
     ) {
         final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
         final Club club = foundClubUseCase.found(request.toCommand(signIn.userId()));
+
         return ResponseEntity.created(URI.create("/api/v1/clubs/" + club.getId())).body(club);
     }
 

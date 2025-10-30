@@ -1,7 +1,7 @@
 package com.official.lockr.domain.club.contract.application;
 
-import com.official.lockr.domain.club.common.Foot;
-import com.official.lockr.domain.club.common.Position;
+import com.official.lockr.global.vo.Foot;
+import com.official.lockr.global.vo.Position;
 import com.official.lockr.domain.club.contract.application.command.ApplyResumeCommand;
 import com.official.lockr.domain.club.contract.application.command.CancelResumeCommand;
 import com.official.lockr.domain.club.contract.domain.Resume;

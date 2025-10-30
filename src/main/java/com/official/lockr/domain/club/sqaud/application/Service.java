@@ -3,7 +3,7 @@ package com.official.lockr.domain.club.sqaud.application;
 import com.official.lockr.domain.club.sqaud.application.dto.AddPlayerCommand;
 import com.official.lockr.domain.club.sqaud.application.usecase.AddPlayerUseCase;
 import com.official.lockr.domain.club.sqaud.domain.*;
-import com.official.lockr.domain.club.common.BackNumber;
+import com.official.lockr.global.vo.BackNumber;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

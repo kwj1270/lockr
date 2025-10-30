@@ -1,7 +1,7 @@
 package com.official.lockr.domain.club.sqaud.infrastructure;
 
-import com.official.lockr.domain.club.common.Foot;
-import com.official.lockr.domain.club.common.Position;
+import com.official.lockr.global.vo.Foot;
+import com.official.lockr.global.vo.Position;
 import com.official.lockr.domain.club.sqaud.domain.RecruitmentInfo;
 import com.official.lockr.domain.club.sqaud.domain.RecruitmentInfos;
 import jakarta.annotation.Nullable;
