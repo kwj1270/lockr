@@ -1,11 +1,11 @@
 package com.official.lockr.domain.club.sqaud.infrastructure;
 
-import com.official.lockr.domain.club.common.Foot;
-import com.official.lockr.domain.club.common.Position;
+import com.official.lockr.global.vo.Foot;
+import com.official.lockr.global.vo.Position;
 import com.official.lockr.domain.club.sqaud.domain.SquadPlayer;
 import com.official.lockr.domain.club.sqaud.domain.Squad;
 import com.official.lockr.domain.club.sqaud.domain.SquadRepository;
-import com.official.lockr.domain.club.common.BackNumber;
+import com.official.lockr.global.vo.BackNumber;
 import com.official.lockr.domain.club.sqaud.domain.vo.SquadPlayerRole;
 import com.official.lockr.global.ddd.DomainEventPublisher;
 import jakarta.annotation.Nullable;
@@ -155,7 +155,7 @@ public class JOOQSquadRepository implements SquadRepository {
                     squadPlayer.getHeight(),
                     squadPlayer.getWeight(),
                     Objects.nonNull(squadPlayer.getFoot()) ? squadPlayer.getFoot().name() : null,
-                    squadPlayer.getBackNumber().getValue(),
+                    squadPlayer.getBackNumber().value(),
                     squadPlayer.getPlayerRole().name(),
                     squadPlayer.getCreatedAt(),
                     squadPlayer.getUpdatedAt(),

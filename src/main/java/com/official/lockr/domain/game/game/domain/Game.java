@@ -1,7 +1,7 @@
 package com.official.lockr.domain.game.game.domain;
 
 import com.official.lockr.domain.game.game.domain.event.*;
-import com.official.lockr.domain.relay.domain.RelayEventType;
+import com.official.lockr.domain.game.relay.domain.RelayEventType;
 import com.official.lockr.domain.game.game.domain.team.Team;
 import com.official.lockr.domain.game.game.domain.team.player.BenchPlayers;
 import com.official.lockr.domain.game.game.domain.team.player.FieldPlayers;

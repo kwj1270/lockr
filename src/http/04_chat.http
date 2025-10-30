@@ -1,0 +1,58 @@
+###
+GET http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/chats/rooms
+Cookie: {{SESSION_COOKIE}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+> {%
+    client.global.set("CHAT_ROOM_ID", response.body[0].id);
+%}
+
+####
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/chats/rooms/{{CHAT_ROOM_ID}}/messages
+Cookie: {{SESSION_COOKIE}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+{
+  "message": "hello",
+  "senderNickname": "name"
+}
+
+####
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/chats/rooms/{{CHAT_ROOM_ID}}/messages
+Cookie: {{SESSION_COOKIE_2}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+{
+  "message": "hello2",
+  "senderNickname": "name"
+}
+
+####
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/chats/rooms/{{CHAT_ROOM_ID}}/messages
+Cookie: {{SESSION_COOKIE_3}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+{
+  "message": "hello3",
+  "senderNickname": "name"
+}
+
+###
+GET http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/chats/rooms/{{CHAT_ROOM_ID}}/messages
+Cookie: {{SESSION_COOKIE}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web

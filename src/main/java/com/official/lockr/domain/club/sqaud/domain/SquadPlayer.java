@@ -1,8 +1,8 @@
 package com.official.lockr.domain.club.sqaud.domain;
 
-import com.official.lockr.domain.club.common.Foot;
-import com.official.lockr.domain.club.common.Position;
-import com.official.lockr.domain.club.common.BackNumber;
+import com.official.lockr.global.vo.Foot;
+import com.official.lockr.global.vo.Position;
+import com.official.lockr.global.vo.BackNumber;
 import com.official.lockr.domain.club.sqaud.domain.vo.SquadPlayerRole;
 
 import java.time.LocalDateTime;
