@@ -33,7 +33,7 @@ public class MatchService implements InviteMatchUseCase, AcceptMatchUseCase {
 
     @Override
     public Match accept(final AcceptMatchCommand command) {
-        final ClubManager clubManager = clubManager(command.userId(), command.clubId());
+        final ClubManager clubManager = clubManager(command.clubId(), command.userId());
         final Match match = matchRepository.find(command.matchProposeId());
         if (isNull(match)) {
             throw new IllegalArgumentException();
