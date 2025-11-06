@@ -47,6 +47,14 @@ public class Match extends AggregateRoot {
         return homeClubId;
     }
 
+    public String getHomeClubMangerUserId() {
+        return homeClubMangerUserId;
+    }
+
+    public String getAwayClubMangerUserId() {
+        return awayClubMangerUserId;
+    }
+
     public String getAwayClubId() {
         return awayClubId;
     }
@@ -82,7 +90,7 @@ public class Match extends AggregateRoot {
         } else {
             this.status = MatchStatus.CANCELLED;
         }
-        this.addEvent(new AcceptedMatchEvent(id, homeClubId, awayClubId));
+        this.addEvent(new AcceptedMatchEvent(id, homeClubId, homeClubMangerUserId, awayClubId, awayClubMangerUserId, location, matchDateTime));
     }
 
     @Override

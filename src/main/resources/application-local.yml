@@ -2,7 +2,8 @@ server:
   servlet:
     session:
       cookie:
-        secure: false
+        secure: false  # HTTP(localhost) 환경에서 쿠키 전송 허용
+        same-site: lax  # Cross-site 요청에서 쿠키 전송 허용 (개발 환경)
 logging:
   level:
     root: DEBUG
