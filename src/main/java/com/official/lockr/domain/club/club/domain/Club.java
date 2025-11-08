@@ -96,6 +96,12 @@ public class Club extends AggregateRoot {
                 .ifPresent(Member::assignManagerRole);
     }
 
+    public boolean isStaff(final String userId) {
+        return members.stream()
+                .filter(it -> it.isSame(userId))
+                .anyMatch(Member::isStaff);
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (o == null || getClass() != o.getClass()) return false;

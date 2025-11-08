@@ -1,10 +1,10 @@
 package com.official.lockr.domain.club.club.api;
 
-import com.official.lockr.domain.auth.domain.auth.SignInSession;
+import com.official.lockr.domain.auth.domain.signin.SignInSession;
 import com.official.lockr.domain.club.club.api.dto.AssignManagerClubRequest;
 import com.official.lockr.domain.club.club.api.dto.FoundClubRequest;
-import com.official.lockr.domain.club.club.application.AssignMangerUseCase;
-import com.official.lockr.domain.club.club.application.FoundClubUseCase;
+import com.official.lockr.domain.club.club.application.usecase.AssignMangerUseCase;
+import com.official.lockr.domain.club.club.application.usecase.FoundClubUseCase;
 import com.official.lockr.domain.club.club.domain.Club;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;

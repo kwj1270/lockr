@@ -1,0 +1,141 @@
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/feeds
+Cookie: {{SESSION_COOKIE}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+{
+  "content": "안녕하세여",
+  "feedType": "GENERAL",
+  "imageUrls": [
+    "https://picsum.photos/200/300",
+    "https://picsum.photos/200/300"
+  ],
+  "videoUrls": [
+    "https://picsum.photos/200/300",
+    "https://picsum.photos/200/300"
+  ]
+}
+> {%
+    client.global.set("FEED_ID", response.body.id);
+%}
+
+
+###
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/feeds/{{FEED_ID}}/update
+Cookie: {{SESSION_COOKIE}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+
+{
+  "content": "안녕하세요",
+  "imageUrls": [
+    "https://picsum.photos/200/300",
+    "https://picsum.photos/200/300"
+  ],
+  "videoUrls": [
+    "https://picsum.photos/200/300",
+    "https://picsum.photos/200/300"
+  ]
+}
+
+###
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/feeds/{{FEED_ID}}/hearts/add
+Cookie: {{SESSION_COOKIE}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+{}
+
+###
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/feeds/{{FEED_ID}}/hearts/remove
+Cookie: {{SESSION_COOKIE}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+{}
+
+###
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/feeds/{{FEED_ID}}/comments
+Cookie: {{SESSION_COOKIE_2}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+{
+  "content": "와 안녕하세요",
+  "imageUrls": [
+    "https://picsum.photos/200/300",
+    "https://picsum.photos/200/300"
+  ],
+  "videoUrls": [
+    "https://picsum.photos/200/300",
+    "https://picsum.photos/200/300"
+  ]
+}
+> {%
+    client.global.set("COMMENT_ID", response.body.comments[0].id);
+%}
+
+###
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/feeds/{{FEED_ID}}/comments/{{COMMENT_ID}}/update
+Cookie: {{SESSION_COOKIE_2}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+{
+  "content": "와 안녕하세요!!",
+  "imageUrls": [
+    "https://picsum.photos/200/300",
+    "https://picsum.photos/200/300"
+  ],
+  "videoUrls": [
+    "https://picsum.photos/200/300",
+    "https://picsum.photos/200/300"
+  ]
+}
+
+###
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/feeds/{{FEED_ID}}/comments/{{COMMENT_ID}}/hearts/add
+Cookie: {{SESSION_COOKIE}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+###
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/feeds/{{FEED_ID}}/comments/{{COMMENT_ID}}/hearts/add
+Cookie: {{SESSION_COOKIE_3}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+###
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/feeds/{{FEED_ID}}/comments/{{COMMENT_ID}}/hearts/remove
+Cookie: {{SESSION_COOKIE_3}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+###
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/feeds/{{FEED_ID}}/delete
+Cookie: {{SESSION_COOKIE}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+{}

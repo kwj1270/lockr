@@ -1,7 +1,7 @@
 package com.official.lockr.domain.auth.infrastructure;
 
-import com.official.lockr.domain.auth.domain.auth.SignUpAuthorization;
-import com.official.lockr.domain.auth.domain.auth.SignUpAuthorizationRepository;
+import com.official.lockr.domain.auth.domain.signup.SignUpAuthorization;
+import com.official.lockr.domain.auth.domain.signup.SignUpAuthorizationRepository;
 import com.official.lockr.domain.auth.infrastructure.http.HttpSignUpAuthorizationClient;
 import jakarta.annotation.Nullable;
 import org.springframework.stereotype.Repository;

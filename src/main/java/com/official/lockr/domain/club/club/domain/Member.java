@@ -63,6 +63,10 @@ public class Member {
         return role.isManager();
     }
 
+    public boolean isStaff() {
+        return role.isStaff();
+    }
+
     public void assignPlayerRole() {
         role = MemberRole.PLAYER;
     }

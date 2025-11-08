@@ -1,4 +1,6 @@
-package com.official.lockr.domain.auth.domain.auth;
+package com.official.lockr.domain.auth.domain.signup;
+
+import com.official.lockr.domain.auth.domain.vo.ProviderType;
 
 import java.util.Objects;
 

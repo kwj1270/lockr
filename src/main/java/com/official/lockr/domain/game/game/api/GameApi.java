@@ -1,6 +1,6 @@
 package com.official.lockr.domain.game.game.api;
 
-import com.official.lockr.domain.auth.domain.auth.SignInSession;
+import com.official.lockr.domain.auth.domain.signin.SignInSession;
 import com.official.lockr.domain.game.game.api.dto.FinishGameRequest;
 import com.official.lockr.domain.game.game.api.dto.SubmitEntryGameTeamRequest;
 import com.official.lockr.domain.game.game.application.FinishGameUseCase;

@@ -1,6 +1,6 @@
 package com.official.lockr.domain.club.chat.api;
 
-import com.official.lockr.domain.auth.domain.auth.SignInSession;
+import com.official.lockr.domain.auth.domain.signin.SignInSession;
 import com.official.lockr.domain.club.chat.api.dto.AddChatterRequest;
 import com.official.lockr.domain.club.chat.api.dto.SendMessageRequest;
 import com.official.lockr.domain.club.chat.application.usecase.AddChatterUseCase;

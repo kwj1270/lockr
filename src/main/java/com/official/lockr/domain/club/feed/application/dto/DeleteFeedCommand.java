@@ -1,0 +1,8 @@
+package com.official.lockr.domain.club.feed.application.dto;
+
+public record DeleteFeedCommand(
+        String feedId,
+        String userId,
+        String clubId
+) {
+}

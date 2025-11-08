@@ -1,6 +1,6 @@
 package com.official.lockr.domain.club.tacticalboard.api;
 
-import com.official.lockr.domain.auth.domain.auth.SignInSession;
+import com.official.lockr.domain.auth.domain.signin.SignInSession;
 import com.official.lockr.domain.club.tacticalboard.api.dto.*;
 import com.official.lockr.domain.club.tacticalboard.application.usecase.*;
 import com.official.lockr.domain.club.tacticalboard.domain.TacticalBoard;

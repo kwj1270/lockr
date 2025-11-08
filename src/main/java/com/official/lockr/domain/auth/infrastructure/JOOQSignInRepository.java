@@ -1,8 +1,8 @@
 package com.official.lockr.domain.auth.infrastructure;
 
-import com.official.lockr.domain.auth.domain.auth.ProviderType;
-import com.official.lockr.domain.auth.domain.auth.SignIn;
-import com.official.lockr.domain.auth.domain.auth.SignInRepository;
+import com.official.lockr.domain.auth.domain.vo.ProviderType;
+import com.official.lockr.domain.auth.domain.signin.SignIn;
+import com.official.lockr.domain.auth.domain.signin.SignInRepository;
 import org.jooq.Configuration;
 import org.jooq.generated.tables.daos.SignInDao;
 import org.jooq.generated.tables.pojos.SignInEntity;

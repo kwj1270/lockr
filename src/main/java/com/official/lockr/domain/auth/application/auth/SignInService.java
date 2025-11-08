@@ -1,11 +1,10 @@
 package com.official.lockr.domain.auth.application.auth;
 
-import com.github.f4b6a3.ulid.UlidCreator;
 import com.official.lockr.domain.auth.application.auth.command.ProcessSignInCommand;
-import com.official.lockr.domain.auth.domain.auth.SignIn;
-import com.official.lockr.domain.auth.domain.auth.SignInRepository;
-import com.official.lockr.domain.auth.domain.auth.SignUpAuthorization;
-import com.official.lockr.domain.auth.domain.auth.SignUpAuthorizationRepository;
+import com.official.lockr.domain.auth.domain.signin.SignIn;
+import com.official.lockr.domain.auth.domain.signin.SignInRepository;
+import com.official.lockr.domain.auth.domain.signup.SignUpAuthorization;
+import com.official.lockr.domain.auth.domain.signup.SignUpAuthorizationRepository;
 import com.official.lockr.global.util.UlidUtils;
 import org.springframework.stereotype.Service;
 

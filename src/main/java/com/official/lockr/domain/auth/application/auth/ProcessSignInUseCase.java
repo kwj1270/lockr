@@ -1,7 +1,7 @@
 package com.official.lockr.domain.auth.application.auth;
 
 import com.official.lockr.domain.auth.application.auth.command.ProcessSignInCommand;
-import com.official.lockr.domain.auth.domain.auth.SignIn;
+import com.official.lockr.domain.auth.domain.signin.SignIn;
 
 public interface ProcessSignInUseCase {
 
