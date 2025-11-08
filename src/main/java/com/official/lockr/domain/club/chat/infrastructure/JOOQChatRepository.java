@@ -10,6 +10,7 @@ import org.jooq.generated.tables.pojos.ChatsEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -53,7 +54,7 @@ public class JOOQChatRepository implements ChatRepository {
                 .fetchInto(ChatsEntity.class)
                 .stream()
                 .map(this::toDomain)
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     @Override
@@ -72,7 +73,7 @@ public class JOOQChatRepository implements ChatRepository {
                 .fetchInto(ChatsEntity.class)
                 .stream()
                 .map(this::toDomain)
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     private List<Chat> findAllByChatRoomId(final String chatRoomId, final int limit) {
@@ -84,7 +85,7 @@ public class JOOQChatRepository implements ChatRepository {
                 .fetchInto(ChatsEntity.class)
                 .stream()
                 .map(this::toDomain)
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     private Chat toDomain(final ChatsEntity entity) {

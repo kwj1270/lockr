@@ -2,8 +2,8 @@ package com.official.lockr.domain.auth.api;
 
 import com.official.lockr.domain.auth.api.dto.AdminLoginHttpRequest;
 import com.official.lockr.domain.auth.application.auth.ProcessSignInUseCase;
-import com.official.lockr.domain.auth.domain.auth.SignIn;
-import com.official.lockr.domain.auth.domain.auth.SignInSession;
+import com.official.lockr.domain.auth.domain.signin.SignIn;
+import com.official.lockr.domain.auth.domain.signin.SignInSession;
 import com.official.lockr.global.http.HttpHeaderContext;
 import com.official.lockr.global.http.HttpHeaders;
 import jakarta.servlet.http.HttpSession;

@@ -1,6 +1,6 @@
 package com.official.lockr.domain.club.contract.api;
 
-import com.official.lockr.domain.auth.domain.auth.SignInSession;
+import com.official.lockr.domain.auth.domain.signin.SignInSession;
 import com.official.lockr.domain.club.contract.api.dto.ApplyResumeRequest;
 import com.official.lockr.domain.club.contract.application.ApplyResumeUseCase;
 import com.official.lockr.domain.club.contract.application.CancelResumeUseCase;

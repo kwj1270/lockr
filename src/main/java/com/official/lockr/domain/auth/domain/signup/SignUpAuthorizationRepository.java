@@ -1,4 +1,4 @@
-package com.official.lockr.domain.auth.domain.auth;
+package com.official.lockr.domain.auth.domain.signup;
 
 import jakarta.annotation.Nullable;
 

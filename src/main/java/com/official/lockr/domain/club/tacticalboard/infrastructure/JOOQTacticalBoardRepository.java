@@ -16,6 +16,7 @@ import org.jooq.generated.tables.pojos.*;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -74,7 +75,7 @@ public class JOOQTacticalBoardRepository implements TacticalBoardRepository {
 
         return entities.stream()
                 .map(entity -> toDomain(entity, entity.getId()))
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     @Transactional
@@ -277,7 +278,7 @@ public class JOOQTacticalBoardRepository implements TacticalBoardRepository {
                         new Location(entity.getLocationX(), entity.getLocationY()),
                         entity.getIsCaptain()
                 ))
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     private List<BenchPlayer> findBenchPlayersByTacticalBoardId(final String tacticalBoardId) {
@@ -290,7 +291,7 @@ public class JOOQTacticalBoardRepository implements TacticalBoardRepository {
                         entity.getSquadPlayerId(),
                         Position.valueOf(entity.getPosition())
                 ))
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     private List<NoneSelectedPlayer> findNoneSelectedPlayersByTacticalBoardId(final String tacticalBoardId) {
@@ -303,7 +304,7 @@ public class JOOQTacticalBoardRepository implements TacticalBoardRepository {
                         entity.getSquadPlayerId(),
                         Position.valueOf(entity.getPosition())
                 ))
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     private void deleteFormation(final String tacticalBoardId) {

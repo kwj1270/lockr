@@ -2,7 +2,7 @@ package com.official.lockr.domain.club.schedule.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.official.lockr.domain.auth.domain.auth.SignInSession;
+import com.official.lockr.domain.auth.domain.signin.SignInSession;
 import com.official.lockr.domain.club.schedule.api.dto.CreateScheduleRequest;
 import com.official.lockr.domain.club.schedule.api.dto.RespondToScheduleRequest;
 import com.official.lockr.domain.club.schedule.api.dto.ScheduleResponse;

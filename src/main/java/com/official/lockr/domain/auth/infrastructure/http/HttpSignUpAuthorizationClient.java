@@ -1,7 +1,6 @@
 package com.official.lockr.domain.auth.infrastructure.http;
 
-import ch.qos.logback.core.status.ErrorStatus;
-import com.official.lockr.domain.auth.domain.auth.SignUpAuthorization;
+import com.official.lockr.domain.auth.domain.signup.SignUpAuthorization;
 import com.official.lockr.domain.auth.infrastructure.http.dto.FindUsersByProviderResponse;
 import com.official.lockr.domain.auth.infrastructure.http.dto.SaveUsersResponse;
 import org.apache.logging.log4j.util.Strings;

@@ -1,6 +1,6 @@
 package com.official.lockr.domain.club.match.api;
 
-import com.official.lockr.domain.auth.domain.auth.SignInSession;
+import com.official.lockr.domain.auth.domain.signin.SignInSession;
 import com.official.lockr.domain.club.match.api.dto.AcceptMatchRequest;
 import com.official.lockr.domain.club.match.api.dto.InviteMatchRequest;
 import com.official.lockr.domain.club.match.application.AcceptMatchUseCase;

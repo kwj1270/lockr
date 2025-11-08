@@ -16,4 +16,8 @@ public enum MemberRole {
     public boolean isManager() {
         return this == MANAGER;
     }
+
+    public boolean isStaff() {
+        return this == COACH || this == MANAGER || this == TREASURER || this == VICE_PRESIDENT || this == PRESIDENT;
+    }
 }

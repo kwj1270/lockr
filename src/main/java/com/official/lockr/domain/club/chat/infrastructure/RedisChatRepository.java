@@ -12,6 +12,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -62,7 +63,7 @@ public class RedisChatRepository implements ChatRepository {
         }
         return messages.stream()
                 .map(this::deserialize)
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     @Override
@@ -85,7 +86,7 @@ public class RedisChatRepository implements ChatRepository {
                 .map(this::deserialize)
                 .filter(chat -> !chat.getId().equals(lastChatId)) // lastChatId 제외
                 .limit(limit)  // 최종적으로 limit개만 반환
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     private List<Chat> findAllChatRoomId(final int limit, final String key) {
@@ -95,7 +96,7 @@ public class RedisChatRepository implements ChatRepository {
         }
         return messages.stream()
                 .map(this::deserialize)
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**

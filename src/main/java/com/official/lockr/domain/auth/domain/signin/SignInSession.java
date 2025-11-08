@@ -1,8 +1,9 @@
-package com.official.lockr.domain.auth.domain.auth;
+package com.official.lockr.domain.auth.domain.signin;
+
+import com.official.lockr.domain.auth.domain.vo.ProviderType;
 
 import java.io.Serializable;
 import java.time.ZonedDateTime;
-import java.util.Objects;
 
 public record SignInSession(
         String id, String userId, String providerId, ProviderType providerType, String deviceId,

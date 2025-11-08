@@ -14,6 +14,7 @@ import org.jooq.generated.tables.pojos.ChattersEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -59,7 +60,7 @@ public class JOOQChatRoomRepository implements ChatRoomRepository {
 
         return entities.stream()
                 .map(this::toDomain)
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     @Transactional
@@ -125,17 +126,17 @@ public class JOOQChatRoomRepository implements ChatRoomRepository {
         // 2. 도메인의 멤버 목록
         final List<String> newUserIds = chatRoom.getChatters().stream()
                 .map(Chatter::getUserId)
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(ArrayList::new));
 
         // 3. 추가할 멤버 (newUserIds - existingUserIds)
         final List<String> toAdd = newUserIds.stream()
                 .filter(userId -> !existingUserIds.contains(userId))
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(ArrayList::new));
 
         // 4. 삭제할 멤버 (existingUserIds - newUserIds)
         final List<String> toRemove = existingUserIds.stream()
                 .filter(userId -> !newUserIds.contains(userId))
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(ArrayList::new));
 
         // 5. 삭제 실행
         if (!toRemove.isEmpty()) {
@@ -174,6 +175,6 @@ public class JOOQChatRoomRepository implements ChatRoomRepository {
                 .fetchInto(ChattersEntity.class)
                 .stream()
                 .map(entity -> new Chatter(entity.getUserId()))
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 }

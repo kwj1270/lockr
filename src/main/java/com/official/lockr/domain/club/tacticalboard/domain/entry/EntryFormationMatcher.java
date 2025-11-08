@@ -44,7 +44,7 @@ public class EntryFormationMatcher {
 
         final List<Position> availablePositions = formationPositions.stream()
                 .filter(pos -> !assignedPositions.contains(pos))
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(ArrayList::new));
 
         // 각 선수에 대해 가장 가까운 포지션 찾기 (그리디)
         for (FieldPlayer player : nonGkPlayers) {

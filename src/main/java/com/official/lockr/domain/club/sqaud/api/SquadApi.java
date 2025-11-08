@@ -1,6 +1,6 @@
 package com.official.lockr.domain.club.sqaud.api;
 
-import com.official.lockr.domain.auth.domain.auth.SignInSession;
+import com.official.lockr.domain.auth.domain.signin.SignInSession;
 import com.official.lockr.domain.club.sqaud.domain.Squad;
 import com.official.lockr.domain.club.sqaud.domain.SquadRepository;
 import jakarta.servlet.http.HttpSession;
