@@ -1,7 +1,7 @@
 package com.official.lockr.domain.club.club.domain;
 
 public enum MemberRole {
-    PLAYER,
+    BASIC,
     COACH,
     MANAGER,
     TREASURER,

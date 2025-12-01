@@ -10,11 +10,5 @@ public interface ScheduleRepository {
     @Nullable
     Schedule findById(String id);
 
-    List<Schedule> findAllByClubId(String clubId);
-
-    List<Schedule> findAllByClubIdAndMonth(String clubId, YearMonth yearMonth);
-
     Schedule save(Schedule schedule);
-
-    void delete(String id);
 }

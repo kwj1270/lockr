@@ -15,20 +15,28 @@ public class Club extends AggregateRoot {
     private final String foundUserId;
     private final String name;
     private final String description;
+    private final String region;
+    private final String sportType;
+    private final String profileImageUrl;
+    private final String backgroundImageUrl;
     private List<Member> members;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
     private final LocalDateTime deletedAt;
 
-    public Club(final String id, final String foundUserId, final String name, final String description) {
-        this(id, foundUserId, name, description, new ArrayList<>(), LocalDateTime.now(), LocalDateTime.now(), null);
+    public Club(final String id, final String foundUserId, final String name, final String description, final String region, final String sportType, final String profileImageUrl, final String backgroundImageUrl) {
+        this(id, foundUserId, name, description, region, sportType, profileImageUrl, backgroundImageUrl, new ArrayList<>(), LocalDateTime.now(), LocalDateTime.now(), null);
     }
 
-    public Club(final String id, final String foundUserId, final String name, final String description, final List<Member> members, final LocalDateTime createdAt, final LocalDateTime updatedAt, final LocalDateTime deletedAt) {
+    public Club(final String id, final String foundUserId, final String name, final String description, final String region, final String sportType, final String profileImageUrl, final String backgroundImageUrl, final List<Member> members, final LocalDateTime createdAt, final LocalDateTime updatedAt, final LocalDateTime deletedAt) {
         this.id = id;
         this.foundUserId = foundUserId;
         this.name = name;
         this.description = description;
+        this.region = region;
+        this.sportType = sportType;
+        this.profileImageUrl = profileImageUrl;
+        this.backgroundImageUrl = backgroundImageUrl;
         this.members = members;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -38,6 +46,10 @@ public class Club extends AggregateRoot {
     public void addMember(final Member member) {
         members.add(member);
         addEvent(new AddedMemberEvent(member));
+    }
+
+    public boolean isEqual(final String id) {
+        return this.id.equals(id);
     }
 
     public String getId() {
@@ -56,6 +68,22 @@ public class Club extends AggregateRoot {
         return description;
     }
 
+    public String getRegion() {
+        return region;
+    }
+
+    public String getSportType() {
+        return sportType;
+    }
+
+    public String getProfileImageUrl() {
+        return profileImageUrl;
+    }
+
+    public String getBackgroundImageUrl() {
+        return backgroundImageUrl;
+    }
+
     public List<Member> getMembers() {
         return members;
     }
@@ -72,12 +100,13 @@ public class Club extends AggregateRoot {
         return deletedAt;
     }
 
-    public boolean isExistedMember(final String userId) {
+    public boolean isExistedUser(final String userId) {
         return members.stream().anyMatch(it -> it.isSame(userId));
     }
 
-    public boolean isNotPresident(final String userId) {
-        return members.stream().filter(it -> it.isSame(userId))
+    public boolean isNotPresident(final String memberId) {
+        return members.stream()
+                .filter(it -> it.isEqual(memberId))
                 .noneMatch(Member::isPresident);
     }
 
@@ -85,15 +114,24 @@ public class Club extends AggregateRoot {
         return members.stream().noneMatch(it -> it.getId().equals(memberId));
     }
 
+    public boolean hasNotUser(final String userId) {
+        return members.stream().noneMatch(it -> it.isSame(userId));
+    }
+
+    public void assignCoach(final String memberId) {
+        final Member member = members.stream()
+                .filter(it -> it.isEqual(memberId))
+                .findFirst()
+                .orElseThrow(IllegalArgumentException::new);
+        member.assignCoach();
+    }
+
     public void assignManger(final String memberId) {
-        members.stream()
-                .filter(Member::isManager)
+        final Member member = members.stream()
+                .filter(it -> it.isEqual(memberId))
                 .findFirst()
-                .ifPresent(Member::assignPlayerRole);
-        members.stream()
-                .filter(it -> it.getId().equals(memberId))
-                .findFirst()
-                .ifPresent(Member::assignManagerRole);
+                .orElseThrow(IllegalArgumentException::new);
+        member.assignManager();
     }
 
     public boolean isStaff(final String userId) {
@@ -114,9 +152,9 @@ public class Club extends AggregateRoot {
         return Objects.hashCode(getId());
     }
 
-    public static Club init(final String id, final String foundUserId, final String name, final String description) {
-        final Club club = new Club(id, foundUserId, name, description);
-        club.addEvent(new FoundClubEvent(club.id, club.name, club.description, club.createdAt));
+    public static Club init(final String id, final String foundUserId, final String name, final String description, final String region, final String sportType, final String profileImageUrl, final String backgroundImageUrl) {
+        final Club club = new Club(id, foundUserId, name, description, region, sportType, profileImageUrl, backgroundImageUrl);
+        club.addEvent(new FoundClubEvent(club.id, club.name, club.description, club.region, club.sportType, club.createdAt));
         return club;
     }
 }

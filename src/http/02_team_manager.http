@@ -15,7 +15,7 @@ X-DEVICE-INFO: web
 %}
 
 #### 입단 신청
-POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/resume
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/application
 Cookie: {{SESSION_COOKIE_2}}
 Content-Type: application/json
 Authorization: test

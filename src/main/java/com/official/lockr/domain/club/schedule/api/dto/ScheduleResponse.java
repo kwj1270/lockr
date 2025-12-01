@@ -3,8 +3,7 @@ package com.official.lockr.domain.club.schedule.api.dto;
 import com.official.lockr.domain.club.schedule.domain.Schedule;
 import com.official.lockr.domain.club.schedule.domain.ScheduleStatus;
 import com.official.lockr.domain.club.schedule.domain.ScheduleType;
-import com.official.lockr.domain.club.schedule.domain.attendance.Attendance;
-import com.official.lockr.domain.club.schedule.domain.detail.ScheduleDetail;
+import com.official.lockr.domain.club.schedule.domain.vo.ScheduleDetailData;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,7 +16,7 @@ public record ScheduleResponse(
         String location,
         LocalDateTime scheduleTime,
         ScheduleType scheduleType,
-        ScheduleDetail detail,
+        ScheduleDetailData detail,
         List<AttendanceResponse> attendances,
         ScheduleStatus status,
         int attendingCount,

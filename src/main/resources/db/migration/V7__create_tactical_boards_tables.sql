@@ -1,4 +1,5 @@
 -- Tactical Boards 테이블 (전술판)
+use lockr;
 CREATE TABLE `tactical_boards`
 (
     `id`            CHAR(128)    NOT NULL COMMENT '전술판 식별키' PRIMARY KEY,

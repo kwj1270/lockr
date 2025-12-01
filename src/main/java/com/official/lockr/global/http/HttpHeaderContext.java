@@ -1,6 +1,5 @@
 package com.official.lockr.global.http;
 
-import com.github.f4b6a3.ulid.UlidCreator;
 import com.official.lockr.global.util.UlidUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.util.Strings;
@@ -11,7 +10,7 @@ import java.util.List;
 public record HttpHeaderContext(
         String rootGuid, String childGuid, String authorization, String userAgent,
         String acceptLanguage, String xRequestId, String xForwardedFor, String deviceId,
-        String deviceInfo, String ipAddress, String appVersion
+        String deviceName, String deviceOS, String ipAddress, String appVersion
 ) {
 
     private static final String BEARER = "BEARER ";
@@ -32,7 +31,8 @@ public record HttpHeaderContext(
                 request.getHeader("X-Request-ID"),
                 request.getHeader("X-FORWARDED-FOR"),
                 request.getHeader("X-DEVICE-ID"),
-                request.getHeader("X-DEVICE-INFO"),
+                request.getHeader("X-DEVICE-NAME"),
+                request.getHeader("X-DEVICE-OS"),
                 clientIpAddress(request),
                 request.getHeader("X-APP-VERSION")
         );
@@ -41,7 +41,7 @@ public record HttpHeaderContext(
 
     public HttpHeaderContext(final String rootGuid, final String childGuid, final String authorization,
                              final String userAgent, final String acceptLanguage, final String xRequestId,
-                             final String xForwardedFor, final String deviceId, final String deviceInfo,
+                             final String xForwardedFor, final String deviceId, final String deviceName, final String deviceOS,
                              final String ipAddress, final String appVersion) {
         this.rootGuid = createRootGuid(rootGuid);
         this.childGuid = createChildGuid(this.rootGuid, childGuid);
@@ -51,7 +51,8 @@ public record HttpHeaderContext(
         this.xRequestId = xRequestId;
         this.xForwardedFor = xForwardedFor;
         this.deviceId = deviceId;
-        this.deviceInfo = deviceInfo;
+        this.deviceName = deviceName;
+        this.deviceOS = deviceOS;
         this.ipAddress = ipAddress;
         this.appVersion = appVersion;
     }
@@ -85,13 +86,14 @@ public record HttpHeaderContext(
         return "HttpHeaderContext{" +
                 "rootGuid='" + rootGuid + '\'' +
                 ", childGuid='" + childGuid + '\'' +
-                ", authorization='" + maskSensitiveData(authorization) + '\'' +
+                ", authorization='" + authorization + '\'' +
                 ", userAgent='" + userAgent + '\'' +
                 ", acceptLanguage='" + acceptLanguage + '\'' +
                 ", xRequestId='" + xRequestId + '\'' +
                 ", xForwardedFor='" + xForwardedFor + '\'' +
                 ", deviceId='" + deviceId + '\'' +
-                ", deviceInfo='" + deviceInfo + '\'' +
+                ", deviceName='" + deviceName + '\'' +
+                ", deviceOS='" + deviceOS + '\'' +
                 ", ipAddress='" + ipAddress + '\'' +
                 ", appVersion='" + appVersion + '\'' +
                 '}';
@@ -108,7 +110,7 @@ public record HttpHeaderContext(
     public HttpHeaderContext increaseChildGuid() {
         return new HttpHeaderContext(
                 rootGuid, childGuid, authorization, userAgent, acceptLanguage,
-                xRequestId, xForwardedFor, deviceId, deviceInfo, ipAddress, appVersion
+                xRequestId, xForwardedFor, deviceId, deviceName, deviceOS, ipAddress, appVersion
         );
     }
 }

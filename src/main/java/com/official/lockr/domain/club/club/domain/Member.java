@@ -23,6 +23,10 @@ public class Member {
         this.deletedAt = deletedAt;
     }
 
+    public boolean isEqual(final String id) {
+        return this.id.equals(id);
+    }
+
     public String getId() {
         return id;
     }
@@ -67,12 +71,12 @@ public class Member {
         return role.isStaff();
     }
 
-    public void assignPlayerRole() {
-        role = MemberRole.PLAYER;
+    public void assignManager() {
+        role = MemberRole.MANAGER;
     }
 
-    public void assignManagerRole() {
-        role = MemberRole.MANAGER;
+    public void assignCoach() {
+        role = MemberRole.COACH;
     }
 
     @Override
@@ -91,7 +95,7 @@ public class Member {
         return new Member(memberId, userId, MemberRole.PRESIDENT, clubId, LocalDateTime.now(), LocalDateTime.now(), null);
     }
 
-    public static Member player(final String memberId, final String userId, final String clubId) {
-        return new Member(memberId, userId, MemberRole.PLAYER, clubId, LocalDateTime.now(), LocalDateTime.now(), null);
+    public static Member basic(final String memberId, final String userId, final String clubId) {
+        return new Member(memberId, userId, MemberRole.BASIC, clubId, LocalDateTime.now(), LocalDateTime.now(), null);
     }
 }

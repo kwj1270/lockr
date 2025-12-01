@@ -1,6 +1,6 @@
 package com.official.lockr.domain.club.schedule.api.dto;
 
-import com.official.lockr.domain.club.schedule.domain.detail.ScheduleDetail;
+import com.official.lockr.domain.club.schedule.domain.vo.ScheduleDetailData;
 
 import java.time.LocalDateTime;
 
@@ -9,6 +9,9 @@ public record UpdateScheduleRequest(
         String content,
         String location,
         LocalDateTime scheduleTime,
-        ScheduleDetail detail
+        ScheduleDetailData detail,
+        int minParticipants,
+        int maxParticipants,
+        int deadlineDays
 ) {
 }

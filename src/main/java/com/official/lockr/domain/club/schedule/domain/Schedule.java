@@ -1,8 +1,6 @@
 package com.official.lockr.domain.club.schedule.domain;
 
-import com.official.lockr.domain.club.schedule.domain.attendance.Attendance;
-import com.official.lockr.domain.club.schedule.domain.attendance.AttendanceStatus;
-import com.official.lockr.domain.club.schedule.domain.detail.ScheduleDetail;
+import com.official.lockr.domain.club.schedule.domain.vo.ScheduleDetailData;
 import com.official.lockr.domain.club.schedule.domain.event.CancelledScheduleEvent;
 import com.official.lockr.domain.club.schedule.domain.event.CreatedScheduleEvent;
 import com.official.lockr.domain.club.schedule.domain.event.RespondedToScheduleEvent;
@@ -12,7 +10,6 @@ import com.official.lockr.global.ddd.AggregateRoot;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static com.official.lockr.domain.club.schedule.domain.ScheduleStatus.SCHEDULED;
 
@@ -25,9 +22,12 @@ public class Schedule extends AggregateRoot {
     private String location;
     private LocalDateTime scheduleTime;
     private final ScheduleType scheduleType;
-    private ScheduleDetail detail;
+    private ScheduleDetailData scheduleDetailData;
     private final List<Attendance> attendances;
     private ScheduleStatus status;
+    private int minParticipants;
+    private int maxParticipants;
+    private int deadlineDays;
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
@@ -40,32 +40,26 @@ public class Schedule extends AggregateRoot {
             final String scheduleLocation,
             final LocalDateTime scheduleTime,
             final ScheduleType scheduleType,
-            final ScheduleDetail detail,
-            final List<String> userIds
+            final ScheduleDetailData detail,
+            final List<String> userIds,
+            final Integer minParticipants,
+            final Integer maxParticipants,
+            final int deadlineDays
     ) {
         final LocalDateTime now = LocalDateTime.now();
         final Schedule schedule = new Schedule(
                 id, clubId, title, content, scheduleLocation, scheduleTime, scheduleType,
-                detail, createInitialAttendances(userIds), SCHEDULED, now, now, null
+                detail, createInitialAttendances(userIds), SCHEDULED, minParticipants, maxParticipants, deadlineDays, now, now, null
         );
         schedule.addEvent(new CreatedScheduleEvent(id, clubId, scheduleType, scheduleTime));
         return schedule;
     }
 
     public Schedule(
-            final String id,
-            final String clubId,
-            final String title,
-            final String content,
-            final String location,
-            final LocalDateTime scheduleTime,
-            final ScheduleType scheduleType,
-            final ScheduleDetail detail,
-            final List<Attendance> attendances,
-            final ScheduleStatus status,
-            final LocalDateTime createdAt,
-            final LocalDateTime updatedAt,
-            final LocalDateTime deletedAt
+            final String id, final String clubId, final String title, final String content, final String location,
+            final LocalDateTime scheduleTime, final ScheduleType scheduleType, final ScheduleDetailData scheduleDetailData,
+            final List<Attendance> attendances, final ScheduleStatus status, final Integer minParticipants, final Integer maxParticipants,
+            final int deadlineDays, final LocalDateTime createdAt, final LocalDateTime updatedAt, final LocalDateTime deletedAt
     ) {
         this.id = id;
         this.clubId = clubId;
@@ -74,36 +68,22 @@ public class Schedule extends AggregateRoot {
         this.location = location;
         this.scheduleTime = scheduleTime;
         this.scheduleType = scheduleType;
-        this.detail = detail;
+        this.scheduleDetailData = scheduleDetailData;
         this.attendances = new ArrayList<>(attendances);  // 방어적 복사
         this.status = status;
+        this.minParticipants = minParticipants;
+        this.maxParticipants = maxParticipants;
+        this.deadlineDays = deadlineDays;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.deletedAt = deletedAt;
     }
 
-    public void respond(final String userId, final AttendanceStatus status) {
+    public void respond(final String userId, final AttendanceStatus status, final String reason) {
         validateNotCancelled();
-
-        final Attendance attendance = findAttendance(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User is not invited: " + userId));
-
+        final Attendance attendance = findAttendance(userId);
         final AttendanceStatus previousStatus = attendance.getStatus();
-        attendance.updateStatus(status);
-
-        this.updatedAt = LocalDateTime.now();
-        addEvent(new RespondedToScheduleEvent(id, clubId, userId, previousStatus, status));
-    }
-
-    public void respondWithReason(final String userId, final AttendanceStatus status, final String reason) {
-        validateNotCancelled();
-
-        final Attendance attendance = findAttendance(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User is not invited: " + userId));
-
-        final AttendanceStatus previousStatus = attendance.getStatus();
-        attendance.updateStatusWithReason(status, reason);
-
+        attendance.respond(status, reason);
         this.updatedAt = LocalDateTime.now();
         addEvent(new RespondedToScheduleEvent(id, clubId, userId, previousStatus, status));
     }
@@ -113,7 +93,10 @@ public class Schedule extends AggregateRoot {
             final String content,
             final String scheduleLocation,
             final LocalDateTime scheduleTime,
-            final ScheduleDetail detail
+            final ScheduleDetailData scheduleDetailData,
+            final int minParticipants,
+            final int maxParticipants,
+            final int deadlineDays
     ) {
         validateNotCancelled();
         validateScheduleTime(scheduleTime);
@@ -122,44 +105,34 @@ public class Schedule extends AggregateRoot {
         this.content = content;
         this.location = scheduleLocation;
         this.scheduleTime = scheduleTime;
-        this.detail = detail;
+        this.scheduleDetailData = scheduleDetailData;
+        this.minParticipants = minParticipants;
+        this.maxParticipants = maxParticipants;
+        this.deadlineDays = deadlineDays;
         this.updatedAt = LocalDateTime.now();
-
         addEvent(new UpdatedScheduleEvent(id, clubId, scheduleTime));
     }
 
     public void cancel() {
         validateNotCancelled();
-
         this.status = ScheduleStatus.CANCELLED;
         this.updatedAt = LocalDateTime.now();
         this.deletedAt = LocalDateTime.now();
-
         addEvent(new CancelledScheduleEvent(id, clubId, scheduleType));
     }
 
     // 도메인 로직: 멤버 추가
     public void addMember(final String userId) {
         validateNotCancelled();
-
         if (isInvited(userId)) {
             throw new IllegalArgumentException("User already invited: " + userId);
         }
-
         attendances.add(Attendance.create(userId));
         this.updatedAt = LocalDateTime.now();
     }
 
-    // 조회 메서드들
     public boolean isInvited(final String userId) {
-        return attendances.stream()
-                .anyMatch(a -> a.getUserId().equals(userId));
-    }
-
-    public boolean isAttending(final String userId) {
-        return findAttendance(userId)
-                .map(Attendance::isAttending)
-                .orElse(false);
+        return attendances.stream().anyMatch(a -> a.getUserId().equals(userId));
     }
 
     public int getAttendingCount() {
@@ -188,11 +161,11 @@ public class Schedule extends AggregateRoot {
         return scheduleTime.isBefore(LocalDateTime.now());
     }
 
-    // 내부 헬퍼 메서드
-    private Optional<Attendance> findAttendance(final String userId) {
+    private Attendance findAttendance(final String userId) {
         return attendances.stream()
                 .filter(a -> a.getUserId().equals(userId))
-                .findFirst();
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("User is not invited: " + userId));
     }
 
     private static List<Attendance> createInitialAttendances(final List<String> userIds) {
@@ -210,7 +183,6 @@ public class Schedule extends AggregateRoot {
             throw new IllegalArgumentException("Schedule time must be in the future");
         }
     }
-
 
     private void validateNotCancelled() {
         if (isCancelled()) {
@@ -247,8 +219,8 @@ public class Schedule extends AggregateRoot {
         return scheduleType;
     }
 
-    public ScheduleDetail getDetail() {
-        return detail;
+    public ScheduleDetailData getDetail() {
+        return scheduleDetailData;
     }
 
     public List<Attendance> getAttendances() {
@@ -269,5 +241,17 @@ public class Schedule extends AggregateRoot {
 
     public LocalDateTime getDeletedAt() {
         return deletedAt;
+    }
+
+    public Integer getMinParticipants() {
+        return minParticipants;
+    }
+
+    public Integer getMaxParticipants() {
+        return maxParticipants;
+    }
+
+    public int getDeadlineDays() {
+        return deadlineDays;
     }
 }
