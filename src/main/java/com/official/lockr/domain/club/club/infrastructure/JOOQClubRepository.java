@@ -68,12 +68,20 @@ public class JOOQClubRepository implements ClubRepository {
                 .set(CLUBS.FOUND_USER_ID, club.getFoundUserId())
                 .set(CLUBS.NAME, club.getName())
                 .set(CLUBS.DESCRIPTION, club.getDescription())
+                .set(CLUBS.REGION, club.getRegion())
+                .set(CLUBS.SPORT_TYPE, club.getSportType())
+                .set(CLUBS.PROFILE_IMAGE_URL, club.getProfileImageUrl())
+                .set(CLUBS.BACKGROUND_IMAGE_URL, club.getBackgroundImageUrl())
                 .set(CLUBS.CREATED_AT, club.getCreatedAt())
                 .set(CLUBS.UPDATED_AT, club.getUpdatedAt())
                 .set(CLUBS.DELETED_AT, club.getDeletedAt())
                 .onDuplicateKeyUpdate()
                 .set(CLUBS.NAME, club.getName())
                 .set(CLUBS.DESCRIPTION, club.getDescription())
+                .set(CLUBS.REGION, club.getRegion())
+                .set(CLUBS.SPORT_TYPE, club.getSportType())
+                .set(CLUBS.PROFILE_IMAGE_URL, club.getProfileImageUrl())
+                .set(CLUBS.BACKGROUND_IMAGE_URL, club.getBackgroundImageUrl())
                 .set(CLUBS.UPDATED_AT, club.getUpdatedAt())
                 .set(CLUBS.DELETED_AT, club.getDeletedAt())
                 .execute();
@@ -171,6 +179,10 @@ public class JOOQClubRepository implements ClubRepository {
                 teamsEntity.getFoundUserId(),
                 teamsEntity.getName(),
                 teamsEntity.getDescription(),
+                teamsEntity.getRegion(),
+                teamsEntity.getSportType(),
+                teamsEntity.getProfileImageUrl(),
+                teamsEntity.getBackgroundImageUrl(),
                 members,
                 teamsEntity.getCreatedAt(),
                 teamsEntity.getUpdatedAt(),
@@ -196,6 +208,10 @@ public class JOOQClubRepository implements ClubRepository {
                 teamsRecord.getFoundUserId(),
                 teamsRecord.getName(),
                 teamsRecord.getDescription(),
+                teamsRecord.getRegion(),
+                teamsRecord.getSportType(),
+                teamsRecord.getProfileImageUrl(),
+                teamsRecord.getBackgroundImageUrl(),
                 members,
                 teamsRecord.getCreatedAt(),
                 teamsRecord.getUpdatedAt(),

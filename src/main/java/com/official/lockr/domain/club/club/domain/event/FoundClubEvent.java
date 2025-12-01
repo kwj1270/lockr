@@ -8,6 +8,8 @@ public record FoundClubEvent(
         String id,
         String name,
         String description,
+        String region,
+        String sportType,
         LocalDateTime createdAt
 ) implements DomainEvent {
 }

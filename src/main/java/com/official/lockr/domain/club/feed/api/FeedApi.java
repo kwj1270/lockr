@@ -1,6 +1,6 @@
 package com.official.lockr.domain.club.feed.api;
 
-import com.official.lockr.domain.auth.domain.signin.SignInSession;
+import com.official.lockr.domain.auth.signin.domain.SignInSession;
 import com.official.lockr.domain.club.feed.api.dto.*;
 import com.official.lockr.domain.club.feed.application.dto.*;
 import com.official.lockr.domain.club.feed.application.usecase.*;

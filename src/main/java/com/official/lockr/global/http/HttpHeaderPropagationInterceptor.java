@@ -39,7 +39,8 @@ public class HttpHeaderPropagationInterceptor implements ClientHttpRequestInterc
             addHeaderIfNotBlank(request, "X-Request-ID", headerContext.xRequestId());
             addHeaderIfNotBlank(request, "X-Forwarded-For", headerContext.xForwardedFor());
             addHeaderIfNotBlank(request, "X-DEVICE-ID", headerContext.deviceId());
-            addHeaderIfNotBlank(request, "X-DEVICE-INFO", headerContext.deviceInfo());
+            addHeaderIfNotBlank(request, "X-DEVICE-NAME", headerContext.deviceName());
+            addHeaderIfNotBlank(request, "X-DEVICE-OS", headerContext.deviceOS());
             addHeaderIfNotBlank(request, "X-IP-ADDRESS", headerContext.ipAddress());
             addHeaderIfNotBlank(request, "X-APP-VERSION", headerContext.ipAddress());
         } catch (Exception e) {

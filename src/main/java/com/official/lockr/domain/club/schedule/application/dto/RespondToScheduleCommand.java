@@ -1,6 +1,6 @@
 package com.official.lockr.domain.club.schedule.application.dto;
 
-import com.official.lockr.domain.club.schedule.domain.attendance.AttendanceStatus;
+import com.official.lockr.domain.club.schedule.domain.AttendanceStatus;
 
 public record RespondToScheduleCommand(
         String scheduleId,

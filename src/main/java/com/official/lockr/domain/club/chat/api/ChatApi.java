@@ -1,6 +1,6 @@
 package com.official.lockr.domain.club.chat.api;
 
-import com.official.lockr.domain.auth.domain.signin.SignInSession;
+import com.official.lockr.domain.auth.signin.domain.SignInSession;
 import com.official.lockr.domain.club.chat.api.dto.AddChatterRequest;
 import com.official.lockr.domain.club.chat.api.dto.SendMessageRequest;
 import com.official.lockr.domain.club.chat.application.usecase.AddChatterUseCase;
@@ -11,12 +11,8 @@ import com.official.lockr.domain.club.chat.domain.Chat;
 import com.official.lockr.domain.club.chat.domain.ChatRoom;
 import com.official.lockr.domain.club.chat.infrastructure.sse.SseChatEventPublisher;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
-import java.util.List;
 
 import static java.util.Objects.isNull;
 
@@ -42,16 +38,6 @@ public class ChatApi {
         this.sseEventPublisher = sseEventPublisher;
     }
 
-    @GetMapping("/rooms")
-    public ResponseEntity<List<ChatRoom>> getChatRooms(
-            final HttpSession httpSession,
-            @PathVariable final String clubId
-    ) {
-        final SignInSession session = session(httpSession);
-        final List<ChatRoom> chatRooms = getChatRoomsUseCase.getChatRooms(clubId, session.userId());
-        return ResponseEntity.ok(chatRooms);
-    }
-
     @PostMapping("/rooms/{chatRoomId}/chatters")
     public ResponseEntity<ChatRoom> addChatter(
             final HttpSession httpSession,
@@ -60,9 +46,7 @@ public class ChatApi {
             @RequestBody final AddChatterRequest request
     ) {
         session(httpSession);
-        final ChatRoom chatRoom = addChatterUseCase.addChatter(
-                request.toCommand(clubId, chatRoomId)
-        );
+        final ChatRoom chatRoom = addChatterUseCase.addChatter(request.toCommand(clubId, chatRoomId));
         return ResponseEntity.ok(chatRoom);
     }
 
@@ -76,38 +60,6 @@ public class ChatApi {
         final SignInSession session = session(httpSession);
         final Chat chat = sendMessageUseCase.send(request.toCommand(clubId, chatRoomId, session.userId()));
         return ResponseEntity.ok(chat);
-    }
-
-    @GetMapping("/rooms/{chatRoomId}/messages")
-    public ResponseEntity<List<Chat>> getMessages(
-            final HttpSession httpSession,
-            @PathVariable final String clubId,
-            @PathVariable final String chatRoomId,
-            @RequestParam(required = false, defaultValue = "") final String lastChatId,
-            @RequestParam(required = false, defaultValue = "100") final int limit
-    ) {
-        final SignInSession session = session(httpSession);
-        final List<Chat> messages = getMessagesUseCase.getMessages(chatRoomId, session.userId(), lastChatId, limit);
-        return ResponseEntity.ok(messages);
-    }
-
-    @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter subscribeToClubChats(
-            final HttpSession httpSession,
-            @PathVariable final String clubId
-    ) {
-        session(httpSession);
-        return sseEventPublisher.subscribeToClub(clubId);
-    }
-
-    @GetMapping(value = "/rooms/{chatRoomId}/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter subscribeToChatRoom(
-            final HttpSession httpSession,
-            @PathVariable final String clubId,
-            @PathVariable final String chatRoomId
-    ) {
-        session(httpSession);
-        return sseEventPublisher.subscribeToChatRoom(chatRoomId);
     }
 
     private SignInSession session(final HttpSession httpSession) {

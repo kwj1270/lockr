@@ -3,12 +3,11 @@ package com.official.lockr.domain.users.application;
 import com.official.lockr.domain.users.application.command.SaveUsersCommand;
 import com.official.lockr.domain.users.domain.Users;
 import com.official.lockr.domain.users.domain.UsersRepository;
-import com.official.lockr.global.util.UlidUtils;
 import org.springframework.stereotype.Service;
 
 
 @Service
-public class UsersService implements SaveUsersUsecase {
+public class UsersService implements RegisterUsersUsecase {
 
     private final UsersRepository usersRepository;
 
@@ -17,9 +16,8 @@ public class UsersService implements SaveUsersUsecase {
     }
 
     @Override
-    public Users save(final SaveUsersCommand command) {
-        final String id = UlidUtils.generateUlid();
-        final Users users = Users.init(id, command.providerId(), command.providerType());
+    public Users register(final SaveUsersCommand command) {
+        final Users users = Users.init();
         return usersRepository.save(users);
     }
 }

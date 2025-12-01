@@ -1,7 +1,8 @@
 -- auto-generated definition
+use lockr;
 CREATE TABLE http_log
 (
-    id          varchar(128) not null comment '고유한 로그 ID (UUID)' primary key,
+    id          CHAR(26) not null comment '고유한 로그 ID (UUID)' primary key,
     root_guid   varchar(128) not null comment '루트 GUID (ULID)',
     child_guid  varchar(128) not null comment '자식 GUID (ULID)',
     tx_date     varchar(24)  not null comment '로그 기록 날짜',
@@ -26,4 +27,3 @@ CREATE INDEX idx_http_log_tx_date ON http_log (tx_date);
 CREATE INDEX idx_http_log_tx_time ON http_log (tx_time);
 
 CREATE INDEX idx_http_log_user_id ON http_log (user_id);
-
