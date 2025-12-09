@@ -13,6 +13,7 @@ X-DEVICE-OS: mac-os
 }
 > {%
     client.global.set("SESSION_COOKIE_2", response.headers.valueOf("Set-Cookie"));
+    client.global.set("PLAYER_ID_2", response.body.id);
 %}
 
 ### 모집중인 클럽 공고 목록 조회
@@ -69,20 +70,29 @@ X-DEVICE-ID: 1
 X-DEVICE-INFO: web
 
 
-### 팀 조회(일단 스쿼드로 조회)
-GET http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/squads
-Cookie: {{SESSION_COOKIE}}
+### 내 클럽 목록 조회
+GET http://127.0.0.1:8080/api/v1/clubs/my
+Cookie: {{SESSION_COOKIE_2}}
 Content-Type: application/json
 Authorization: test
 X-DEVICE-ID: 1
 X-DEVICE-INFO: web
 
 > {%
-    client.global.set("SQUAD_ID", response.body.id);
-    client.global.set("CLUB_ID", response.body.clubId);
-    client.global.set("PLAYER_ID_2", response.body.squadPlayers[1].memberId);
+    client.global.set("CLUB_ID", response.body.clubs[0].clubId);
 %}
 
+### 클럽내 내 정보 조회
+GET http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/me
+Cookie: {{SESSION_COOKIE_2}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+> {%
+    client.global.set("MEMBER_ID_2", response.body.memberId);
+%}
 
 #### 매니저 임명
 POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/manager
@@ -93,5 +103,5 @@ X-DEVICE-ID: 1
 X-DEVICE-INFO: web
 
 {
-  "targetMemberId": "{{PLAYER_ID_2}}"
+  "targetMemberId": "{{MEMBER_ID_2}}"
 }

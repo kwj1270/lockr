@@ -112,10 +112,10 @@ public class Club extends AggregateRoot {
         return members.stream().anyMatch(it -> it.isSame(userId));
     }
 
-    public boolean isNotPresident(final String memberId) {
+    public boolean isPresident(final String memberId) {
         return members.stream()
                 .filter(it -> it.isEqual(memberId))
-                .noneMatch(Member::isPresident);
+                .anyMatch(Member::isPresident);
     }
 
     public boolean hasNotMember(final String memberId) {
