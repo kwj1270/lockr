@@ -4,10 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.official.lockr.domain.club.recruitment.recruitment.domain.Recruitment;
+import com.official.lockr.domain.club.recruitment.recruitment.domain.vo.Days;
 import com.official.lockr.domain.club.recruitment.recruitment.domain.vo.RecruitmentType;
 import com.official.lockr.domain.club.recruitment.recruitment.domain.RecruitmentRepository;
 import com.official.lockr.domain.club.recruitment.recruitment.domain.vo.RecruitmentStatus;
 import com.official.lockr.global.ddd.DomainEventPublisher;
+import io.jsonwebtoken.lang.Collections;
 import jakarta.annotation.Nullable;
 import org.jooq.Configuration;
 import org.jooq.generated.tables.daos.RecruitmentsDao;
@@ -15,8 +17,11 @@ import org.jooq.generated.tables.pojos.RecruitmentsEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static org.jooq.generated.tables.RecruitmentsJOOQEntity.RECRUITMENTS;
 
@@ -81,7 +86,7 @@ public class JOOQRecruitmentRepository implements RecruitmentRepository {
     }
 
     private void upsertRecruitment(final Recruitment recruitment) {
-        final String activityDaysJson = toJson(recruitment.getActivityDays());
+        final String activityDaysJson = String.join(",", recruitment.getActivityDays());
 
         recruitmentsDao.ctx()
                 .insertInto(RECRUITMENTS)
@@ -92,7 +97,8 @@ public class JOOQRecruitmentRepository implements RecruitmentRepository {
                 .set(RECRUITMENTS.TITLE, recruitment.getTitle())
                 .set(RECRUITMENTS.CONTENT, recruitment.getContent())
                 .set(RECRUITMENTS.RECRUITMENT_TYPE, recruitment.getRecruitmentType().name())
-                .set(RECRUITMENTS.ACTIVITY_REGION, recruitment.getRegion())
+                .set(RECRUITMENTS.ACTIVITY_CITY, recruitment.getActivityCity())
+                .set(RECRUITMENTS.ACTIVITY_DISTRICT, recruitment.getActivityDistrict())
                 .set(RECRUITMENTS.ACTIVITY_DAYS, activityDaysJson)
                 .set(RECRUITMENTS.ACTIVITY_TIME, recruitment.getActivityTime())
                 .set(RECRUITMENTS.MONTHLY_FEE, recruitment.getMonthlyFee())
@@ -106,7 +112,8 @@ public class JOOQRecruitmentRepository implements RecruitmentRepository {
                 .set(RECRUITMENTS.TITLE, recruitment.getTitle())
                 .set(RECRUITMENTS.CONTENT, recruitment.getContent())
                 .set(RECRUITMENTS.RECRUITMENT_TYPE, recruitment.getRecruitmentType().name())
-                .set(RECRUITMENTS.ACTIVITY_REGION, recruitment.getRegion())
+                .set(RECRUITMENTS.ACTIVITY_CITY, recruitment.getActivityCity())
+                .set(RECRUITMENTS.ACTIVITY_DISTRICT, recruitment.getActivityDistrict())
                 .set(RECRUITMENTS.ACTIVITY_DAYS, activityDaysJson)
                 .set(RECRUITMENTS.ACTIVITY_TIME, recruitment.getActivityTime())
                 .set(RECRUITMENTS.MONTHLY_FEE, recruitment.getMonthlyFee())
@@ -117,8 +124,6 @@ public class JOOQRecruitmentRepository implements RecruitmentRepository {
     }
 
     private Recruitment toDomain(final RecruitmentsEntity entity) {
-        final List<String> activityDays = fromJson(entity.getActivityDays());
-
         return new Recruitment(
                 entity.getId(),
                 entity.getClubId(),
@@ -127,8 +132,9 @@ public class JOOQRecruitmentRepository implements RecruitmentRepository {
                 entity.getTitle(),
                 entity.getContent(),
                 RecruitmentType.valueOf(entity.getRecruitmentType()),
-                entity.getActivityRegion(),
-                activityDays,
+                entity.getActivityCity(),
+                entity.getActivityDistrict(),
+                Days.of(entity.getActivityDays().split(",")),
                 entity.getActivityTime(),
                 entity.getMonthlyFee() != null ? entity.getMonthlyFee() : 0,
                 entity.getContactMethod(),
@@ -136,24 +142,5 @@ public class JOOQRecruitmentRepository implements RecruitmentRepository {
                 entity.getUpdatedAt(),
                 entity.getDeletedAt()
         );
-    }
-
-    private String toJson(final List<String> activityDays) {
-        try {
-            return objectMapper.writeValueAsString(activityDays);
-        } catch (JsonProcessingException e) {
-            throw new IllegalStateException("Failed to serialize activity days: " + activityDays, e);
-        }
-    }
-
-    private List<String> fromJson(final String json) {
-        if (json == null || json.isBlank()) {
-            return List.of();
-        }
-        try {
-            return objectMapper.readValue(json, new TypeReference<>() {});
-        } catch (JsonProcessingException e) {
-            throw new IllegalStateException("Failed to deserialize activity days JSON: " + json, e);
-        }
     }
 }

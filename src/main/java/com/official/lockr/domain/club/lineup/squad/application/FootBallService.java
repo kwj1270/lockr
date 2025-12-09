@@ -6,15 +6,11 @@ import com.official.lockr.domain.club.lineup.squad.domain.*;
 import com.official.lockr.domain.club.recruitment.applications.domain.Application;
 import com.official.lockr.domain.club.recruitment.applications.domain.ApplicationRepository;
 import com.official.lockr.domain.club.recruitment.applications.domain.vo.sport.FootballSportSpecificData;
-import com.official.lockr.domain.club.recruitment.applications.domain.vo.sport.SportSpecificData;
-import com.official.lockr.domain.club.recruitment.recruitment.domain.Recruitment;
-import com.official.lockr.domain.club.recruitment.recruitment.domain.RecruitmentRepository;
 import com.official.lockr.global.vo.BackNumber;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 import static com.github.f4b6a3.ulid.UlidCreator.getUlid;
@@ -36,7 +32,7 @@ public class FootBallService implements AddPlayerUseCase {
     @Override
     public Squad addPlayer(final AddPlayerCommand command) {
         final Squad lineUp = squad(command.clubId());
-        if (lineUp.hasPlayer(command.memberId())) {
+        if (lineUp.hasPlayer(command.userId())) {
             return lineUp;
         }
         final BackNumber backNumber = new BackNumber(randomNumber());

@@ -27,13 +27,13 @@ public record SubmitApplicationRequest(
                 applicationFormType,
                 name,
                 phone,
-                email,
-                emergencyContactPhone,
-                profileImageUrl,
-                birthDate,
                 gender,
-                address,
                 introduction,
+                profileImageUrl,
+                email,
+                address,
+                birthDate,
+                emergencyContactPhone,
                 sportType,
                 sportSpecificData
         );

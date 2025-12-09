@@ -64,7 +64,7 @@ public class ApplicationService implements SubmitApplicationUseCase, CancelAppli
         final SportSpecificData sportSpecificData = factory(sportType, command.sportSpecificData());
         final ApplicationFormType applicationFormType = ApplicationFormType.valueOf(command.applicationFormType());
         final Application application = Application.create(
-                generateUlid(), command.recruitmentId(), club.getId(), command.userId(),
+                generateUlid(), club.getId(), command.recruitmentId(), command.userId(),
                 applicationFormType, command.name(), command.phone(), command.gender(), command.introduction(),
                 command.profileImageUrl(), command.email(), command.address(), parseDate(command.birthDate()), command.emergencyContactPhone(),
                 sportType, sportSpecificData
@@ -101,6 +101,12 @@ public class ApplicationService implements SubmitApplicationUseCase, CancelAppli
         final Application application = applicationRepository.find(command.tryoutId());
         if (isNull(application) || !application.isSameClub(command.clubId()) || !application.isActive()) {
             throw new IllegalArgumentException("Tryout not found: " + command.tryoutId());
+        }
+        if(application.isRejected()) {
+            throw new IllegalArgumentException("Tryout not found: " + command.tryoutId());
+        }
+        if(application.isApproved()) {
+            return application;
         }
         application.approve(command.processedByUserId());
         return applicationRepository.save(application);

@@ -7,9 +7,10 @@ import java.time.LocalDateTime;
 public record FoundClubEvent(
         String id,
         String name,
-        String description,
-        String region,
         String sportType,
+        String city,
+        String district,
+        String description,
         LocalDateTime createdAt
 ) implements DomainEvent {
 }

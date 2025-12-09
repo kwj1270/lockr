@@ -1,0 +1,70 @@
+#### 팀 창단
+POST http://127.0.0.1:8080/api/v1/clubs
+Cookie: {{SESSION_COOKIE}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+{
+  "name": "강남구 풋살 FC",
+  "sportType": "FOOT_BALL",
+  "city": "서울시",
+  "district": "강남구",
+  "description": "test club",
+  "profileImageUrl": "",
+  "backgroundImageUrl": ""
+}
+> {%
+    client.global.set("CLUB_ID", response.body.id);
+%}
+
+### 모집 공고 오픈
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/recruitments
+Cookie: {{SESSION_COOKIE}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+{
+  "isPublic": true,
+  "title": "강남구 풋살 FC 모집 공고를 오픈합니다.",
+  "content": "제곧내",
+  "applicationType": "SIMPLE",
+  "activityCity": "서울시",
+  "activityDistrict": "강남구",
+  "activityDays": ["SATURDAY", "SUNDAY"],
+  "activityTime": "12:00",
+  "monthlyFee": 1000,
+  "contactMethod": "E-MAIL"
+}
+> {%
+    client.global.set("RECRUITMENT_ID", response.body.id);
+%}
+
+### 모집 공고 수정
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/recruitments/{{RECRUITMENT_ID}}/update
+Cookie: {{SESSION_COOKIE}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+{
+  "isPublic": true,
+  "title": "강남구 풋살 FC 모집 공고를 오픈합니다.2",
+  "content": "제곧내2",
+  "status": "PAUSED",
+  "applicationType": "DETAILED",
+  "activityCity": "서울시",
+  "activityDistrict": "도봉구",
+  "activityDays": ["MONDAY", "SUNDAY"],
+  "activityTime": "13:00",
+  "monthlyFee": 3000,
+  "contactMethod": "PHONE"
+}
+> {%
+    client.global.set("RECRUITMENT_ID", response.body.id);
+%}
+

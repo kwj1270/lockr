@@ -17,11 +17,11 @@ public record ApplicationFormData(
     }
 
     public String profileImageUrl() {
-        return this.profileImageUrl();
+        return detailedInfo.profileImageUrl();
     }
 
-    public String birth() {
-        return this.birth();
+    public LocalDate birthDate() {
+        return detailedInfo.birthDate();
     }
 
     public record DetailedInfo(

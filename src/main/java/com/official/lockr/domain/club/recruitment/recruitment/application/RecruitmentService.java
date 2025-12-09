@@ -33,13 +33,13 @@ public class RecruitmentService implements PostRecruitmentUseCase, UpdateRecruit
     public Recruitment post(final PostRecruitmentCommand command) {
         final Club club = club(command.clubId(), command.userId());
         final Recruitment existedRecruitment = recruitmentRepository.findByClubId(club.getId());
-        if (nonNull(existedRecruitment) && existedRecruitment.isNotDeleted()) {
+        if (nonNull(existedRecruitment) && existedRecruitment.isOpen()) {
             return existedRecruitment;
         }
         final Recruitment recruitment = Recruitment.post(
                 generateUlid(), club.getId(), command.isPublic(),
                 command.title(), command.content(), RecruitmentType.valueOf(command.applicationType()),
-                command.activityRegion(), command.activityDays(), command.activityTime(),
+                command.activityCity(), command.activityDistrict(), command.activityDays(), command.activityTime(),
                 command.monthlyFee(), command.contactMethod()
         );
         return recruitmentRepository.save(recruitment);
@@ -56,7 +56,8 @@ public class RecruitmentService implements PostRecruitmentUseCase, UpdateRecruit
                 command.isPublic(), command.title(), command.content(),
                 command.status(),
                 RecruitmentType.valueOf(command.applicationType()),
-                command.activityRegion(), command.activityDays(), command.activityTime(),
+                command.activityCity(), command.activityDistrict(),
+                command.activityDays(), command.activityTime(),
                 command.monthlyFee(), command.contactMethod()
         );
         return recruitmentRepository.save(recruitment);

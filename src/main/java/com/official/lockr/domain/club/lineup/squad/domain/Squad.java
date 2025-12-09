@@ -24,8 +24,8 @@ public class Squad extends AggregateRoot {
         this.deletedAt = deletedAt;
     }
 
-    public boolean hasPlayer(final String memberId) {
-        return squadPlayers.stream().anyMatch(it -> it.isSameMember(memberId));
+    public boolean hasPlayer(final String userId) {
+        return squadPlayers.stream().anyMatch(it -> it.isSame(userId));
     }
 
     public void addPlayer(final SquadPlayer lineUpMember) {

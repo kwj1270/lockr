@@ -1,5 +1,6 @@
 package com.official.lockr.domain.club.recruitment.recruitment.domain;
 
+import com.official.lockr.domain.club.recruitment.recruitment.domain.vo.Days;
 import com.official.lockr.domain.club.recruitment.recruitment.domain.vo.RecruitmentStatus;
 import com.official.lockr.domain.club.recruitment.recruitment.domain.vo.RecruitmentType;
 import com.official.lockr.global.ddd.AggregateRoot;
@@ -9,7 +10,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static com.official.lockr.domain.club.recruitment.recruitment.domain.vo.RecruitmentStatus.RECRUITING;
-import static java.util.Objects.nonNull;
+import static java.util.Objects.isNull;
 
 public class Recruitment extends AggregateRoot {
 
@@ -20,8 +21,9 @@ public class Recruitment extends AggregateRoot {
     private boolean isPublic;
     private RecruitmentStatus status;
     private RecruitmentType recruitmentType;
-    private String region;
-    private List<String> activityDays;
+    private String activityCity;
+    private String activityDistrict;
+    private Days activityDays;
     private String activityTime;
     private String contactMethod;
     private int monthlyFee;
@@ -38,8 +40,9 @@ public class Recruitment extends AggregateRoot {
             final String title,
             final String content,
             final RecruitmentType recruitmentType,
-            final String region,
-            final List<String> activityDays,
+            final String activityCity,
+            final String activityDistrict,
+            final Days activityDays,
             final String activityTime,
             final int monthlyFee,
             final String contactMethod,
@@ -54,7 +57,8 @@ public class Recruitment extends AggregateRoot {
         this.title = title;
         this.content = content;
         this.recruitmentType = recruitmentType;
-        this.region = region;
+        this.activityCity = activityCity;
+        this.activityDistrict = activityDistrict;
         this.activityDays = activityDays;
         this.activityTime = activityTime;
         this.monthlyFee = monthlyFee;
@@ -71,7 +75,8 @@ public class Recruitment extends AggregateRoot {
             final String title,
             final String content,
             final RecruitmentType applicationType,
-            final String activityRegion,
+            final String activityCity,
+            final String activityDistrict,
             final List<String> activityDays,
             final String activityTime,
             final int monthlyFee,
@@ -79,14 +84,15 @@ public class Recruitment extends AggregateRoot {
     ) {
         return new Recruitment(
                 id, clubId, RECRUITING, isPublic, title, content,
-                applicationType, activityRegion, activityDays, activityTime, monthlyFee, contactMethod,
+                applicationType, activityCity, activityDistrict, Days.of(activityDays), activityTime, monthlyFee, contactMethod,
                 LocalDateTime.now(), LocalDateTime.now(), null
         );
     }
 
     public void update(
             final boolean isPublic, final String title, final String content, final String status,
-            final RecruitmentType applicationType, final String activityRegion,
+            final RecruitmentType applicationType,
+            final String activityCity, final String activityDistrict,
             final List<String> activityDays,
             final String activityTime,
             final int monthlyFee,
@@ -97,8 +103,9 @@ public class Recruitment extends AggregateRoot {
         this.content = content;
         this.status = RecruitmentStatus.valueOf(status);
         this.recruitmentType = applicationType;
-        this.region = activityRegion;
-        this.activityDays = activityDays;
+        this.activityCity = activityCity;
+        this.activityDistrict = activityDistrict;
+        this.activityDays = Days.of(activityDays);
         this.activityTime = activityTime;
         this.monthlyFee = monthlyFee;
         this.contactMethod = contactMethod;
@@ -129,12 +136,16 @@ public class Recruitment extends AggregateRoot {
         return content;
     }
 
-    public String getRegion() {
-        return region;
+    public String getActivityCity() {
+        return activityCity;
+    }
+
+    public String getActivityDistrict() {
+        return activityDistrict;
     }
 
     public List<String> getActivityDays() {
-        return activityDays;
+        return activityDays.getDaysValue();
     }
 
     public String getActivityTime() {
@@ -165,8 +176,8 @@ public class Recruitment extends AggregateRoot {
         return recruitmentType;
     }
 
-    public boolean isNotDeleted() {
-        return nonNull(deletedAt);
+    public boolean isOpen() {
+        return isNull(deletedAt);
     }
 
     @Override
