@@ -1,7 +1,7 @@
 package com.official.lockr.domain.club.lineup.squad.application;
 
-import com.official.lockr.domain.club.lineup.squad.application.dto.AddPlayerCommand;
-import com.official.lockr.domain.club.lineup.squad.application.usecase.AddPlayerUseCase;
+import com.official.lockr.domain.club.lineup.squad.application.dto.AddFootBallPlayerCommand;
+import com.official.lockr.domain.club.lineup.squad.application.usecase.AddFootBallPlayerUseCase;
 import com.official.lockr.domain.club.lineup.squad.domain.*;
 import com.official.lockr.domain.club.recruitment.applications.domain.Application;
 import com.official.lockr.domain.club.recruitment.applications.domain.ApplicationRepository;
@@ -18,7 +18,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 @Service
-public class FootBallService implements AddPlayerUseCase {
+public class FootBallService implements AddFootBallPlayerUseCase {
 
     private final ApplicationRepository applicationRepository;
     private final SquadRepository squadRepository;
@@ -30,7 +30,7 @@ public class FootBallService implements AddPlayerUseCase {
     }
 
     @Override
-    public Squad addPlayer(final AddPlayerCommand command) {
+    public Squad addPlayer(final AddFootBallPlayerCommand command) {
         final Squad lineUp = squad(command.clubId());
         if (lineUp.hasPlayer(command.userId())) {
             return lineUp;

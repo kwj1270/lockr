@@ -6,7 +6,7 @@ import com.official.lockr.domain.club.chat.application.usecase.AddChatterUseCase
 import com.official.lockr.domain.club.chat.application.usecase.CreateChatRoomUseCase;
 import com.official.lockr.domain.club.chat.application.usecase.GetChatRoomsUseCase;
 import com.official.lockr.domain.club.chat.domain.ChatRoom;
-import com.official.lockr.domain.club.club.domain.event.AddedMemberEvent;
+import com.official.lockr.domain.club.club.domain.event.AddedClubMemberEvent;
 import com.official.lockr.domain.club.club.domain.event.FoundClubEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +46,7 @@ public class ChatConsumer {
 
     @Async
     @EventListener
-    public void addMember(final AddedMemberEvent event) {
+    public void addMember(final AddedClubMemberEvent event) {
         log.debug("Received AddedMemberEvent for club: {}, user: {}", event.clubId(), event.userId());
         try {
             addMemberWithRetry(event);
@@ -60,7 +60,7 @@ public class ChatConsumer {
             maxAttempts = 5,
             backoff = @Backoff(delay = 1000, multiplier = 1.5, maxDelay = 5000)
     )
-    public void addMemberWithRetry(final AddedMemberEvent event) {
+    public void addMemberWithRetry(final AddedClubMemberEvent event) {
         log.debug("Attempting to add member to chat room. club: {}, user: {}", event.clubId(), event.userId());
 
         final List<ChatRoom> chatRooms = getChatRoomsUseCase.getChatRooms(event.clubId(), event.userId());
@@ -81,7 +81,7 @@ public class ChatConsumer {
     }
 
     @Recover
-    public void recoverAddMember(final IllegalStateException e, final AddedMemberEvent event) {
+    public void recoverAddMember(final IllegalStateException e, final AddedClubMemberEvent event) {
         log.error("Failed to add member to chat room after all retries. " + "ChatRoom may not have been created. club: {}, user: {}", event.clubId(), event.userId(), e);
     }
 }

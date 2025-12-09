@@ -6,18 +6,20 @@ import com.official.lockr.global.ddd.DomainEvent;
 
 import java.time.LocalDateTime;
 
-public record AddedMemberEvent(
+public record AddedClubMemberEvent(
         String id,
         String userId,
         MemberRole role,
         String clubId,
+        String sportType,
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
         LocalDateTime deletedAt
 ) implements DomainEvent {
-    public AddedMemberEvent(final Member member) {
+    public AddedClubMemberEvent(final Member member, final String sportType) {
         this(
                 member.getId(), member.getUserId(), member.getRole(), member.getClubId(),
+                sportType,
                 member.getCreatedAt(), member.getUpdatedAt(), member.getDeletedAt()
         );
     }

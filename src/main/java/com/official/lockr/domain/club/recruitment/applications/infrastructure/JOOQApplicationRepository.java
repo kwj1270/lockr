@@ -18,6 +18,7 @@ import org.jooq.JSON;
 import org.jooq.generated.tables.daos.ApplicationsDao;
 import org.jooq.generated.tables.pojos.ApplicationsEntity;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 import java.util.Objects;
@@ -61,6 +62,7 @@ public class JOOQApplicationRepository implements ApplicationRepository {
         return toDomain(entity);
     }
 
+    @Transactional
     @Override
     public Application save(final Application application) {
         upsert(application);

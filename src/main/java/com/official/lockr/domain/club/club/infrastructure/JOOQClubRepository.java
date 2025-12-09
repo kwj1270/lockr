@@ -60,7 +60,6 @@ public class JOOQClubRepository implements ClubRepository {
         return club;
     }
 
-    // ✅ INSERT or UPDATE Club
     private void upsertClub(final Club club) {
         clubsDao.ctx()
                 .insertInto(CLUBS)

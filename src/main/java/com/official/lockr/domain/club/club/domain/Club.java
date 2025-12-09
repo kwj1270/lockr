@@ -1,6 +1,6 @@
 package com.official.lockr.domain.club.club.domain;
 
-import com.official.lockr.domain.club.club.domain.event.AddedMemberEvent;
+import com.official.lockr.domain.club.club.domain.event.AddedClubMemberEvent;
 import com.official.lockr.domain.club.club.domain.event.FoundClubEvent;
 import com.official.lockr.global.ddd.AggregateRoot;
 
@@ -49,7 +49,7 @@ public class Club extends AggregateRoot {
 
     public void addMember(final Member member) {
         members.add(member);
-        addEvent(new AddedMemberEvent(member));
+        addEvent(new AddedClubMemberEvent(member, sportType));
     }
 
     public boolean isEqual(final String id) {
