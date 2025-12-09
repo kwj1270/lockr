@@ -1,6 +1,6 @@
 package com.official.lockr.domain.club.lineup.squad.application.dto;
 
-public record AddPlayerCommand(
+public record AddFootBallPlayerCommand(
         String clubId,
         String userId
 ) {

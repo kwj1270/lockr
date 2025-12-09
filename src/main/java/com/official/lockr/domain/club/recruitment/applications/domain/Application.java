@@ -76,7 +76,7 @@ public class Application extends AggregateRoot {
         this.processingInfo = new ProcessingInfo(processedByUserId, LocalDateTime.now(), "");
         this.updatedAt = LocalDateTime.now();
         this.addEvent(new ApprovedApplicationEvent(
-                id, clubId, recruitmentId, userId, applicationStatus.name(), processedByUserId
+                id, clubId, recruitmentId, userId, sportType.name(), applicationStatus.name(), processedByUserId
         ));
     }
 
