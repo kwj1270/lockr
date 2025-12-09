@@ -7,6 +7,7 @@ import com.official.lockr.global.vo.Position;
 import com.official.lockr.global.vo.BackNumber;
 import com.official.lockr.domain.club.lineup.squad.domain.vo.SquadPlayerRole;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -17,7 +18,7 @@ public class SquadPlayer {
     private final String userId;
     private final String name;
     private final String profileImageUrl;
-    private final String birth;
+    private final LocalDate birthDate;
     private final String height;
     private final String weight;
     private final Foot foot;
@@ -33,7 +34,7 @@ public class SquadPlayer {
                        final String userId,
                        final String name,
                        final String profileImageUrl,
-                       final String birth,
+                       final LocalDate birthDate,
                        final String height,
                        final String weight,
                        final Foot foot,
@@ -48,7 +49,7 @@ public class SquadPlayer {
         this.profileImageUrl = profileImageUrl;
         this.name = name;
         this.positions = positions;
-        this.birth = birth;
+        this.birthDate = birthDate;
         this.height = height;
         this.weight = weight;
         this.foot = foot;
@@ -73,7 +74,7 @@ public class SquadPlayer {
                 memberId,
                 application.getName(),
                 application.getProfileImage(),
-                application.getBirth(),
+                application.getBirthDate(),
                 footballSportSpecificData.height(),
                 footballSportSpecificData.weight(),
                 Foot.valueOf(footballSportSpecificData.foot()),
@@ -97,8 +98,8 @@ public class SquadPlayer {
         return positions;
     }
 
-    public String getBirth() {
-        return birth;
+    public LocalDate getBirthDate() {
+        return birthDate;
     }
 
     public String getHeight() {
@@ -145,7 +146,7 @@ public class SquadPlayer {
         return profileImageUrl;
     }
 
-    public boolean isSameMember(final String memberId) {
-        return this.userId.equals(memberId);
+    public boolean isSame(final String userId) {
+        return this.userId.equals(userId);
     }
 }

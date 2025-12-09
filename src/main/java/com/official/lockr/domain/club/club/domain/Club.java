@@ -9,14 +9,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static com.official.lockr.global.util.UlidUtils.generateUlid;
+
 public class Club extends AggregateRoot {
 
     private final String id;
     private final String foundUserId;
     private final String name;
-    private final String description;
-    private final String region;
     private final String sportType;
+    private final String city;
+    private final String district;
+    private final String description;
     private final String profileImageUrl;
     private final String backgroundImageUrl;
     private List<Member> members;
@@ -24,17 +27,18 @@ public class Club extends AggregateRoot {
     private final LocalDateTime updatedAt;
     private final LocalDateTime deletedAt;
 
-    public Club(final String id, final String foundUserId, final String name, final String description, final String region, final String sportType, final String profileImageUrl, final String backgroundImageUrl) {
-        this(id, foundUserId, name, description, region, sportType, profileImageUrl, backgroundImageUrl, new ArrayList<>(), LocalDateTime.now(), LocalDateTime.now(), null);
+    public Club(final String id, final String foundUserId, final String name, final String sportType, final String city, final String district, final String description, final String profileImageUrl, final String backgroundImageUrl) {
+        this(id, foundUserId, name, sportType, city, district, description, profileImageUrl, backgroundImageUrl, new ArrayList<>(), LocalDateTime.now(), LocalDateTime.now(), null);
     }
 
-    public Club(final String id, final String foundUserId, final String name, final String description, final String region, final String sportType, final String profileImageUrl, final String backgroundImageUrl, final List<Member> members, final LocalDateTime createdAt, final LocalDateTime updatedAt, final LocalDateTime deletedAt) {
+    public Club(final String id, final String foundUserId, final String name, final String sportType, final String city, final String district, final String description, final String profileImageUrl, final String backgroundImageUrl, final List<Member> members, final LocalDateTime createdAt, final LocalDateTime updatedAt, final LocalDateTime deletedAt) {
         this.id = id;
         this.foundUserId = foundUserId;
         this.name = name;
-        this.description = description;
-        this.region = region;
         this.sportType = sportType;
+        this.city = city;
+        this.district = district;
+        this.description = description;
         this.profileImageUrl = profileImageUrl;
         this.backgroundImageUrl = backgroundImageUrl;
         this.members = members;
@@ -68,8 +72,12 @@ public class Club extends AggregateRoot {
         return description;
     }
 
-    public String getRegion() {
-        return region;
+    public String getCity() {
+        return city;
+    }
+
+    public String getDistrict() {
+        return district;
     }
 
     public String getSportType() {
@@ -152,9 +160,9 @@ public class Club extends AggregateRoot {
         return Objects.hashCode(getId());
     }
 
-    public static Club init(final String id, final String foundUserId, final String name, final String description, final String region, final String sportType, final String profileImageUrl, final String backgroundImageUrl) {
-        final Club club = new Club(id, foundUserId, name, description, region, sportType, profileImageUrl, backgroundImageUrl);
-        club.addEvent(new FoundClubEvent(club.id, club.name, club.description, club.region, club.sportType, club.createdAt));
+    public static Club init(final String foundUserId, final String name, final String sportType, final String city, final String district, final String description, final String profileImageUrl, final String backgroundImageUrl) {
+        final Club club = new Club(generateUlid(), foundUserId, name, sportType, city, district, district, profileImageUrl, backgroundImageUrl);
+        club.addEvent(new FoundClubEvent(club.id, club.name, club.sportType, club.city, club.district, club.description, club.createdAt));
         return club;
     }
 }

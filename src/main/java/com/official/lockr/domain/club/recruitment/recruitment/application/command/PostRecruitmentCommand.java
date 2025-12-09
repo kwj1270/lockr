@@ -1,6 +1,5 @@
 package com.official.lockr.domain.club.recruitment.recruitment.application.command;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public record PostRecruitmentCommand(
@@ -10,9 +9,8 @@ public record PostRecruitmentCommand(
         String title,
         String content,
         String applicationType,
-        LocalDateTime recruitmentStart,
-        LocalDateTime recruitmentEnd,
-        String activityRegion,
+        String activityCity,
+        String activityDistrict,
         List<String> activityDays,
         String activityTime,
         int monthlyFee,

@@ -14,8 +14,8 @@ import org.springframework.stereotype.Service;
 
 import static com.official.lockr.domain.club.club.domain.Member.basic;
 import static com.official.lockr.domain.club.club.domain.Member.president;
-import static com.official.lockr.global.util.UlidUtils.generateUlid;
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 @Service
 public class ClubService implements FoundClubUseCase, RegisterClubMemberUseCase, AssignMangerUseCase, AssignCoachUseCase {
@@ -28,11 +28,15 @@ public class ClubService implements FoundClubUseCase, RegisterClubMemberUseCase,
 
     @Override
     public Club found(final FoundClubCommand command) {
+        final Club existingClub = clubRepository.findByName(command.name());
+        if (nonNull(existingClub)) {
+            return existingClub;
+        }
         final Club club = Club.init(
-                generateUlid(), command.userId(), command.name(), command.description(), command.region(),
-                command.sportType(), command.profileImageUrl(), command.backgroundImageUrl()
+                command.userId(), command.name(), command.sportType(), command.city(),
+                command.district(), command.description(), command.profileImageUrl(), command.backgroundImageUrl()
         );
-        club.addMember(president(generateUlid(), command.userId(), club.getId()));
+        club.addMember(president(command.userId(), club.getId()));
         return clubRepository.save(club);
     }
 
@@ -45,7 +49,7 @@ public class ClubService implements FoundClubUseCase, RegisterClubMemberUseCase,
         if (club.isExistedUser(command.userId())) {
             return club;
         }
-        club.addMember(basic(generateUlid(), command.userId(), club.getId()));
+        club.addMember(basic(command.userId(), club.getId()));
         return clubRepository.save(club);
     }
 

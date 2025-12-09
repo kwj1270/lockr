@@ -2,7 +2,6 @@ package com.official.lockr.domain.club.recruitment.recruitment.api.dto;
 
 import com.official.lockr.domain.club.recruitment.recruitment.application.command.PostRecruitmentCommand;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public record PostRecruitmentRequest(
@@ -10,9 +9,8 @@ public record PostRecruitmentRequest(
         String title,
         String content,
         String applicationType,
-        LocalDateTime recruitmentStart,
-        LocalDateTime recruitmentEnd,
-        String activityRegion,
+        String activityCity,
+        String activityDistrict,
         List<String> activityDays,
         String activityTime,
         int monthlyFee,
@@ -20,7 +18,6 @@ public record PostRecruitmentRequest(
 ) {
     public PostRecruitmentCommand toCommand(final String clubId, final String userId) {
         return new PostRecruitmentCommand(clubId, userId, isPublic, title, content,
-                applicationType, recruitmentStart, recruitmentEnd, activityRegion,
-                activityDays, activityTime, monthlyFee, contactMethod);
+                applicationType, activityCity, activityDistrict, activityDays, activityTime, monthlyFee, contactMethod);
     }
 }

@@ -128,7 +128,7 @@ public class JOOQSquadRepository implements SquadRepository {
                 SQUAD_PLAYERS.PROFILE_IMAGE,
                 SQUAD_PLAYERS.NAME,
                 SQUAD_PLAYERS.POSITIONS,
-                SQUAD_PLAYERS.BIRTH,
+                SQUAD_PLAYERS.BIRTH_DATE,
                 SQUAD_PLAYERS.HEIGHT,
                 SQUAD_PLAYERS.WEIGHT,
                 SQUAD_PLAYERS.FOOT,
@@ -149,7 +149,7 @@ public class JOOQSquadRepository implements SquadRepository {
                     Objects.nonNull(lineUpMember.getPositions())
                             ? lineUpMember.getPositions().stream().map(Enum::name).collect(Collectors.joining(","))
                             : null,
-                    lineUpMember.getBirth(),
+                    lineUpMember.getBirthDate(),
                     lineUpMember.getHeight(),
                     lineUpMember.getWeight(),
                     Objects.nonNull(lineUpMember.getFoot()) ? lineUpMember.getFoot().name() : null,
@@ -165,7 +165,7 @@ public class JOOQSquadRepository implements SquadRepository {
                 .set(SQUAD_PLAYERS.PROFILE_IMAGE, excluded(SQUAD_PLAYERS.PROFILE_IMAGE))
                 .set(SQUAD_PLAYERS.NAME, excluded(SQUAD_PLAYERS.NAME))
                 .set(SQUAD_PLAYERS.POSITIONS, excluded(SQUAD_PLAYERS.POSITIONS))
-                .set(SQUAD_PLAYERS.BIRTH, excluded(SQUAD_PLAYERS.BIRTH))
+                .set(SQUAD_PLAYERS.BIRTH_DATE, excluded(SQUAD_PLAYERS.BIRTH_DATE))
                 .set(SQUAD_PLAYERS.HEIGHT, excluded(SQUAD_PLAYERS.HEIGHT))
                 .set(SQUAD_PLAYERS.WEIGHT, excluded(SQUAD_PLAYERS.WEIGHT))
                 .set(SQUAD_PLAYERS.FOOT, excluded(SQUAD_PLAYERS.FOOT))
@@ -204,7 +204,7 @@ public class JOOQSquadRepository implements SquadRepository {
                 entity.getMemberId(),
                 entity.getName(),
                 entity.getProfileImage(),
-                entity.getBirth(),
+                entity.getBirthDate(),
                 entity.getHeight(),
                 entity.getWeight(),
                 Objects.nonNull(entity.getFoot()) ? Foot.valueOf(entity.getFoot()) : null,

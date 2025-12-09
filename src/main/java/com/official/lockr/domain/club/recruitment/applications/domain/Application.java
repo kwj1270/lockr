@@ -1,18 +1,21 @@
 package com.official.lockr.domain.club.recruitment.applications.domain;
 
+import com.official.lockr.domain.club.recruitment.applications.domain.event.ApprovedApplicationEvent;
+import com.official.lockr.domain.club.recruitment.applications.domain.event.RejectedApplicationEvent;
 import com.official.lockr.domain.club.recruitment.applications.domain.vo.ApplicationStatus;
 import com.official.lockr.domain.club.recruitment.applications.domain.vo.ProcessingInfo;
 import com.official.lockr.domain.club.recruitment.applications.domain.vo.form.ApplicationFormData;
 import com.official.lockr.domain.club.recruitment.applications.domain.vo.form.ApplicationFormType;
 import com.official.lockr.domain.club.recruitment.applications.domain.vo.sport.SportSpecificData;
 import com.official.lockr.domain.club.recruitment.applications.domain.vo.sport.SportType;
+import com.official.lockr.global.ddd.AggregateRoot;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import static java.util.Objects.isNull;
 
-public class Application {
+public class Application extends AggregateRoot {
 
     private final String id;
     private final String clubId;
@@ -72,12 +75,26 @@ public class Application {
         this.applicationStatus = ApplicationStatus.APPROVED;
         this.processingInfo = new ProcessingInfo(processedByUserId, LocalDateTime.now(), "");
         this.updatedAt = LocalDateTime.now();
+        this.addEvent(new ApprovedApplicationEvent(
+                id, clubId, recruitmentId, userId, applicationStatus.name(), processedByUserId
+        ));
     }
 
     public void reject(final String processedByUserId, final String reason) {
         this.applicationStatus = ApplicationStatus.REJECTED;
         this.processingInfo = new ProcessingInfo(processedByUserId, LocalDateTime.now(), reason);
         this.updatedAt = LocalDateTime.now();
+        this.addEvent(new RejectedApplicationEvent(
+                id, clubId, recruitmentId, userId, applicationStatus.name(), processedByUserId, reason
+        ));
+    }
+
+    public boolean isApproved() {
+        return ApplicationStatus.APPROVED == applicationStatus;
+    }
+
+    public boolean isRejected() {
+        return ApplicationStatus.REJECTED == applicationStatus;
     }
 
     public boolean isApplicant(final String userId) {
@@ -144,11 +161,12 @@ public class Application {
         return applicationFormData.profileImageUrl();
     }
 
-    public String getBirth() {
-        return applicationFormData.birth();
+    public LocalDate getBirthDate() {
+        return applicationFormData.birthDate();
     }
 
     public String getName() {
         return applicationFormData.name();
     }
+
 }
