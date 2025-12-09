@@ -56,7 +56,7 @@ public class ClubService implements FoundClubUseCase, RegisterClubMemberUseCase,
     @Override
     public Club assignCoach(final AssignCoachCommand command) {
         final Club club = club(command.clubId(), command.userId());
-        if (club.isNotPresident(command.targetMemberId()) || club.hasNotMember(command.targetMemberId())) {
+        if (club.isPresident(command.targetMemberId()) || club.hasNotMember(command.targetMemberId())) {
             throw new IllegalArgumentException();
         }
         club.assignCoach(command.targetMemberId());
@@ -66,7 +66,7 @@ public class ClubService implements FoundClubUseCase, RegisterClubMemberUseCase,
     @Override
     public Club assignManager(final AssignManagerCommand command) {
         final Club club = club(command.clubId(), command.userId());
-        if (club.isNotPresident(command.targetMemberId()) || club.hasNotMember(command.targetMemberId())) {
+        if (club.isPresident(command.targetMemberId()) || club.hasNotMember(command.targetMemberId())) {
             throw new IllegalArgumentException();
         }
         club.assignManger(command.targetMemberId());
