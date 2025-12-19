@@ -3,6 +3,7 @@ package com.official.lockr.domain.club.club.domain;
 import com.official.lockr.domain.club.club.domain.event.AddedClubMemberEvent;
 import com.official.lockr.domain.club.club.domain.event.FoundClubEvent;
 import com.official.lockr.global.ddd.AggregateRoot;
+import reactor.util.annotation.Nullable;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -49,7 +50,7 @@ public class Club extends AggregateRoot {
 
     public void addMember(final Member member) {
         members.add(member);
-        addEvent(new AddedClubMemberEvent(member, sportType));
+        this.addEvent(new AddedClubMemberEvent(member, sportType));
     }
 
     public boolean isEqual(final String id) {
@@ -164,5 +165,13 @@ public class Club extends AggregateRoot {
         final Club club = new Club(generateUlid(), foundUserId, name, sportType, city, district, district, profileImageUrl, backgroundImageUrl);
         club.addEvent(new FoundClubEvent(club.id, club.name, club.sportType, club.city, club.district, club.description, club.createdAt));
         return club;
+    }
+
+    @Nullable
+    public Member findByUserId(final String userId) {
+        return members.stream()
+                .filter(it -> it.isSame(userId))
+                .findFirst()
+                .orElse(null);
     }
 }
