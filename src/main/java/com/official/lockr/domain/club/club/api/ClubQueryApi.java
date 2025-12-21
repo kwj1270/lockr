@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import static java.util.stream.Collectors.toMap;
 import static org.jooq.generated.tables.ClubsJOOQEntity.CLUBS;
 import static org.jooq.generated.tables.MembersJOOQEntity.MEMBERS;
 
@@ -40,8 +41,8 @@ public class ClubQueryApi {
     ) {
         final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
 
-        var myClubIdsQuery = clubsDao.ctx()
-                .select(CLUBS.ID)
+        var myClubDataQuery = clubsDao.ctx()
+                .select(CLUBS.ID, MEMBERS.MEMBER_ROLE)
                 .from(CLUBS)
                 .innerJoin(MEMBERS).on(MEMBERS.CLUB_ID.eq(CLUBS.ID))
                 .where(MEMBERS.USER_ID.eq(signIn.userId()))
@@ -49,17 +50,27 @@ public class ClubQueryApi {
                 .and(MEMBERS.DELETED_AT.isNull());
 
         if (!cursor.isEmpty()) {
-            myClubIdsQuery = myClubIdsQuery.and(CLUBS.ID.lt(cursor));
+            myClubDataQuery = myClubDataQuery.and(CLUBS.ID.lt(cursor));
         }
 
-        final var myClubIds = myClubIdsQuery
+        final var myClubData = myClubDataQuery
                 .orderBy(CLUBS.CREATED_AT.desc())
                 .limit(limit)
-                .fetch(CLUBS.ID);
+                .fetch();
 
-        if (myClubIds.isEmpty()) {
+        if (myClubData.isEmpty()) {
             return ResponseEntity.ok(new MyClubsResponse(List.of()));
         }
+
+        final var myClubIds = myClubData.stream()
+                .map(record -> record.get(CLUBS.ID))
+                .toList();
+
+        final var clubIdToRole = myClubData.stream()
+                .collect(toMap(
+                        record -> record.get(CLUBS.ID),
+                        record -> record.get(MEMBERS.MEMBER_ROLE)
+                ));
 
         final List<MyClubResponse> clubs = clubsDao.ctx()
                 .select(
@@ -72,7 +83,7 @@ public class ClubQueryApi {
                         DSL.count(MEMBERS.ID).as("member_count")
                 )
                 .from(CLUBS)
-                .innerJoin(MEMBERS).on(MEMBERS.CLUB_ID.eq(CLUBS.ID))
+                .join(MEMBERS).on(MEMBERS.CLUB_ID.eq(CLUBS.ID))
                 .where(CLUBS.ID.in(myClubIds))
                 .and(MEMBERS.DELETED_AT.isNull())
                 .groupBy(CLUBS.ID, CLUBS.NAME, CLUBS.SPORT_TYPE, CLUBS.CITY, CLUBS.DISTRICT, CLUBS.PROFILE_IMAGE_URL)
@@ -85,7 +96,8 @@ public class ClubQueryApi {
                         record.get("member_count", Integer.class),
                         record.get(CLUBS.CITY),
                         record.get(CLUBS.DISTRICT),
-                        record.get(CLUBS.PROFILE_IMAGE_URL)
+                        record.get(CLUBS.PROFILE_IMAGE_URL),
+                        clubIdToRole.get(record.get(CLUBS.ID))
                 ));
 
         return ResponseEntity.ok(new MyClubsResponse(clubs));
