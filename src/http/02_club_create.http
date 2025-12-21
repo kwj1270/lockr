@@ -68,3 +68,15 @@ X-DEVICE-INFO: web
     client.global.set("RECRUITMENT_ID", response.body.id);
 %}
 
+### 내 클럽 목록 조회
+GET http://127.0.0.1:8080/api/v1/clubs/my
+Cookie: {{SESSION_COOKIE}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+> {%
+    client.global.set("CLUB_ID", response.body.clubs[0].clubId);
+%}
+

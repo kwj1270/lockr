@@ -16,7 +16,7 @@ X-DEVICE-INFO: web
 %}
 
 ### 슬롯 추가
-POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/lineups/{{LINEUP_ID_1}}/slots
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/lineups/{{LINEUP_ID_2}}/slots
 Cookie: {{SESSION_COOKIE}}
 Content-Type: application/json
 Authorization: test
@@ -25,6 +25,6 @@ X-DEVICE-INFO: web
 
 {
   "slotType": "starter",
-  "slotIndex": 4,
-  "squadPlayerId": "{{SQUAD_PLAYER_3}}"
+  "slotIndex": 5,
+  "squadPlayerId": "{{SQUAD_PLAYER_2}}"
 }
