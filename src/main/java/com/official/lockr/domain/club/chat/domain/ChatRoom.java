@@ -20,7 +20,7 @@ public class ChatRoom extends AggregateRoot {
     private final LocalDateTime updatedAt;
     private final LocalDateTime deletedAt;
 
-    public static ChatRoom init(final String id, final String clubId, final String name) {
+    public static ChatRoom init(final String id, final String clubId, final String name, final String defaultChatterUserId) {
         final ChatRoom chatRoom = new ChatRoom(id, clubId, name, new ArrayList<>(), LocalDateTime.now(), LocalDateTime.now(), null);
         chatRoom.addEvent(new CreatedChatRoomEvent(chatRoom.id, chatRoom.clubId));
         return chatRoom;

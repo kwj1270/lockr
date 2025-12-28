@@ -96,6 +96,10 @@ public class Lineup extends AggregateRoot {
         players.add(LineupSlot.of(this.id, squadPlayerId, slotType, slotIndex));
     }
 
+    public void changeFormation(final String formation) {
+        this.formation = Formation.fromName(formation);
+    }
+
     public String getId() {
         return id;
     }
@@ -127,4 +131,6 @@ public class Lineup extends AggregateRoot {
     public java.time.LocalDateTime getDeletedAt() {
         return deletedAt;
     }
+
+
 }

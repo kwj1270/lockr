@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 public record FoundClubEvent(
         String id,
+        String foundUserId,
         String name,
         String sportType,
         String city,
