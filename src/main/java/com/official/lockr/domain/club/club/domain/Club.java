@@ -163,7 +163,7 @@ public class Club extends AggregateRoot {
 
     public static Club init(final String foundUserId, final String name, final String sportType, final String city, final String district, final String description, final String profileImageUrl, final String backgroundImageUrl) {
         final Club club = new Club(generateUlid(), foundUserId, name, sportType, city, district, district, profileImageUrl, backgroundImageUrl);
-        club.addEvent(new FoundClubEvent(club.id, club.name, club.sportType, club.city, club.district, club.description, club.createdAt));
+        club.addEvent(new FoundClubEvent(club.id, club.foundUserId, club.name, club.sportType, club.city, club.district, club.description, club.createdAt));
         return club;
     }
 
