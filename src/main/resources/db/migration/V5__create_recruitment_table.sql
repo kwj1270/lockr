@@ -39,7 +39,7 @@ CREATE TABLE `applications`
     `name`                    VARCHAR(100) NOT NULL COMMENT '지원자 이름',
     `phone`                   VARCHAR(20)  NOT NULL COMMENT '지원자 연락처',
     `email`                   VARCHAR(100) NOT NULL COMMENT '지원자 이메일',
-    `birth_date`              DATE         NOT NULL COMMENT '생년월일',
+    `birth_date`              CHAR(8)      NOT NULL COMMENT '생년월일(YYYYMMDD)',
     `gender`                  VARCHAR(10)  NOT NULL COMMENT '성별',
     `emergency_contact_phone` VARCHAR(20)  NULL COMMENT '비상 연락처',
     `profile_image_url`       VARCHAR(500) NULL COMMENT '프로필 이미지 URL',

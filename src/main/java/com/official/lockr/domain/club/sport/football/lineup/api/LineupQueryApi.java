@@ -147,7 +147,7 @@ public class LineupQueryApi {
     ) {
         return squadPlayers.stream()
                 .map(squadPlayer -> {
-                    final MembersEntity member = memberMap.get(squadPlayer.getMemberId());
+                    final MembersEntity member = memberMap.get(squadPlayer.getUserId());
                     return new SquadPlayerResponse(
                             squadPlayer.getId(),
                             squadPlayer.getName(),

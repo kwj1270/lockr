@@ -7,7 +7,7 @@ import org.jooq.Configuration;
 import org.jooq.generated.tables.daos.SignInTokensDao;
 import org.jooq.generated.tables.pojos.SignInTokensEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,15 +18,15 @@ import static org.jooq.generated.tables.SignInTokensJOOQEntity.SIGN_IN_TOKENS;
 
 @RequestMapping("/api/v1/auth/sign_in/tokens")
 @RestController
-public class SignInTokenApi {
+public class SignInTokenQueryApi {
 
     private final SignInTokensDao signInTokensDao;
 
-    public SignInTokenApi(final Configuration configuration) {
+    public SignInTokenQueryApi(final Configuration configuration) {
         this.signInTokensDao = new SignInTokensDao(configuration);
     }
 
-    @GetMapping
+    @PostMapping
     public ResponseEntity<SignInToken> signInToken(
             final HttpSession httpSession
     ) {

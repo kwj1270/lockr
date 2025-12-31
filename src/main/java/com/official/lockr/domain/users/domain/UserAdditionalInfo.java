@@ -1,5 +1,6 @@
 package com.official.lockr.domain.users.domain;
 
+import com.official.lockr.global.vo.BirthDate;
 import com.official.lockr.global.vo.Gender;
 
 import java.time.LocalDateTime;
@@ -10,7 +11,7 @@ public class UserAdditionalInfo {
     private final String id;
     private final String userId;
     private String name;
-    private String birthdate;
+    private BirthDate birthDate;
     private String phone;
     private Gender gender;
     private final LocalDateTime createdAt;
@@ -25,7 +26,7 @@ public class UserAdditionalInfo {
     public UserAdditionalInfo(final String id,
                               final String userId,
                               final String name,
-                              final String birthdate,
+                              final BirthDate birthDate,
                               final String phone,
                               final Gender gender,
                               final LocalDateTime createdAt,
@@ -34,12 +35,19 @@ public class UserAdditionalInfo {
         this.id = id;
         this.userId = userId;
         this.name = name;
-        this.birthdate = birthdate;
+        this.birthDate = birthDate;
         this.phone = phone;
         this.gender = gender;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.deletedAt = deletedAt;
+    }
+
+    public void update(final String name, final BirthDate birthDate, final String phone, final Gender gender) {
+        this.name = name;
+        this.birthDate = birthDate;
+        this.phone = phone;
+        this.gender = gender;
     }
 
     public String getId() {
@@ -54,8 +62,11 @@ public class UserAdditionalInfo {
         return name;
     }
 
-    public String getBirthdate() {
-        return birthdate;
+    public String getBirthDate() {
+        if(Objects.isNull(birthDate)) {
+            return null;
+        }
+        return birthDate.birthDate();
     }
 
     public String getPhone() {
@@ -89,4 +100,5 @@ public class UserAdditionalInfo {
     public int hashCode() {
         return Objects.hash(getId(), getUserId());
     }
+
 }

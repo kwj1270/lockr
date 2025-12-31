@@ -1,10 +1,20 @@
 package com.official.lockr.domain.club.sport.football.squad.domain;
 
 import com.official.lockr.global.ddd.AggregateRoot;
+import com.official.lockr.global.vo.BackNumber;
+import com.official.lockr.global.vo.BirthDate;
+import com.official.lockr.global.vo.Foot;
+import com.official.lockr.global.vo.Position;
 import reactor.util.annotation.Nullable;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Objects;
+
+import static java.util.Objects.isNull;
 
 public class Squad extends AggregateRoot {
 
@@ -63,5 +73,13 @@ public class Squad extends AggregateRoot {
                 .filter(it -> it.getUserId().equals(userId))
                 .findFirst()
                 .orElse(null);
+    }
+
+    public void updatePlayer(final String userId, final String name, final String profileImage, final String birthDate, final String height, final String weight, final Foot foot, final List<Position> positions, final Integer backNumber) {
+        final SquadPlayer squadPlayer = findByUserId(userId);
+        if(isNull(squadPlayer)) {
+            throw new IllegalArgumentException();
+        }
+        squadPlayer.update(name, profileImage, birthDate, height, weight, foot, positions, new BackNumber(backNumber));
     }
 }

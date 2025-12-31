@@ -19,6 +19,7 @@ public class Feed extends AggregateRoot {
     private final String id;
     private final String clubId;
     private final String userId;
+    private String title;
     private String content;
     private final FeedType feedType;
     private FeedImages images;
@@ -29,11 +30,12 @@ public class Feed extends AggregateRoot {
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
 
-    public Feed(final String id, final String clubId, final String content, final FeedType feedType,
+    public Feed(final String id, final String clubId, final String title, final String content, final FeedType feedType,
                 final FeedImages images, final FeedVideos videos, final List<Comment> comments, final List<Heart> hearts,
                 final String userId, final LocalDateTime createdAt, final LocalDateTime updatedAt, final LocalDateTime deletedAt) {
         this.id = id;
         this.clubId = clubId;
+        this.title = title;
         this.content = content;
         this.feedType = feedType;
         this.images = images;
@@ -47,15 +49,15 @@ public class Feed extends AggregateRoot {
     }
 
     public static Feed create(final String id, final String clubId, final String userId, final FeedType feedType,
-                               final String content, final FeedImages images, final FeedVideos videos) {
+                               final String title, final String content, final FeedImages images, final FeedVideos videos) {
         if (content == null || content.isBlank()) {
             throw new IllegalArgumentException("피드 내용은 필수입니다");
         }
-        return new Feed(id, clubId, content, feedType, images, videos, new ArrayList<>(), new ArrayList<>(),
+        return new Feed(id, clubId, title, content, feedType, images, videos, new ArrayList<>(), new ArrayList<>(),
                 userId, LocalDateTime.now(), LocalDateTime.now(), null);
     }
 
-    public void update(final String userId, final String content, final FeedImages newImages, final FeedVideos newVideos) {
+    public void update(final String userId, final String title, final String content, final FeedImages newImages, final FeedVideos newVideos) {
         if (!canEditBy(userId)) {
             throw new IllegalStateException("피드 작성자만 수정할 수 있습니다");
         }
@@ -85,7 +87,7 @@ public class Feed extends AggregateRoot {
         final List<Video> mergedVideos = new ArrayList<>(this.videos.getVideos());
         mergedVideos.addAll(newVideos.getVideos());
         this.videos = new FeedVideos(this.id, mergedVideos);
-
+        this.title = title;
         this.content = content;
         this.updatedAt = LocalDateTime.now();
     }
@@ -198,6 +200,10 @@ public class Feed extends AggregateRoot {
                 .count();
     }
 
+    public String getTitle() {
+        return title;
+    }
+
     public String getId() {
         return id;
     }
@@ -245,4 +251,5 @@ public class Feed extends AggregateRoot {
     public LocalDateTime getDeletedAt() {
         return deletedAt;
     }
+
 }

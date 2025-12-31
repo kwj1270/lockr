@@ -66,7 +66,7 @@ public class ApplicationService implements SubmitApplicationUseCase, CancelAppli
         final Application application = Application.create(
                 generateUlid(), club.getId(), command.recruitmentId(), command.userId(),
                 applicationFormType, command.name(), command.phone(), command.gender(), command.introduction(),
-                command.profileImageUrl(), command.email(), command.address(), parseDate(command.birthDate()), command.emergencyContactPhone(),
+                command.profileImageUrl(), command.email(), command.address(), command.birthDate(), command.emergencyContactPhone(),
                 sportType, sportSpecificData
         );
         return applicationRepository.save(application);

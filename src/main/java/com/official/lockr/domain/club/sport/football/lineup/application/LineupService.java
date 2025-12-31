@@ -34,7 +34,7 @@ public class LineupService implements AddLineupUseCase, AssignSlotUseCase, Chang
             return clubs;
         }
         final List<Lineup> lineups = IntStream.range(0, 3)
-                .mapToObj(it -> new Lineup(command.clubId(), "포메이션" + it))
+                .mapToObj(it -> new Lineup(command.clubId(), "포메이션" + (char)('A' + it)))
                 .toList();
         return lineUpRepository.saveAll(lineups);
     }

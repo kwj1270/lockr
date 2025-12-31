@@ -5,6 +5,7 @@ CREATE TABLE feeds
     id         VARCHAR(26) PRIMARY KEY COMMENT '피드 ID (ULID)',
     club_id    VARCHAR(26)  NOT NULL COMMENT '클럽 ID',
     user_id    VARCHAR(26)  NOT NULL COMMENT '작성자 ID',
+    title      VARCHAR(50)  NULL COMMENT '피드 제목',
     content    TEXT         NOT NULL COMMENT '피드 내용',
     feed_type  VARCHAR(50)  NOT NULL COMMENT '피드 타입 (GENERAL, NOTICE)',
     created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성 시간',
