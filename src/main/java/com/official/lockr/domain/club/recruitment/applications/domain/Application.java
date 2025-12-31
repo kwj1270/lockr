@@ -9,6 +9,7 @@ import com.official.lockr.domain.club.recruitment.applications.domain.vo.form.Ap
 import com.official.lockr.domain.club.recruitment.applications.domain.vo.sport.SportSpecificData;
 import com.official.lockr.domain.club.recruitment.applications.domain.vo.sport.SportType;
 import com.official.lockr.global.ddd.AggregateRoot;
+import com.official.lockr.global.vo.BirthDate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -35,12 +36,12 @@ public class Application extends AggregateRoot {
             final String id, final String clubId, final String recruitmentId, final String userId,
             final ApplicationFormType applicationFormType,
             final String name, final String phone, final String gender, final String introduction,
-            final String profileImageUrl, final String email, final String address, final LocalDate birthDate, final String emergencyContactPhone,
+            final String profileImageUrl, final String email, final String address, final String birthDate, final String emergencyContactPhone,
             final SportType sportType, final SportSpecificData sportSpecificData
     ) {
         final LocalDateTime now = LocalDateTime.now();
         return new Application(id, clubId, recruitmentId, userId, applicationFormType,
-                new ApplicationFormData(name, phone, gender, introduction, new ApplicationFormData.DetailedInfo(profileImageUrl, email, address, birthDate, emergencyContactPhone)),
+                new ApplicationFormData(name, phone, gender, introduction, new ApplicationFormData.DetailedInfo(profileImageUrl, email, address, new BirthDate(birthDate), emergencyContactPhone)),
                 sportType, sportSpecificData, ApplicationStatus.SUBMITTED, null, now, now, null
         );
     }
@@ -161,7 +162,7 @@ public class Application extends AggregateRoot {
         return applicationFormData.profileImageUrl();
     }
 
-    public LocalDate getBirthDate() {
+    public BirthDate getBirthDate() {
         return applicationFormData.birthDate();
     }
 

@@ -2,6 +2,7 @@ package com.official.lockr.domain.auth.signin.application;
 
 import com.official.lockr.domain.auth.signin.application.command.RefreshSignInTokenCommand;
 import com.official.lockr.domain.auth.signin.application.command.RegisterSignInTokenCommand;
+import com.official.lockr.domain.auth.signin.application.usecase.DeleteSignInTokenUseCase;
 import com.official.lockr.domain.auth.signin.application.usecase.RefreshSignInTokenUseCase;
 import com.official.lockr.domain.auth.signin.application.usecase.RegisterSignInTokenUseCase;
 import com.official.lockr.domain.auth.signin.domain.SignInToken;
@@ -15,7 +16,7 @@ import static com.official.lockr.global.util.UuidUtils.generateUuid;
 import static java.util.Objects.isNull;
 
 @Service
-public class SignInTokenService implements RegisterSignInTokenUseCase, RefreshSignInTokenUseCase {
+public class SignInTokenService implements RegisterSignInTokenUseCase, RefreshSignInTokenUseCase, DeleteSignInTokenUseCase {
 
     private final SignInTokenRepository signInTokenRepository;
 
@@ -49,5 +50,10 @@ public class SignInTokenService implements RegisterSignInTokenUseCase, RefreshSi
                 null
         );
         return signInTokenRepository.save(newToken);
+    }
+
+    @Override
+    public void delete(final String userId) {
+        signInTokenRepository.deleteByUserId(userId);
     }
 }

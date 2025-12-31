@@ -1,42 +1,38 @@
 package com.official.lockr.domain.club.sport.football.squad.api;
 
 import com.official.lockr.domain.auth.signin.domain.SignInSession;
+import com.official.lockr.domain.club.sport.football.squad.api.dto.UpdateSquadPlayerRequest;
+import com.official.lockr.domain.club.sport.football.squad.application.command.UpdateSquadPlayerCommand;
+import com.official.lockr.domain.club.sport.football.squad.application.usecase.UpdateSquadPlayerUseCase;
 import com.official.lockr.domain.club.sport.football.squad.domain.Squad;
-import com.official.lockr.domain.club.sport.football.squad.domain.SquadRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import static java.util.Objects.isNull;
-
-@RequestMapping("/api/v1/clubs/{clubId}/football/squads")
+@RequestMapping("/api/v1/clubs/{clubId}/squads/{squadId}")
 @RestController
 public class SquadApi {
 
-    private final SquadRepository squadRepository;
+    private final UpdateSquadPlayerUseCase updateSquadPlayerUseCase;
 
-    public SquadApi(final SquadRepository squadRepository) {
-        this.squadRepository = squadRepository;
+    public SquadApi(final UpdateSquadPlayerUseCase updateSquadPlayerUseCase) {
+        this.updateSquadPlayerUseCase = updateSquadPlayerUseCase;
     }
 
-    @GetMapping
-    public ResponseEntity<Squad> find(
+    @PostMapping("/players")
+    public ResponseEntity<Squad> registerOrUpdatePlayer(
             @PathVariable String clubId,
+            @PathVariable String squadId,
+            @RequestBody UpdateSquadPlayerRequest request,
             final HttpSession httpSession
     ) {
-        final SignInSession signInSession = session(httpSession);
-        final Squad lineUp = squadRepository.findByClubId(clubId);
-        return ResponseEntity.ok(lineUp);
-    }
-
-    private SignInSession session(final HttpSession httpSession) {
         final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
-        if (isNull(signIn)) {
-            throw new IllegalStateException("User not authenticated");
+        if (signIn == null) {
+            return ResponseEntity.status(401).build();
         }
-        return signIn;
+
+        final UpdateSquadPlayerCommand command = request.toCommand(signIn.userId(), clubId);
+        final Squad squad = updateSquadPlayerUseCase.updatePlayer(command);
+        return ResponseEntity.ok(squad);
     }
 }

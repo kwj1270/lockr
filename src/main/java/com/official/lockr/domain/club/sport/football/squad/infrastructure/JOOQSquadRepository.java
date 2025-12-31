@@ -1,5 +1,6 @@
 package com.official.lockr.domain.club.sport.football.squad.infrastructure;
 
+import com.official.lockr.global.vo.BirthDate;
 import com.official.lockr.global.vo.Position;
 import com.official.lockr.domain.club.sport.football.squad.domain.Squad;
 import com.official.lockr.domain.club.sport.football.squad.domain.SquadPlayer;
@@ -122,7 +123,7 @@ public class JOOQSquadRepository implements SquadRepository {
 
         var query = squadPlayersDao.ctx().insertInto(SQUAD_PLAYERS,
                 SQUAD_PLAYERS.ID,
-                SQUAD_PLAYERS.MEMBER_ID,
+                SQUAD_PLAYERS.USER_ID,
                 SQUAD_PLAYERS.SQUAD_ID,
                 SQUAD_PLAYERS.PROFILE_IMAGE,
                 SQUAD_PLAYERS.NAME,
@@ -137,24 +138,24 @@ public class JOOQSquadRepository implements SquadRepository {
                 SQUAD_PLAYERS.DELETED_AT
         );
 
-        for (final SquadPlayer lineUpMember : squadPlayers) {
+        for (final SquadPlayer squadPlayer : squadPlayers) {
             query.values(
-                    lineUpMember.getId(),
-                    lineUpMember.getUserId(),
-                    lineUpMember.getSquadId(),
-                    lineUpMember.getProfileImageUrl(),
-                    lineUpMember.getName(),
-                    Objects.nonNull(lineUpMember.getPositions())
-                            ? lineUpMember.getPositions().stream().map(Enum::name).collect(Collectors.joining(","))
+                    squadPlayer.getId(),
+                    squadPlayer.getUserId(),
+                    squadPlayer.getSquadId(),
+                    squadPlayer.getProfileImageUrl(),
+                    squadPlayer.getName(),
+                    Objects.nonNull(squadPlayer.getPositions())
+                            ? squadPlayer.getPositions().stream().map(Enum::name).collect(Collectors.joining(","))
                             : null,
-                    lineUpMember.getBirthDate(),
-                    lineUpMember.getHeight(),
-                    lineUpMember.getWeight(),
-                    Objects.nonNull(lineUpMember.getFoot()) ? lineUpMember.getFoot().name() : null,
-                    lineUpMember.getBackNumber().value(),
-                    lineUpMember.getCreatedAt(),
-                    lineUpMember.getUpdatedAt(),
-                    lineUpMember.getDeletedAt()
+                    Objects.nonNull(squadPlayer.getBirthDate()) ? squadPlayer.getBirthDate().birthDate() : null,
+                    squadPlayer.getHeight(),
+                    squadPlayer.getWeight(),
+                    Objects.nonNull(squadPlayer.getFoot()) ? squadPlayer.getFoot().name() : null,
+                    squadPlayer.getBackNumber().value(),
+                    squadPlayer.getCreatedAt(),
+                    squadPlayer.getUpdatedAt(),
+                    squadPlayer.getDeletedAt()
             );
         }
 
@@ -197,10 +198,10 @@ public class JOOQSquadRepository implements SquadRepository {
         return new SquadPlayer(
                 entity.getId(),
                 entity.getSquadId(),
-                entity.getMemberId(),
+                entity.getUserId(),
                 entity.getName(),
                 entity.getProfileImage(),
-                entity.getBirthDate(),
+                Objects.nonNull(entity.getBirthDate()) ? new BirthDate(entity.getBirthDate()): null,
                 entity.getHeight(),
                 entity.getWeight(),
                 Objects.nonNull(entity.getFoot()) ? Foot.valueOf(entity.getFoot()) : null,

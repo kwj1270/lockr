@@ -1,5 +1,6 @@
 package com.official.lockr.domain.club.sport.football.squad.domain;
 
+import com.official.lockr.global.vo.BirthDate;
 import com.official.lockr.global.vo.Position;
 import com.official.lockr.domain.club.recruitment.applications.domain.Application;
 import com.official.lockr.domain.club.recruitment.applications.domain.vo.sport.FootballSportSpecificData;
@@ -15,16 +16,16 @@ public class SquadPlayer {
     private final String id;
     private final String squadId;
     private final String userId;
-    private final String name;
-    private final String profileImageUrl;
-    private final LocalDate birthDate;
-    private final String height;
-    private final String weight;
-    private final Foot foot;
-    private final List<Position> positions;
-    private final BackNumber backNumber;
+    private String name;
+    private String profileImageUrl;
+    private BirthDate birthDate;
+    private String height;
+    private String weight;
+    private Foot foot;
+    private List<Position> positions;
+    private BackNumber backNumber;
     private final LocalDateTime createdAt;
-    private final LocalDateTime updatedAt;
+    private LocalDateTime updatedAt;
     private final LocalDateTime deletedAt;
 
     public SquadPlayer(final String id,
@@ -32,7 +33,7 @@ public class SquadPlayer {
                        final String userId,
                        final String name,
                        final String profileImageUrl,
-                       final LocalDate birthDate,
+                       final BirthDate birthDate,
                        final String height,
                        final String weight,
                        final Foot foot,
@@ -63,11 +64,11 @@ public class SquadPlayer {
         );
     }
 
-    public static SquadPlayer init(final String id, final String squadId, final String memberId, final Application application, final FootballSportSpecificData footballSportSpecificData, final BackNumber backNumber) {
+    public static SquadPlayer init(final String id, final String squadId, final String userId, final Application application, final FootballSportSpecificData footballSportSpecificData, final BackNumber backNumber) {
         return new SquadPlayer(
                 id,
                 squadId,
-                memberId,
+                userId,
                 application.getName(),
                 application.getProfileImage(),
                 application.getBirthDate(),
@@ -79,6 +80,19 @@ public class SquadPlayer {
                 LocalDateTime.now(),
                 LocalDateTime.now(),
                 null);
+    }
+
+
+    public void update(final String name, final String profileImage, final String birthDate, final String height, final String weight, final Foot foot, final List<Position> positions, final BackNumber backNumber) {
+        this.name = name;
+        this.profileImageUrl = profileImage;
+        this.birthDate = new BirthDate(birthDate);
+        this.height = height;
+        this.weight = weight;
+        this.foot = foot;
+        this.positions = positions;
+        this.backNumber = backNumber;
+        this.updatedAt = LocalDateTime.now();
     }
 
     public String getId() {
@@ -93,7 +107,7 @@ public class SquadPlayer {
         return positions;
     }
 
-    public LocalDate getBirthDate() {
+    public BirthDate getBirthDate() {
         return birthDate;
     }
 

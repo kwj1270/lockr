@@ -10,47 +10,47 @@ import java.util.List;
  */
 public enum Formation {
     FORMATION_4_3_3("433", Arrays.asList(
-            Position.GK,
-            Position.LB, Position.LCB, Position.RCB, Position.RB,
-            Position.LCM, Position.CDM, Position.RCM,
-            Position.LW, Position.ST, Position.RW
+            FootBallPosition.GK,
+            FootBallPosition.LB, FootBallPosition.LCB, FootBallPosition.RCB, FootBallPosition.RB,
+            FootBallPosition.LCM, FootBallPosition.CDM, FootBallPosition.RCM,
+            FootBallPosition.LW, FootBallPosition.ST, FootBallPosition.RW
     )),
     FORMATION_4_4_2("442", Arrays.asList(
-            Position.GK,
-            Position.LB, Position.LCB, Position.RCB, Position.RB,
-            Position.LM, Position.LCM, Position.RCM, Position.RM,
-            Position.LF, Position.RF
+            FootBallPosition.GK,
+            FootBallPosition.LB, FootBallPosition.LCB, FootBallPosition.RCB, FootBallPosition.RB,
+            FootBallPosition.LM, FootBallPosition.LCM, FootBallPosition.RCM, FootBallPosition.RM,
+            FootBallPosition.LF, FootBallPosition.RF
     )),
     FORMATION_4_2_3_1("4231", Arrays.asList(
-            Position.GK,
-            Position.LB, Position.LCB, Position.RCB, Position.RB,
-            Position.LDM, Position.RDM,
-            Position.LAM, Position.CAM, Position.RAM,
-            Position.ST
+            FootBallPosition.GK,
+            FootBallPosition.LB, FootBallPosition.LCB, FootBallPosition.RCB, FootBallPosition.RB,
+            FootBallPosition.LDM, FootBallPosition.RDM,
+            FootBallPosition.LAM, FootBallPosition.CAM, FootBallPosition.RAM,
+            FootBallPosition.ST
     )),
     FORMATION_3_5_2("352", Arrays.asList(
-            Position.GK,
-            Position.LCB, Position.CB, Position.RCB,
-            Position.LWB, Position.LM, Position.CM, Position.RM, Position.RWB,
-            Position.LF, Position.RF
+            FootBallPosition.GK,
+            FootBallPosition.LCB, FootBallPosition.CB, FootBallPosition.RCB,
+            FootBallPosition.LWB, FootBallPosition.LM, FootBallPosition.CM, FootBallPosition.RM, FootBallPosition.RWB,
+            FootBallPosition.LF, FootBallPosition.RF
     )),
     FORMATION_3_4_3("343", Arrays.asList(
-            Position.GK,
-            Position.LCB, Position.CB, Position.RCB,
-            Position.LM, Position.LCM, Position.RCM, Position.RM,
-            Position.LW, Position.ST, Position.RW
+            FootBallPosition.GK,
+            FootBallPosition.LCB, FootBallPosition.CB, FootBallPosition.RCB,
+            FootBallPosition.LM, FootBallPosition.LCM, FootBallPosition.RCM, FootBallPosition.RM,
+            FootBallPosition.LW, FootBallPosition.ST, FootBallPosition.RW
     )),
     FORMATION_5_3_2("532", Arrays.asList(
-            Position.GK,
-            Position.LWB, Position.LCB, Position.CB, Position.RCB, Position.RWB,
-            Position.LM, Position.CM, Position.RM,
-            Position.LF, Position.RF
+            FootBallPosition.GK,
+            FootBallPosition.LWB, FootBallPosition.LCB, FootBallPosition.CB, FootBallPosition.RCB, FootBallPosition.RWB,
+            FootBallPosition.LM, FootBallPosition.CM, FootBallPosition.RM,
+            FootBallPosition.LF, FootBallPosition.RF
     ));
 
     private final String name;
-    private final List<Position> positions;
+    private final List<FootBallPosition> positions;
 
-    Formation(final String name, final List<Position> positions) {
+    Formation(final String name, final List<FootBallPosition> positions) {
         this.name = name;
         this.positions = Collections.unmodifiableList(positions);
     }
@@ -79,7 +79,7 @@ public enum Formation {
         return name;
     }
 
-    public List<Position> getPositions() {
+    public List<FootBallPosition> getPositions() {
         return positions;
     }
 

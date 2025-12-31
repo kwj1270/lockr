@@ -44,6 +44,7 @@ public class FeedService implements CreateFeedUseCase, UpdateFeedUseCase, Delete
                 command.clubId(),
                 command.userId(),
                 command.feedType(),
+                command.title(),
                 command.content(),
                 images,
                 videos
@@ -59,7 +60,7 @@ public class FeedService implements CreateFeedUseCase, UpdateFeedUseCase, Delete
         final FeedImages images = FeedImages.from(command.imageUrls(), command.userId(), feed.getId());
         final FeedVideos videos = FeedVideos.from(command.videoUrls(), command.userId(), feed.getId());
 
-        feed.update(command.userId(), command.content(), images, videos);
+        feed.update(command.userId(), command.title(), command.content(), images, videos);
 
         return feedRepository.save(feed);
     }

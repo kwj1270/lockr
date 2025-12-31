@@ -15,7 +15,7 @@ CREATE TABLE `user_additional_info`
     `id`         CHAR(26)     NOT NULL COMMENT '사용자 추가 정보 식별키 (ULID)' PRIMARY KEY,
     `user_id`    CHAR(26)     NOT NULL COMMENT '사용자 ID',
     `name`       VARCHAR(100) NULL COMMENT '실명',
-    `birthdate`  CHAR(8)      NULL COMMENT '생년월일(YYYYMMDD)',
+    `birth_date`  CHAR(8)      NULL COMMENT '생년월일(YYYYMMDD)',
     `phone`      VARCHAR(20)  NULL COMMENT '휴대폰 번호',
     `gender`     CHAR(1)      NULL COMMENT '성별 (M/F)',
     `created_at` DATETIME(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '생성 시각',

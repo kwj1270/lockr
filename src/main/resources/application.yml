@@ -7,7 +7,7 @@ server:
         http-only: true  # XSS 방지
         secure: true
         same-site: strict # CSRF 방지
-        max-age: 600
+        max-age: 3000
 spring:
   application:
     name: lockr

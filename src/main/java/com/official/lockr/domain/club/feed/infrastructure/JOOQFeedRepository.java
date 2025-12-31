@@ -103,6 +103,7 @@ public class JOOQFeedRepository implements FeedRepository {
                 .set(FEEDS.ID, feed.getId())
                 .set(FEEDS.CLUB_ID, feed.getClubId())
                 .set(FEEDS.USER_ID, feed.getUserId())
+                .set(FEEDS.TITLE, feed.getTitle())
                 .set(FEEDS.CONTENT, feed.getContent())
                 .set(FEEDS.FEED_TYPE, feed.getFeedType().name())
                 .set(FEEDS.CREATED_AT, feed.getCreatedAt())
@@ -309,6 +310,7 @@ public class JOOQFeedRepository implements FeedRepository {
         return new Feed(
                 entity.getId(),
                 entity.getClubId(),
+                entity.getTitle(),
                 entity.getContent(),
                 FeedType.valueOf(entity.getFeedType()),
                 feedImages,

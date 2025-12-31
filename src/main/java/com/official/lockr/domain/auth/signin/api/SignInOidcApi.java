@@ -54,7 +54,6 @@ public class SignInOidcApi {
                 signIn.getDeviceId(),
                 signIn.getDeviceName(),
                 signIn.getDeviceOS(),
-                signIn.getDeviceName(),
                 signIn.getIpAddress(),
                 signIn.getUserAgent(),
                 signIn.getCreatedAt()

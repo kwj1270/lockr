@@ -1,5 +1,7 @@
 package com.official.lockr.domain.club.recruitment.applications.domain.vo.form;
 
+import com.official.lockr.global.vo.BirthDate;
+
 import java.time.LocalDate;
 
 import static java.util.Objects.isNull;
@@ -20,7 +22,7 @@ public record ApplicationFormData(
         return detailedInfo.profileImageUrl();
     }
 
-    public LocalDate birthDate() {
+    public BirthDate birthDate() {
         return detailedInfo.birthDate();
     }
 
@@ -28,7 +30,7 @@ public record ApplicationFormData(
             String profileImageUrl,
             String email,
             String address,
-            LocalDate birthDate,
+            BirthDate birthDate,
             String emergencyContactPhone
     ) {
     }

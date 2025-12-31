@@ -16,4 +16,6 @@ public interface SignInTokenRepository {
     List<SignInToken> findBySignInId(String signInId);
 
     void deleteById(String id);
+
+    void deleteByUserId(String userId);
 }
