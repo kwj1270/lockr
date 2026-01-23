@@ -24,20 +24,12 @@ public class SignOutApi {
     public ResponseEntity<Void> logout(
             final HttpSession httpSession
     ) {
-        final SignInSession signInSession = session(httpSession);
+        final SignInSession signInSession = (SignInSession) httpSession.getAttribute("signIn");
         if (signInSession != null) {
             final String userId = signInSession.userId();
             deleteSignInTokenUseCase.delete(userId);
         }
         httpSession.invalidate();
         return ResponseEntity.ok().build();
-    }
-
-    private SignInSession session(final HttpSession httpSession) {
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
-        if (isNull(signIn)) {
-            return null;
-        }
-        return signIn;
     }
 }

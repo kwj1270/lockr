@@ -59,6 +59,9 @@ public class ChatEventListener {
                 event.senderId(),
                 event.senderNickname(),
                 event.message(),
+                event.repliedToId(),
+                event.quotedSenderName(),
+                event.quotedContent(),
                 java.time.LocalDateTime.now()
         );
 

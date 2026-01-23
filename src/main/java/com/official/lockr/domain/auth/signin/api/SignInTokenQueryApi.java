@@ -6,10 +6,12 @@ import jakarta.servlet.http.HttpSession;
 import org.jooq.Configuration;
 import org.jooq.generated.tables.daos.SignInTokensDao;
 import org.jooq.generated.tables.pojos.SignInTokensEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 
@@ -62,7 +64,7 @@ public class SignInTokenQueryApi {
     private SignInSession session(final HttpSession httpSession) {
         final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
         if (isNull(signIn)) {
-            throw new IllegalStateException("User not authenticated");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
         }
         return signIn;
     }

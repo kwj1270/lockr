@@ -46,6 +46,7 @@ public class Schedule extends AggregateRoot {
             final Integer maxParticipants,
             final int deadlineDays
     ) {
+        validateScheduleTime(scheduleTime);
         final LocalDateTime now = LocalDateTime.now();
         final Schedule schedule = new Schedule(
                 id, clubId, title, content, scheduleLocation, scheduleTime, scheduleType,
@@ -58,8 +59,8 @@ public class Schedule extends AggregateRoot {
     public Schedule(
             final String id, final String clubId, final String title, final String content, final String location,
             final LocalDateTime scheduleTime, final ScheduleType scheduleType, final ScheduleDetailData scheduleDetailData,
-            final List<Attendance> attendances, final ScheduleStatus status, final Integer minParticipants, final Integer maxParticipants,
-            final int deadlineDays, final LocalDateTime createdAt, final LocalDateTime updatedAt, final LocalDateTime deletedAt
+            final List<Attendance> attendances, final ScheduleStatus status, final Integer minParticipants, final Integer maxParticipants, final int deadlineDays,
+            final LocalDateTime createdAt, final LocalDateTime updatedAt, final LocalDateTime deletedAt
     ) {
         this.id = id;
         this.clubId = clubId;

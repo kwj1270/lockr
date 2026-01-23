@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -51,6 +52,13 @@ public class RedisChatRepository implements ChatRepository {
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Failed to serialize chat message", e);
         }
+    }
+
+    @Override
+    public Optional<Chat> findById(final String chatId) {
+        // Redis에서는 개별 메시지 조회가 비효율적이므로 Optional.empty() 반환
+        // ChatRepositoryAdapter에서 DB 조회로 폴백됨
+        return Optional.empty();
     }
 
     @Override
@@ -140,6 +148,9 @@ public class RedisChatRepository implements ChatRepository {
         public String senderId;
         public String senderNickname;
         public String message;
+        public String repliedToId;
+        public String quotedSenderName;
+        public String quotedContent;
         public LocalDateTime createdAt;
 
         public ChatDto() {
@@ -149,13 +160,19 @@ public class RedisChatRepository implements ChatRepository {
             this.id = chat.getId();
             this.chatRoomId = chat.getChatRoomId();
             this.senderId = chat.getSenderId();
-            this.senderNickname = chat.getSenderNickname();
+            this.senderNickname = chat.getSenderName();
             this.message = chat.getMessage();
+            this.repliedToId = chat.getRepliedToId();
+            this.quotedSenderName = chat.getQuotedSenderName();
+            this.quotedContent = chat.getQuotedContent();
             this.createdAt = chat.getCreatedAt();
         }
 
         public Chat toDomain() {
-            return new Chat(id, chatRoomId, senderId, senderNickname, message, createdAt);
+            return new Chat(
+                    id, chatRoomId, senderId, senderNickname, message,
+                    repliedToId, quotedSenderName, quotedContent, createdAt
+            );
         }
     }
 }

@@ -4,7 +4,7 @@ public record SendMessageCommand(
         String clubId,
         String chatRoomId,
         String senderId,
-        String senderNickname,
-        String message
+        String message,
+        String repliedToId
 ) {
 }

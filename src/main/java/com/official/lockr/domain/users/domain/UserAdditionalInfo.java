@@ -14,13 +14,14 @@ public class UserAdditionalInfo {
     private BirthDate birthDate;
     private String phone;
     private Gender gender;
+    private String profileImage;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
 
     public static UserAdditionalInfo init(final String id, final String userId) {
         final LocalDateTime now = LocalDateTime.now();
-        return new UserAdditionalInfo(id, userId, null, null, null, null, now, now, null);
+        return new UserAdditionalInfo(id, userId, null, null, null, null, null, now, now, null);
     }
 
     public UserAdditionalInfo(final String id,
@@ -29,6 +30,7 @@ public class UserAdditionalInfo {
                               final BirthDate birthDate,
                               final String phone,
                               final Gender gender,
+                              final String profileImage,
                               final LocalDateTime createdAt,
                               final LocalDateTime updatedAt,
                               final LocalDateTime deletedAt) {
@@ -38,16 +40,18 @@ public class UserAdditionalInfo {
         this.birthDate = birthDate;
         this.phone = phone;
         this.gender = gender;
+        this.profileImage = profileImage;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.deletedAt = deletedAt;
     }
 
-    public void update(final String name, final BirthDate birthDate, final String phone, final Gender gender) {
+    public void update(final String name, final BirthDate birthDate, final String phone, final Gender gender, final String profileImage) {
         this.name = name;
         this.birthDate = birthDate;
         this.phone = phone;
         this.gender = gender;
+        this.profileImage = profileImage;
     }
 
     public String getId() {
@@ -75,6 +79,10 @@ public class UserAdditionalInfo {
 
     public Gender getGender() {
         return gender;
+    }
+
+    public String getProfileImage() {
+        return profileImage;
     }
 
     public LocalDateTime getCreatedAt() {

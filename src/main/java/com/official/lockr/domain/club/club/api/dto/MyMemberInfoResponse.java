@@ -9,6 +9,7 @@ public record MyMemberInfoResponse(
         String userId,
         String clubId,
         MemberRole role,
+        String profileImage,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {

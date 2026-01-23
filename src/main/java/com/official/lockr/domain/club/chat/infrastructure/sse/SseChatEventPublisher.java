@@ -1,6 +1,12 @@
 package com.official.lockr.domain.club.chat.infrastructure.sse;
 
 import com.official.lockr.domain.club.chat.domain.event.ChatSseEvent;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -8,14 +14,84 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 public class SseChatEventPublisher {
+
+    private static final Logger log = LoggerFactory.getLogger(SseChatEventPublisher.class);
+    private static final long SSE_TIMEOUT = 30 * 60 * 1000L; // 30분
 
     // chatRoomId -> List<SseEmitter>
     private final Map<String, CopyOnWriteArrayList<SseEmitter>> chatRoomEmitters = new ConcurrentHashMap<>();
     // clubId -> List<SseEmitter>
     private final Map<String, CopyOnWriteArrayList<SseEmitter>> clubEmitters = new ConcurrentHashMap<>();
+
+    // 모니터링
+    private final AtomicInteger clubConnectionCount = new AtomicInteger(0);
+    private final AtomicInteger chatRoomConnectionCount = new AtomicInteger(0);
+    private final Counter clubConnectionOpened;
+    private final Counter clubConnectionClosedCompleted;
+    private final Counter clubConnectionClosedTimeout;
+    private final Counter clubConnectionClosedError;
+    private final Counter chatRoomConnectionOpened;
+    private final Counter chatRoomConnectionClosedCompleted;
+    private final Counter chatRoomConnectionClosedTimeout;
+    private final Counter chatRoomConnectionClosedError;
+    private final Counter clubMessageSent;
+    private final Counter clubMessageFailed;
+    private final Counter chatRoomMessageSent;
+    private final Counter chatRoomMessageFailed;
+
+    public SseChatEventPublisher(MeterRegistry meterRegistry) {
+        Gauge.builder("sse.connections.active", clubConnectionCount, AtomicInteger::get)
+                .tag("type", "club")
+                .description("Active SSE connections for club")
+                .register(meterRegistry);
+        Gauge.builder("sse.connections.active", chatRoomConnectionCount, AtomicInteger::get)
+                .tag("type", "chat_room")
+                .description("Active SSE connections for chat room")
+                .register(meterRegistry);
+
+        this.clubConnectionOpened = Counter.builder("sse.connections.opened")
+                .tag("type", "club")
+                .register(meterRegistry);
+        this.clubConnectionClosedCompleted = Counter.builder("sse.connections.closed")
+                .tag("type", "club").tag("reason", "completed")
+                .register(meterRegistry);
+        this.clubConnectionClosedTimeout = Counter.builder("sse.connections.closed")
+                .tag("type", "club").tag("reason", "timeout")
+                .register(meterRegistry);
+        this.clubConnectionClosedError = Counter.builder("sse.connections.closed")
+                .tag("type", "club").tag("reason", "error")
+                .register(meterRegistry);
+
+        this.chatRoomConnectionOpened = Counter.builder("sse.connections.opened")
+                .tag("type", "chat_room")
+                .register(meterRegistry);
+        this.chatRoomConnectionClosedCompleted = Counter.builder("sse.connections.closed")
+                .tag("type", "chat_room").tag("reason", "completed")
+                .register(meterRegistry);
+        this.chatRoomConnectionClosedTimeout = Counter.builder("sse.connections.closed")
+                .tag("type", "chat_room").tag("reason", "timeout")
+                .register(meterRegistry);
+        this.chatRoomConnectionClosedError = Counter.builder("sse.connections.closed")
+                .tag("type", "chat_room").tag("reason", "error")
+                .register(meterRegistry);
+
+        this.clubMessageSent = Counter.builder("sse.messages.sent")
+                .tag("type", "club")
+                .register(meterRegistry);
+        this.clubMessageFailed = Counter.builder("sse.messages.failed")
+                .tag("type", "club")
+                .register(meterRegistry);
+        this.chatRoomMessageSent = Counter.builder("sse.messages.sent")
+                .tag("type", "chat_room")
+                .register(meterRegistry);
+        this.chatRoomMessageFailed = Counter.builder("sse.messages.failed")
+                .tag("type", "chat_room")
+                .register(meterRegistry);
+    }
 
     public void publish(final ChatSseEvent event) {
         // 특정 채팅방 구독자들에게 전송
@@ -26,40 +102,82 @@ public class SseChatEventPublisher {
     }
 
     public SseEmitter subscribeToClub(final String clubId) {
-        final SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
-        clubEmitters.computeIfAbsent(clubId, k -> new CopyOnWriteArrayList<>()).add(emitter);
+        final SseEmitter emitter = new SseEmitter(SSE_TIMEOUT);
+        clubEmitters.computeIfAbsent(clubId, ignored -> new CopyOnWriteArrayList<>()).add(emitter);
 
-        emitter.onCompletion(() -> removeClubEmitter(clubId, emitter));
-        emitter.onTimeout(() -> removeClubEmitter(clubId, emitter));
-        emitter.onError(e -> removeClubEmitter(clubId, emitter));
+        clubConnectionCount.incrementAndGet();
+        clubConnectionOpened.increment();
+        log.debug("SSE club 연결 시작: clubId={}, activeConnections={}", clubId, clubConnectionCount.get());
+
+        emitter.onCompletion(() -> {
+            removeClubEmitter(clubId, emitter);
+            clubConnectionCount.decrementAndGet();
+            clubConnectionClosedCompleted.increment();
+            log.debug("SSE club 연결 완료(onCompletion): clubId={}", clubId);
+        });
+        emitter.onTimeout(() -> {
+            removeClubEmitter(clubId, emitter);
+            clubConnectionCount.decrementAndGet();
+            clubConnectionClosedTimeout.increment();
+            log.debug("SSE club 연결 타임아웃(onTimeout): clubId={}", clubId);
+        });
+        emitter.onError(e -> {
+            removeClubEmitter(clubId, emitter);
+            clubConnectionCount.decrementAndGet();
+            clubConnectionClosedError.increment();
+            log.warn("SSE club 연결 에러(onError): clubId={}, error={}", clubId, e.getMessage());
+        });
 
         // 초기 연결 확인 이벤트 전송
         try {
             emitter.send(SseEmitter.event()
                     .name("connected")
                     .data("Connected to club: " + clubId));
+            log.debug("SSE club 초기 연결 이벤트 전송 성공: clubId={}", clubId);
         } catch (IOException e) {
-            removeClubEmitter(clubId, emitter);
+            log.warn("SSE club 초기 연결 이벤트 전송 실패: clubId={}, error={}", clubId, e.getMessage());
+            emitter.completeWithError(e);
         }
 
         return emitter;
     }
 
     public SseEmitter subscribeToChatRoom(final String chatRoomId) {
-        final SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
-        chatRoomEmitters.computeIfAbsent(chatRoomId, k -> new CopyOnWriteArrayList<>()).add(emitter);
+        final SseEmitter emitter = new SseEmitter(SSE_TIMEOUT);
+        chatRoomEmitters.computeIfAbsent(chatRoomId, ignored -> new CopyOnWriteArrayList<>()).add(emitter);
 
-        emitter.onCompletion(() -> removeChatRoomEmitter(chatRoomId, emitter));
-        emitter.onTimeout(() -> removeChatRoomEmitter(chatRoomId, emitter));
-        emitter.onError(e -> removeChatRoomEmitter(chatRoomId, emitter));
+        chatRoomConnectionCount.incrementAndGet();
+        chatRoomConnectionOpened.increment();
+        log.debug("SSE chatRoom 연결 시작: chatRoomId={}, activeConnections={}", chatRoomId, chatRoomConnectionCount.get());
+
+        emitter.onCompletion(() -> {
+            removeChatRoomEmitter(chatRoomId, emitter);
+            chatRoomConnectionCount.decrementAndGet();
+            chatRoomConnectionClosedCompleted.increment();
+            log.debug("SSE chatRoom 연결 완료(onCompletion): chatRoomId={}", chatRoomId);
+        });
+        emitter.onTimeout(() -> {
+            removeChatRoomEmitter(chatRoomId, emitter);
+            chatRoomConnectionCount.decrementAndGet();
+            chatRoomConnectionClosedTimeout.increment();
+            log.debug("SSE chatRoom 연결 타임아웃(onTimeout): chatRoomId={}", chatRoomId);
+        });
+        emitter.onError(e -> {
+            removeChatRoomEmitter(chatRoomId, emitter);
+            chatRoomConnectionCount.decrementAndGet();
+            chatRoomConnectionClosedError.increment();
+            log.warn("SSE chatRoom 연결 에러(onError): chatRoomId={}, error={}", chatRoomId, e.getMessage());
+        });
 
         // 초기 연결 확인 이벤트 전송
         try {
             emitter.send(SseEmitter.event()
                     .name("connected")
                     .data("Connected to chat room: " + chatRoomId));
+            log.debug("SSE chatRoom 초기 연결 이벤트 전송 성공: chatRoomId={}", chatRoomId);
         } catch (IOException e) {
-            removeChatRoomEmitter(chatRoomId, emitter);
+            log.warn("SSE chatRoom 초기 연결 이벤트 전송 실패: chatRoomId={}, error={}", chatRoomId, e.getMessage());
+            emitter.completeWithError(e);
         }
 
         return emitter;
@@ -76,8 +194,10 @@ public class SseChatEventPublisher {
                 emitter.send(SseEmitter.event()
                         .name(event.type().name())
                         .data(event));
+                chatRoomMessageSent.increment();
             } catch (IOException e) {
-                removeChatRoomEmitter(chatRoomId, emitter);
+                chatRoomMessageFailed.increment();
+                emitter.completeWithError(e);
             }
         });
     }
@@ -93,8 +213,10 @@ public class SseChatEventPublisher {
                 emitter.send(SseEmitter.event()
                         .name(event.type().name())
                         .data(event));
+                clubMessageSent.increment();
             } catch (IOException e) {
-                removeClubEmitter(clubId, emitter);
+                clubMessageFailed.increment();
+                emitter.completeWithError(e);
             }
         });
     }
@@ -116,6 +238,27 @@ public class SseChatEventPublisher {
             if (emitters.isEmpty()) {
                 chatRoomEmitters.remove(chatRoomId);
             }
+        }
+    }
+
+    @Scheduled(fixedRate = 30000)
+    public void sendHeartbeat() {
+        clubEmitters.forEach((clubId, emitters) ->
+                emitters.forEach(this::sendHeartbeatToEmitter)
+        );
+
+        chatRoomEmitters.forEach((chatRoomId, emitters) ->
+                emitters.forEach(this::sendHeartbeatToEmitter)
+        );
+    }
+
+    private void sendHeartbeatToEmitter(final SseEmitter emitter) {
+        try {
+            emitter.send(SseEmitter.event()
+                    .name("heartbeat")
+                    .data("ping"));
+        } catch (IOException e) {
+            emitter.completeWithError(e);
         }
     }
 }

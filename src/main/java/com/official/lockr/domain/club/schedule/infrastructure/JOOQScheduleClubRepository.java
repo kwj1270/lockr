@@ -56,6 +56,7 @@ public class JOOQScheduleClubRepository implements ScheduleClub {
                 entity.getUserId(),
                 MemberRole.valueOf(entity.getMemberRole()),
                 entity.getClubId(),
+                entity.getProfileImage(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt(),
                 entity.getDeletedAt()

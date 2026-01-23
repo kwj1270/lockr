@@ -3,9 +3,11 @@ package com.official.lockr.domain.club.sport.football.lineup.application;
 import com.official.lockr.domain.club.club.domain.ClubRepository;
 import com.official.lockr.domain.club.sport.football.lineup.application.command.AddLineupsCommand;
 import com.official.lockr.domain.club.sport.football.lineup.application.command.AssignSlotCommand;
+import com.official.lockr.domain.club.sport.football.lineup.application.command.RemoveSlotCommand;
 import com.official.lockr.domain.club.sport.football.lineup.application.usecase.AddLineupUseCase;
 import com.official.lockr.domain.club.sport.football.lineup.application.usecase.AssignSlotUseCase;
 import com.official.lockr.domain.club.sport.football.lineup.application.usecase.ChangeFormationUseCase;
+import com.official.lockr.domain.club.sport.football.lineup.application.usecase.RemoveSlotUseCase;
 import com.official.lockr.domain.club.sport.football.lineup.domain.Lineup;
 import com.official.lockr.domain.club.sport.football.lineup.domain.LineupRepository;
 import org.springframework.lang.NonNull;
@@ -15,7 +17,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 @Service
-public class LineupService implements AddLineupUseCase, AssignSlotUseCase, ChangeFormationUseCase {
+public class LineupService implements AddLineupUseCase, AssignSlotUseCase, ChangeFormationUseCase, RemoveSlotUseCase {
 
     private final ClubRepository clubRepository;
     private final LineupRepository lineUpRepository;
@@ -50,6 +52,13 @@ public class LineupService implements AddLineupUseCase, AssignSlotUseCase, Chang
     public Lineup changeFormation(final String clubId, final String lineupId, final String formation) {
         final Lineup lineup = lineup(lineupId, clubId);
         lineup.changeFormation(formation);
+        return lineUpRepository.save(lineup);
+    }
+
+    @Override
+    public Lineup removeSlot(final RemoveSlotCommand command) {
+        final Lineup lineup = lineup(command.lineupId(), command.clubId());
+        lineup.removeSlot(command.slotType(), command.slotIndex());
         return lineUpRepository.save(lineup);
     }
 

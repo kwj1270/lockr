@@ -1,5 +1,4 @@
 -- Feeds 테이블
-use lockr;
 CREATE TABLE feeds
 (
     id         VARCHAR(26) PRIMARY KEY COMMENT '피드 ID (ULID)',

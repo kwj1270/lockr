@@ -8,7 +8,8 @@ public record UserAdditionalInfoRequest(
         String name,
         String birthDate,
         String phone,
-        String gender
+        String gender,
+        String profileImage
 ) {
     public UpdateUserAdditionalInfoCommand toCommand(final String userId) {
         return new UpdateUserAdditionalInfoCommand(
@@ -16,7 +17,8 @@ public record UserAdditionalInfoRequest(
                 name,
                 new BirthDate(birthDate),
                 phone,
-                Gender.fromString(gender)
+                Gender.fromString(gender),
+                profileImage
         );
     }
 }

@@ -43,6 +43,7 @@ public class JOOQFeedClubRepository implements FeedClub {
                 entity.getUserId(),
                 MemberRole.valueOf(entity.getMemberRole()),
                 entity.getClubId(),
+                entity.getProfileImage(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt(),
                 entity.getDeletedAt()

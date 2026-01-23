@@ -1,5 +1,3 @@
--- auto-generated definition
-use lockr;
 CREATE TABLE http_log
 (
     id          CHAR(26) not null comment '고유한 로그 ID (UUID)' primary key,

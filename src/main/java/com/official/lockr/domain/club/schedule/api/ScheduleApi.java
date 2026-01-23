@@ -3,10 +3,7 @@ package com.official.lockr.domain.club.schedule.api;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.official.lockr.domain.auth.signin.domain.SignInSession;
-import com.official.lockr.domain.club.schedule.api.dto.CreateScheduleRequest;
-import com.official.lockr.domain.club.schedule.api.dto.RespondToScheduleRequest;
-import com.official.lockr.domain.club.schedule.api.dto.ScheduleResponse;
-import com.official.lockr.domain.club.schedule.api.dto.UpdateScheduleRequest;
+import com.official.lockr.domain.club.schedule.api.dto.*;
 import com.official.lockr.domain.club.schedule.application.usecase.CancelScheduleUseCase;
 import com.official.lockr.domain.club.schedule.application.usecase.RegisterScheduleUseCase;
 import com.official.lockr.domain.club.schedule.application.usecase.RespondToScheduleUseCase;
@@ -20,6 +17,8 @@ import com.official.lockr.domain.club.schedule.domain.vo.TrainingDetailData;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import static java.util.Objects.isNull;
 
@@ -91,17 +90,18 @@ public class ScheduleApi {
     }
 
     @PostMapping("/{scheduleId}/respond")
-    public ResponseEntity<Schedule> respond(
+    public ResponseEntity<Void> respond(
             final HttpSession httpSession,
             @PathVariable final String clubId,
             @PathVariable final String scheduleId,
             @RequestBody final RespondToScheduleRequest request
     ) {
         final SignInSession session = session(httpSession);
-        final Schedule schedule = respondToScheduleUseCase.respond(
+        respondToScheduleUseCase.respond(
                 scheduleId, session.userId(), clubId, request.status(), request.reason()
         );
-        return ResponseEntity.ok().body(schedule);
+        // Command API는 성공 응답만 반환
+        return ResponseEntity.ok().build();
     }
 
     private ScheduleDetailData scheduleDetail(final ScheduleType scheduleType, final String detail) {
@@ -121,10 +121,10 @@ public class ScheduleApi {
     }
 
     private SignInSession session(final HttpSession httpSession) {
-        final SignInSession session = (SignInSession) httpSession.getAttribute("signIn");
-        if (isNull(session)) {
-            throw new IllegalArgumentException("Not signed in");
+        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
+        if (isNull(signIn)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
         }
-        return session;
+        return signIn;
     }
 }

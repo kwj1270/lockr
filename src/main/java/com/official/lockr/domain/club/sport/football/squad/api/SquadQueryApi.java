@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,11 +58,7 @@ public class SquadQueryApi {
             @PathVariable String clubId,
             final HttpSession httpSession
     ) {
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
-        if (signIn == null) {
-            return ResponseEntity.status(401).build();
-        }
-
+        final SignInSession signIn = session(httpSession);
         final SquadPlayer mySquadPlayer = findMySquadPlayerByUserIdAndClubId(signIn.userId(), clubId);
 
         if (mySquadPlayer == null) {
@@ -167,5 +165,13 @@ public class SquadQueryApi {
         }
 
         return playerDomain(playerEntity);
+    }
+
+    private SignInSession session(final HttpSession httpSession) {
+        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
+        if (isNull(signIn)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
+        }
+        return signIn;
     }
 }

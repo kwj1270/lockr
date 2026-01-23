@@ -1,5 +1,4 @@
 -- recruitments definition
-use lockr;
 CREATE TABLE `recruitments`
 (
     `id`               CHAR(128)    NOT NULL COMMENT '모집 공고 식별키' primary key,

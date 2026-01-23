@@ -10,10 +10,10 @@ import java.time.Duration;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class PerformanceListener implements ExecuteListener {
+public class JooqPerformanceListener implements ExecuteListener {
 
     private static final Duration SLOW_QUERY_LIMIT = Duration.ofSeconds(3);
-    private static final Logger log = getLogger(PerformanceListener.class);
+    private static final Logger log = getLogger(JooqPerformanceListener.class);
 
     private StopWatch watch;
 

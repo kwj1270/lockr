@@ -9,7 +9,8 @@ public record ApprovedApplicationEvent(
         String userId,
         String sportType,
         String applicationStatus,
-        String processedByUserId
+        String processedByUserId,
+        String profileImage
 ) implements DomainEvent {
 
 }
