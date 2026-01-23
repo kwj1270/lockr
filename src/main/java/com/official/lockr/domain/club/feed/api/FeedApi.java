@@ -8,6 +8,8 @@ import com.official.lockr.domain.club.feed.domain.Feed;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import static java.util.Objects.isNull;
 
@@ -153,10 +155,10 @@ public class FeedApi {
     }
 
     private SignInSession session(final HttpSession httpSession) {
-        final SignInSession session = (SignInSession) httpSession.getAttribute("signIn");
-        if (isNull(session)) {
-            throw new IllegalArgumentException("Not signed in");
+        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
+        if (isNull(signIn)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
         }
-        return session;
+        return signIn;
     }
 }

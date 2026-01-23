@@ -10,6 +10,8 @@ import com.official.lockr.domain.club.chat.domain.ChatRoom;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import static java.util.Objects.isNull;
 
@@ -53,7 +55,7 @@ public class ChatApi {
     private SignInSession session(final HttpSession httpSession) {
         final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
         if (isNull(signIn)) {
-            throw new IllegalStateException("User not authenticated");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
         }
         return signIn;
     }

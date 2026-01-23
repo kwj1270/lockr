@@ -12,6 +12,9 @@ public record CreatedChatEvent(
         String clubId,
         String senderId,
         String senderNickname,
-        String message
+        String message,
+        String repliedToId,
+        String quotedSenderName,
+        String quotedContent
 ) implements DomainEvent {
 }

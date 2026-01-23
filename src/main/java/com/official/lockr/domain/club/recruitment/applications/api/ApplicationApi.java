@@ -11,8 +11,12 @@ import com.official.lockr.domain.club.recruitment.applications.application.useca
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import java.net.URI;
+
+import static java.util.Objects.isNull;
 
 @RestController
 @RequestMapping("/api/v1/clubs/{clubId}/applications")
@@ -41,7 +45,7 @@ public class ApplicationApi {
             @RequestBody final SubmitApplicationRequest request,
             final HttpSession httpSession
     ) {
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
+        final SignInSession signIn = session(httpSession);
         final Application application = submitApplicationUseCase.submit(request.toCommand(clubId, signIn.userId()));
         return ResponseEntity.created(URI.create("/api/v1/clubs/" + clubId + "/applications/" + application.getId())).body(application);
     }
@@ -52,7 +56,7 @@ public class ApplicationApi {
             @PathVariable("clubId") final String clubId,
             @PathVariable("applicationId") final String tryoutId
     ) {
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
+        final SignInSession signIn = session(httpSession);
         final Application application = cancelApplicationUseCase.cancel(clubId, tryoutId, signIn.userId());
         return ResponseEntity.ok().body(application);
     }
@@ -63,7 +67,7 @@ public class ApplicationApi {
             @PathVariable("clubId") final String clubId,
             @PathVariable("applicationId") final String applicationId
     ) {
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
+        final SignInSession signIn = session(httpSession);
         final Application application = approveApplicationUseCase.approve(clubId, applicationId, signIn.userId());
         return ResponseEntity.ok().body(application);
     }
@@ -75,8 +79,16 @@ public class ApplicationApi {
             @PathVariable("applicationId") final String applicationId,
             @RequestBody final RejectApplicationRequest request
     ) {
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
+        final SignInSession signIn = session(httpSession);
         final Application application = rejectApplicationUseCase.reject(request.toCommand(clubId, applicationId, signIn.userId()));
         return ResponseEntity.ok().body(application);
+    }
+
+    private SignInSession session(final HttpSession httpSession) {
+        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
+        if (isNull(signIn)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
+        }
+        return signIn;
     }
 }

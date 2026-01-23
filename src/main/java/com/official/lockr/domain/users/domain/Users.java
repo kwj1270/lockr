@@ -14,7 +14,7 @@ public class Users {
     private final UserAdditionalInfo userAdditionalInfo;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
-    private final LocalDateTime deletedAt;
+    private LocalDateTime deletedAt;
 
     public static Users init() {
         final String userId = generateUlid();
@@ -33,8 +33,19 @@ public class Users {
         this.deletedAt = deletedAt;
     }
 
-    public void updateAdditionalInfo(final String name, final BirthDate birthDate, final String phone, final Gender gender) {
-        this.userAdditionalInfo.update(name, birthDate, phone, gender);
+    public void updateAdditionalInfo(final String name, final BirthDate birthDate, final String phone, final Gender gender, final String profileImage) {
+        this.userAdditionalInfo.update(name, birthDate, phone, gender, profileImage);
+    }
+
+    public void withdraw() {
+        if (this.deletedAt != null) {
+            throw new IllegalStateException("이미 탈퇴한 회원입니다.");
+        }
+        this.deletedAt = LocalDateTime.now();
+    }
+
+    public boolean isWithdrawn() {
+        return this.deletedAt != null;
     }
 
     public String getId() {

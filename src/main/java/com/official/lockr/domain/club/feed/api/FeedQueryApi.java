@@ -29,8 +29,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
+
+import static java.util.Objects.isNull;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -52,7 +56,7 @@ public class FeedQueryApi {
             @RequestParam(value = "limit", defaultValue = "20") int limit
     ) {
         // Get current user from session
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
+        final SignInSession signIn = session(httpSession);
 
         // Check if user is a member of the club
         final boolean isMember = feedsDao.ctx()
@@ -204,7 +208,7 @@ public class FeedQueryApi {
             @RequestParam(value = "limit", defaultValue = "20") int limit
     ) {
         // Get current user from session
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
+        final SignInSession signIn = session(httpSession);
 
         // Check if user is a member of the club
         final boolean isMember = feedsDao.ctx()
@@ -339,7 +343,7 @@ public class FeedQueryApi {
             @RequestParam(value = "limit", defaultValue = "20") int limit
     ) {
         // Get current user from session
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
+        final SignInSession signIn = session(httpSession);
 
         // Check if user is a member of the club
         final boolean isMember = feedsDao.ctx()
@@ -396,7 +400,7 @@ public class FeedQueryApi {
             final HttpSession httpSession
     ) {
         // Get current user from session
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
+        final SignInSession signIn = session(httpSession);
 
         // Check if user is a member of the club
         final boolean isMember = feedsDao.ctx()
@@ -478,4 +482,11 @@ public class FeedQueryApi {
         return ResponseEntity.ok(feed);
     }
 
+    private SignInSession session(final HttpSession httpSession) {
+        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
+        if (isNull(signIn)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
+        }
+        return signIn;
+    }
 }

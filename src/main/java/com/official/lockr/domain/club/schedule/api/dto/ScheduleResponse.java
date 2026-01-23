@@ -1,5 +1,6 @@
 package com.official.lockr.domain.club.schedule.api.dto;
 
+import com.official.lockr.domain.club.schedule.domain.AttendanceStatus;
 import com.official.lockr.domain.club.schedule.domain.Schedule;
 import com.official.lockr.domain.club.schedule.domain.ScheduleStatus;
 import com.official.lockr.domain.club.schedule.domain.ScheduleType;
@@ -25,6 +26,7 @@ public record ScheduleResponse(
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
+
     public static ScheduleResponse from(final Schedule schedule) {
         return new ScheduleResponse(
                 schedule.getId(),

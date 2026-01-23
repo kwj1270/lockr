@@ -8,6 +8,10 @@ import com.official.lockr.domain.club.sport.football.squad.domain.Squad;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
+
+import static java.util.Objects.isNull;
 
 @RequestMapping("/api/v1/clubs/{clubId}/squads/{squadId}")
 @RestController
@@ -26,13 +30,17 @@ public class SquadApi {
             @RequestBody UpdateSquadPlayerRequest request,
             final HttpSession httpSession
     ) {
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
-        if (signIn == null) {
-            return ResponseEntity.status(401).build();
-        }
-
+        final SignInSession signIn = session(httpSession);
         final UpdateSquadPlayerCommand command = request.toCommand(signIn.userId(), clubId);
         final Squad squad = updateSquadPlayerUseCase.updatePlayer(command);
         return ResponseEntity.ok(squad);
+    }
+
+    private SignInSession session(final HttpSession httpSession) {
+        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
+        if (isNull(signIn)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
+        }
+        return signIn;
     }
 }

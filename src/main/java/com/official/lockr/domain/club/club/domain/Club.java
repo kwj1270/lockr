@@ -113,31 +113,31 @@ public class Club extends AggregateRoot {
         return members.stream().anyMatch(it -> it.isSame(userId));
     }
 
-    public boolean isPresident(final String memberId) {
+    public boolean isPresident(final String userId) {
         return members.stream()
-                .filter(it -> it.isEqual(memberId))
+                .filter(it -> it.isSame(userId))
                 .anyMatch(Member::isPresident);
     }
 
-    public boolean hasNotMember(final String memberId) {
-        return members.stream().noneMatch(it -> it.getId().equals(memberId));
+    public boolean hasNotMember(final String userId) {
+        return members.stream().noneMatch(it -> it.isSame(userId));
     }
 
     public boolean hasNotUser(final String userId) {
         return members.stream().noneMatch(it -> it.isSame(userId));
     }
 
-    public void assignCoach(final String memberId) {
+    public void assignCoach(final String userId) {
         final Member member = members.stream()
-                .filter(it -> it.isEqual(memberId))
+                .filter(it -> it.isSame(userId))
                 .findFirst()
                 .orElseThrow(IllegalArgumentException::new);
         member.assignCoach();
     }
 
-    public void assignManger(final String memberId) {
+    public void assignManger(final String userId) {
         final Member member = members.stream()
-                .filter(it -> it.isEqual(memberId))
+                .filter(it -> it.isSame(userId))
                 .findFirst()
                 .orElseThrow(IllegalArgumentException::new);
         member.assignManager();
@@ -167,11 +167,11 @@ public class Club extends AggregateRoot {
         return club;
     }
 
-    @Nullable
-    public Member findByUserId(final String userId) {
-        return members.stream()
+    public void updateMemberProfileImage(final String userId, final String profileImage) {
+        final Member member = members.stream()
                 .filter(it -> it.isSame(userId))
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(IllegalArgumentException::new);
+        member.updateProfileImage(profileImage);
     }
 }

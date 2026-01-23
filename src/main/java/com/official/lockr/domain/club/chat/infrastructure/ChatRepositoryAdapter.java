@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 채팅 저장소 어댑터
@@ -50,6 +51,14 @@ public class ChatRepositoryAdapter implements ChatRepository {
             log.warn("Failed to save chat to Redis cache, but DB save was successful. chatId={}, chatRoomId={}", savedChat.getId(), savedChat.getChatRoomId(), e);
         }
         return savedChat;
+    }
+
+    /**
+     * ID로 채팅 메시지 조회 (DB 직접 조회)
+     */
+    @Override
+    public Optional<Chat> findById(final String chatId) {
+        return jooqChatRepository.findById(chatId);
     }
 
     /**

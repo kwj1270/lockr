@@ -130,6 +130,7 @@ public class JOOQClubRepository implements ClubRepository {
                 MEMBERS.USER_ID,
                 MEMBERS.MEMBER_ROLE,
                 MEMBERS.CLUB_ID,
+                MEMBERS.PROFILE_IMAGE,
                 MEMBERS.CREATED_AT,
                 MEMBERS.UPDATED_AT,
                 MEMBERS.DELETED_AT
@@ -141,6 +142,7 @@ public class JOOQClubRepository implements ClubRepository {
                     member.getUserId(),
                     member.getRole().name(),
                     member.getClubId(),
+                    member.getProfileImage(),
                     member.getCreatedAt(),
                     member.getUpdatedAt(),
                     member.getDeletedAt()
@@ -150,6 +152,7 @@ public class JOOQClubRepository implements ClubRepository {
         query.onDuplicateKeyUpdate()
                 .set(MEMBERS.USER_ID, excluded(MEMBERS.USER_ID))
                 .set(MEMBERS.MEMBER_ROLE, excluded(MEMBERS.MEMBER_ROLE))
+                .set(MEMBERS.PROFILE_IMAGE, excluded(MEMBERS.PROFILE_IMAGE))
                 .set(MEMBERS.UPDATED_AT, excluded(MEMBERS.UPDATED_AT))
                 .set(MEMBERS.DELETED_AT, excluded(MEMBERS.DELETED_AT))
                 .execute();
@@ -163,6 +166,25 @@ public class JOOQClubRepository implements ClubRepository {
             return null;
         }
         return domain(teamsEntity, findAllMember(id));
+    }
+
+    @Override
+    public List<Club> findAllByUserId(final String userId) {
+        List<String> clubIds = memberDao.ctx()
+                .select(MEMBERS.CLUB_ID)
+                .from(MEMBERS)
+                .where(MEMBERS.USER_ID.eq(userId))
+                .and(MEMBERS.DELETED_AT.isNull())
+                .fetchInto(String.class);
+
+        if (clubIds.isEmpty()) {
+            return List.of();
+        }
+
+        return clubIds.stream()
+                .map(this::findById)
+                .filter(Objects::nonNull)
+                .toList();
     }
 
     private List<Member> findAllMember(final String teamId) {
@@ -199,6 +221,7 @@ public class JOOQClubRepository implements ClubRepository {
                 entity.getUserId(),
                 MemberRole.valueOf(entity.getMemberRole()),
                 entity.getClubId(),
+                entity.getProfileImage(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt(),
                 entity.getDeletedAt()

@@ -17,6 +17,6 @@ public class ClubEventConsumer {
 
     @TransactionalEventListener
     public void addMember(final ApprovedApplicationEvent event) {
-        registerClubMemberUseCase.addMember(new AddMemberCommand(event.clubId(), event.userId()));
+        registerClubMemberUseCase.addMember(new AddMemberCommand(event.clubId(), event.userId(), event.profileImage()));
     }
 }

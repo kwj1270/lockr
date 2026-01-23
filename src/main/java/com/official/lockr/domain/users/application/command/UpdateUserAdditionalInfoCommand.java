@@ -8,6 +8,7 @@ public record UpdateUserAdditionalInfoCommand(
         String name,
         BirthDate birthDate,
         String phone,
-        Gender gender
+        Gender gender,
+        String profileImage
 ) {
 }

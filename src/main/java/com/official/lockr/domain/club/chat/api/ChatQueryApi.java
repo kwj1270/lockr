@@ -7,9 +7,12 @@ import com.official.lockr.domain.club.chat.domain.Chat;
 import com.official.lockr.domain.club.chat.domain.ChatRoom;
 import com.official.lockr.domain.club.chat.infrastructure.sse.SseChatEventPublisher;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import java.io.IOException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
@@ -57,6 +60,21 @@ public class ChatQueryApi {
         return ResponseEntity.ok(messages);
     }
 
+    @GetMapping(value = "/test-stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter testStream(@PathVariable final String clubId) {
+        SseEmitter emitter = new SseEmitter(30 * 60 * 1000L);
+
+        try {
+            emitter.send(SseEmitter.event()
+                    .name("connected")
+                    .data("test"));
+        } catch (IOException e) {
+            emitter.completeWithError(e);
+        }
+
+        return emitter;
+    }
+
     @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribeToClubChats(
             final HttpSession httpSession,
@@ -79,7 +97,7 @@ public class ChatQueryApi {
     private SignInSession session(final HttpSession httpSession) {
         final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
         if (isNull(signIn)) {
-            throw new IllegalStateException("User not authenticated");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
         }
         return signIn;
     }

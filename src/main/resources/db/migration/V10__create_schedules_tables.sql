@@ -1,5 +1,4 @@
 -- 1. Schedules 테이블 (개선)
-use lockr;
 CREATE TABLE schedules
 (
     id               VARCHAR(26) PRIMARY KEY COMMENT '일정 ID (ULID)',

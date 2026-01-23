@@ -1,9 +1,7 @@
 package com.official.lockr.domain.club.club.api;
 
 import com.official.lockr.domain.auth.signin.domain.SignInSession;
-import com.official.lockr.domain.club.club.api.dto.MyClubResponse;
-import com.official.lockr.domain.club.club.api.dto.MyClubsResponse;
-import com.official.lockr.domain.club.club.api.dto.MyMemberInfoResponse;
+import com.official.lockr.domain.club.club.api.dto.*;
 import com.official.lockr.domain.club.club.domain.MemberRole;
 import jakarta.servlet.http.HttpSession;
 import org.jooq.Configuration;
@@ -11,17 +9,20 @@ import org.jooq.generated.tables.daos.ClubsDao;
 import org.jooq.generated.tables.pojos.MembersEntity;
 import org.jooq.impl.DSL;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
+
+import static java.util.Objects.isNull;
 
 import static java.util.stream.Collectors.toMap;
 import static org.jooq.generated.tables.ClubsJOOQEntity.CLUBS;
 import static org.jooq.generated.tables.MembersJOOQEntity.MEMBERS;
+import static org.jooq.generated.tables.UserAdditionalInfoJOOQEntity.USER_ADDITIONAL_INFO;
+import static org.jooq.generated.tables.SquadsJOOQEntity.SQUADS;
+import static org.jooq.generated.tables.SquadPlayersJOOQEntity.SQUAD_PLAYERS;
 
 @RestController
 @RequestMapping("/api/v1/clubs")
@@ -33,13 +34,32 @@ public class ClubQueryApi {
         this.clubsDao = new ClubsDao(configuration);
     }
 
+    @GetMapping
+    public ResponseEntity<FindClubsResponse> clubs(
+            final HttpSession httpSession,
+            @RequestParam("name") final String name,
+            @RequestParam("sportType") final String sportType
+    ) {
+        final SignInSession signIn = session(httpSession);
+        final FindClubsResponse findClubsResponses = new FindClubsResponse(clubsDao.ctx()
+                .select(CLUBS)
+                .from(CLUBS)
+                .where(
+                        CLUBS.NAME.eq(name),
+                        CLUBS.SPORT_TYPE.eq("FOOT_BALL")
+                )
+                .and(CLUBS.DELETED_AT.isNull())
+                .fetchInto(FindClubResponse.class));
+        return ResponseEntity.ok(findClubsResponses);
+    }
+
     @GetMapping("/my")
     public ResponseEntity<MyClubsResponse> getMyClubs(
             final HttpSession httpSession,
             @RequestParam(value = "cursor", required = false, defaultValue = "") String cursor,
             @RequestParam(value = "limit", defaultValue = "5") int limit
     ) {
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
+        final SignInSession signIn = session(httpSession);
 
         var myClubDataQuery = clubsDao.ctx()
                 .select(CLUBS.ID, MEMBERS.MEMBER_ROLE)
@@ -108,7 +128,7 @@ public class ClubQueryApi {
             final HttpSession httpSession,
             @PathVariable final String clubId
     ) {
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
+        final SignInSession signIn = session(httpSession);
 
         final MembersEntity member = clubsDao.ctx()
                 .selectFrom(MEMBERS)
@@ -126,10 +146,63 @@ public class ClubQueryApi {
                 member.getUserId(),
                 member.getClubId(),
                 MemberRole.valueOf(member.getMemberRole()),
+                member.getProfileImage(),
                 member.getCreatedAt(),
                 member.getUpdatedAt()
         );
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{clubId}/members")
+    public ResponseEntity<MembersResponse> getMembers(
+            final HttpSession httpSession,
+            @PathVariable final String clubId
+    ) {
+        session(httpSession);
+
+        final var profileImageField = DSL.coalesce(MEMBERS.PROFILE_IMAGE, SQUAD_PLAYERS.PROFILE_IMAGE).as("profile_image");
+
+        final List<MemberResponse> members = clubsDao.ctx()
+                .select(
+                        MEMBERS.USER_ID,
+                        USER_ADDITIONAL_INFO.NAME,
+                        MEMBERS.MEMBER_ROLE,
+                        MEMBERS.CREATED_AT,
+                        profileImageField,
+                        SQUAD_PLAYERS.POSITIONS,
+                        SQUAD_PLAYERS.BACK_NUMBER,
+                        USER_ADDITIONAL_INFO.PHONE
+                )
+                .from(MEMBERS)
+                .leftJoin(USER_ADDITIONAL_INFO).on(MEMBERS.USER_ID.eq(USER_ADDITIONAL_INFO.USER_ID))
+                .leftJoin(SQUADS).on(SQUADS.CLUB_ID.eq(MEMBERS.CLUB_ID).and(SQUADS.DELETED_AT.isNull()))
+                .leftJoin(SQUAD_PLAYERS).on(SQUAD_PLAYERS.SQUAD_ID.eq(SQUADS.ID)
+                        .and(SQUAD_PLAYERS.USER_ID.eq(MEMBERS.USER_ID))
+                        .and(SQUAD_PLAYERS.DELETED_AT.isNull()))
+                .where(MEMBERS.CLUB_ID.eq(clubId))
+                .and(MEMBERS.DELETED_AT.isNull())
+                .orderBy(MEMBERS.CREATED_AT.asc())
+                .fetch()
+                .map(record -> new MemberResponse(
+                        record.get(MEMBERS.USER_ID),
+                        record.get(USER_ADDITIONAL_INFO.NAME),
+                        record.get(MEMBERS.MEMBER_ROLE),
+                        record.get(MEMBERS.CREATED_AT),
+                        record.get("profile_image", String.class),
+                        record.get(SQUAD_PLAYERS.POSITIONS),
+                        record.get(SQUAD_PLAYERS.BACK_NUMBER),
+                        record.get(USER_ADDITIONAL_INFO.PHONE)
+                ));
+
+        return ResponseEntity.ok(new MembersResponse(members));
+    }
+
+    private SignInSession session(final HttpSession httpSession) {
+        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
+        if (isNull(signIn)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
+        }
+        return signIn;
     }
 }

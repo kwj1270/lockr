@@ -1,0 +1,23 @@
+#### 로그인
+POST http://127.0.0.1:8080/api/v1/auth/sign_in/admin
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-NAME: woozi's local
+X-DEVICE-OS: mac-os
+
+{
+  "id": "id",
+  "password": "password"
+}
+> {%
+    client.global.set("SESSION_COOKIE", response.headers.valueOf("Set-Cookie"));
+%}
+
+
+### 내 일정 조회
+GET http://127.0.0.1:8080/api/v1/schedules/summary
+Cookie: {{SESSION_COOKIE}}
+Content-Type: application/json
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web

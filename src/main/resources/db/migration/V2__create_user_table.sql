@@ -1,5 +1,4 @@
 -- 사용자 기본 정보(불변)
-USE lockr;
 
 CREATE TABLE `users`
 (
@@ -18,6 +17,7 @@ CREATE TABLE `user_additional_info`
     `birth_date`  CHAR(8)      NULL COMMENT '생년월일(YYYYMMDD)',
     `phone`      VARCHAR(20)  NULL COMMENT '휴대폰 번호',
     `gender`     CHAR(1)      NULL COMMENT '성별 (M/F)',
+    `profile_image` VARCHAR(500) NULL COMMENT '프로필 이미지 URL',
     `created_at` DATETIME(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '생성 시각',
     `updated_at` DATETIME(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '변경 시각',
     `deleted_at` DATETIME(6)  NULL COMMENT '삭제 시각',

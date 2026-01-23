@@ -1,4 +1,3 @@
-use lockr;
 CREATE TABLE `squads`
 (
     `id`         CHAR(128)   NOT NULL COMMENT '스쿼드 식별키' PRIMARY KEY,

@@ -9,8 +9,12 @@ import com.official.lockr.domain.club.recruitment.recruitment.domain.Recruitment
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import java.net.URI;
+
+import static java.util.Objects.isNull;
 
 @RestController
 @RequestMapping("/api/v1/clubs/{clubId}/recruitments")
@@ -31,7 +35,7 @@ public class RecruitmentApi {
             @PathVariable final String clubId,
             @RequestBody final PostRecruitmentRequest request
     ) {
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
+        final SignInSession signIn = session(httpSession);
         final Recruitment recruitment = postRecruitmentUseCase.post(request.toCommand(clubId, signIn.userId()));
         return ResponseEntity.created(URI.create("/api/v1/recruitments/" + recruitment.getId())).body(recruitment);
     }
@@ -43,8 +47,16 @@ public class RecruitmentApi {
             @PathVariable final String recruitmentId,
             @RequestBody final UpdateRecruitmentRequest request
     ) {
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
+        final SignInSession signIn = session(httpSession);
         final Recruitment recruitment = updateRecruitmentUseCase.update(request.toCommand(clubId, recruitmentId, signIn.userId()));
         return ResponseEntity.ok(recruitment);
+    }
+
+    private SignInSession session(final HttpSession httpSession) {
+        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
+        if (isNull(signIn)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
+        }
+        return signIn;
     }
 }
