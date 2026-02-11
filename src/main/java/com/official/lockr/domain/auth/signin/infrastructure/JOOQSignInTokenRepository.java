@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.jooq.generated.Tables.SIGN_IN_TOKENS;
 import static org.jooq.impl.DSL.excluded;
@@ -53,15 +52,7 @@ public class JOOQSignInTokenRepository implements SignInTokenRepository {
             return null;
         }
 
-        return new SignInToken(
-                record.getId(),
-                record.getUserId(),
-                record.getSignInId(),
-                record.getToken(),
-                record.getExpiresAt(),
-                record.getCreatedAt(),
-                record.getDeletedAt()
-        );
+        return toDomain(record);
     }
 
     @Transactional(readOnly = true)
@@ -77,15 +68,7 @@ public class JOOQSignInTokenRepository implements SignInTokenRepository {
             return null;
         }
 
-        return new SignInToken(
-                record.getId(),
-                record.getUserId(),
-                record.getSignInId(),
-                record.getToken(),
-                record.getExpiresAt(),
-                record.getCreatedAt(),
-                record.getDeletedAt()
-        );
+        return toDomain(record);
     }
 
     @Transactional(readOnly = true)
@@ -97,16 +80,8 @@ public class JOOQSignInTokenRepository implements SignInTokenRepository {
                 .and(SIGN_IN_TOKENS.DELETED_AT.isNull())
                 .fetch()
                 .stream()
-                .map(record -> new SignInToken(
-                        record.getId(),
-                        record.getUserId(),
-                        record.getSignInId(),
-                        record.getToken(),
-                        record.getExpiresAt(),
-                        record.getCreatedAt(),
-                        record.getDeletedAt()
-                ))
-                .collect(Collectors.toList());
+                .map(JOOQSignInTokenRepository::toDomain)
+                .toList();
     }
 
     @Transactional
@@ -128,5 +103,17 @@ public class JOOQSignInTokenRepository implements SignInTokenRepository {
                 .where(SIGN_IN_TOKENS.USER_ID.eq(userId))
                 .and(SIGN_IN_TOKENS.DELETED_AT.isNull())
                 .execute();
+    }
+
+    private static SignInToken toDomain(final org.jooq.Record record) {
+        return new SignInToken(
+                record.get(SIGN_IN_TOKENS.ID),
+                record.get(SIGN_IN_TOKENS.USER_ID),
+                record.get(SIGN_IN_TOKENS.SIGN_IN_ID),
+                record.get(SIGN_IN_TOKENS.TOKEN),
+                record.get(SIGN_IN_TOKENS.EXPIRES_AT),
+                record.get(SIGN_IN_TOKENS.CREATED_AT),
+                record.get(SIGN_IN_TOKENS.DELETED_AT)
+        );
     }
 }

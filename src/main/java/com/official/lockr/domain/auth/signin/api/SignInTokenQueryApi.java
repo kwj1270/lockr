@@ -1,17 +1,16 @@
 package com.official.lockr.domain.auth.signin.api;
 
+import com.official.lockr.domain.auth.signin.api.dto.SignInTokenResponse;
 import com.official.lockr.domain.auth.signin.domain.SignInSession;
 import com.official.lockr.domain.auth.signin.domain.SignInToken;
-import jakarta.servlet.http.HttpSession;
 import org.jooq.Configuration;
 import org.jooq.generated.tables.daos.SignInTokensDao;
 import org.jooq.generated.tables.pojos.SignInTokensEntity;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 
@@ -28,11 +27,10 @@ public class SignInTokenQueryApi {
         this.signInTokensDao = new SignInTokensDao(configuration);
     }
 
-    @PostMapping
-    public ResponseEntity<SignInToken> signInToken(
-            final HttpSession httpSession
+    @GetMapping
+    public ResponseEntity<SignInTokenResponse> signInToken(
+            @RequestAttribute("signInSession") final SignInSession signInSession
     ) {
-        final SignInSession signInSession = session(httpSession);
         final String userId = signInSession.userId();
 
         final SignInTokensEntity tokenEntity = signInTokensDao.ctx()
@@ -58,14 +56,6 @@ public class SignInTokenQueryApi {
                 tokenEntity.getDeletedAt()
         );
 
-        return ResponseEntity.ok(token);
-    }
-
-    private SignInSession session(final HttpSession httpSession) {
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
-        if (isNull(signIn)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
-        }
-        return signIn;
+        return ResponseEntity.ok(new SignInTokenResponse(token.getToken(), token.getExpiresAt()));
     }
 }

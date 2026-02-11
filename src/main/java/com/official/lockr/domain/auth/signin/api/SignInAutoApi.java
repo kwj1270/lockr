@@ -1,12 +1,14 @@
 package com.official.lockr.domain.auth.signin.api;
 
 import com.official.lockr.domain.auth.signin.api.dto.SignInAutoHttpRequest;
+import com.official.lockr.domain.auth.signin.api.dto.SignInTokenResponse;
 import com.official.lockr.domain.auth.signin.application.usecase.RefreshSignInTokenUseCase;
 import com.official.lockr.domain.auth.signin.application.command.RefreshSignInTokenCommand;
 import com.official.lockr.domain.auth.signin.domain.SignInSession;
 import com.official.lockr.domain.auth.signin.domain.SignInToken;
 import com.official.lockr.global.http.HttpHeaderContext;
 import com.official.lockr.global.http.HttpHeaders;
+import com.official.lockr.global.util.SessionUtils;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,7 +30,7 @@ public class SignInAutoApi {
     }
 
     @PostMapping("/auto")
-    public ResponseEntity<SignInToken> signIn(
+    public ResponseEntity<SignInTokenResponse> signIn(
             final HttpSession session,
             @RequestBody final SignInAutoHttpRequest signInAutoHttpRequest
     ) {
@@ -36,19 +38,7 @@ public class SignInAutoApi {
         final SignInToken signInToken = refreshSignInTokenUseCase.refresh(
                 new RefreshSignInTokenCommand(signInAutoHttpRequest.signInToken())
         );
-        session(session, httpHeaderContext, signInToken);
-        return ResponseEntity.ok(signInToken);
-    }
-
-    private void session(final HttpSession session, final HttpHeaderContext httpHeaderContext, final SignInToken signInToken) {
-        session.setAttribute("signIn", new SignInSession(
-                signInToken.getUserId(),
-                httpHeaderContext.deviceId(),
-                httpHeaderContext.deviceName(),
-                httpHeaderContext.deviceOS(),
-                httpHeaderContext.ipAddress(),
-                httpHeaderContext.userAgent(),
-                signInToken.getCreatedAt()
-        ));
+        SessionUtils.setSignInSession(session, SignInSession.from(signInToken, httpHeaderContext));
+        return ResponseEntity.ok(new SignInTokenResponse(signInToken.getToken(), signInToken.getExpiresAt()));
     }
 }

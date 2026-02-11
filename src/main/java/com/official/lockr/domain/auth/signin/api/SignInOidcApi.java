@@ -1,13 +1,16 @@
 package com.official.lockr.domain.auth.signin.api;
 
-import com.official.lockr.domain.auth.oidc.application.RegisterOidcUseCase;
+import com.official.lockr.domain.auth.oidc.application.usecase.RegisterOidcUseCase;
 import com.official.lockr.domain.auth.oidc.domain.Oidc;
 import com.official.lockr.domain.auth.signin.api.dto.SignInOidcHttpRequest;
+import com.official.lockr.domain.auth.signin.api.dto.SignInOidcResponse;
+import com.official.lockr.domain.auth.signin.application.command.RegisterSignInCommand;
 import com.official.lockr.domain.auth.signin.application.usecase.RegisterSignInUseCase;
 import com.official.lockr.domain.auth.signin.domain.SignIn;
 import com.official.lockr.domain.auth.signin.domain.SignInSession;
 import com.official.lockr.global.http.HttpHeaderContext;
 import com.official.lockr.global.http.HttpHeaders;
+import com.official.lockr.global.util.SessionUtils;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,30 +36,18 @@ public class SignInOidcApi {
     }
 
     @PostMapping("/sign_in/oidc")
-    public ResponseEntity<Oidc> loginByOidc(
+    public ResponseEntity<SignInOidcResponse> loginByOidc(
             @RequestBody final SignInOidcHttpRequest request,
             final HttpSession session
     ) {
         final HttpHeaderContext httpHeaderContext = httpHeaders.get();
         final String idToken = httpHeaderContext.authorizationPlain();
         final Oidc oidc = registerOidcUseCase.register(idToken, request.providerType());
-        final SignIn signIn = registerSignInUseCase.register(
+        final SignIn signIn = registerSignInUseCase.register(new RegisterSignInCommand(
                 oidc.getUserId(), httpHeaderContext.deviceId(), httpHeaderContext.deviceName(), httpHeaderContext.deviceOS(),
                 httpHeaderContext.ipAddress(), httpHeaderContext.userAgent()
-        );
-        session(session, signIn);
-        return ResponseEntity.ok().body(oidc);
-    }
-
-    private void session(final HttpSession session, final SignIn signIn) {
-        session.setAttribute("signIn", new SignInSession(
-                signIn.getUserId(),
-                signIn.getDeviceId(),
-                signIn.getDeviceName(),
-                signIn.getDeviceOS(),
-                signIn.getIpAddress(),
-                signIn.getUserAgent(),
-                signIn.getCreatedAt()
         ));
+        SessionUtils.setSignInSession(session, SignInSession.from(signIn));
+        return ResponseEntity.ok().body(new SignInOidcResponse(oidc.getUserId()));
     }
 }

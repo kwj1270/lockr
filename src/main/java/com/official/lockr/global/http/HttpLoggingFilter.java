@@ -99,7 +99,7 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
             return "";
         }
         try {
-            final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
+            final SignInSession signIn = (SignInSession) httpSession.getAttribute(SignInSession.SESSION_KEY);
             return signIn.userId();
         } catch (Exception e) {
             return "";

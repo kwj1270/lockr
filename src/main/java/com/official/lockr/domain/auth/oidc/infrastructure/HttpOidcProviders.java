@@ -17,7 +17,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
-import java.util.Arrays;
 import java.util.Base64;
 
 @Component
@@ -33,7 +32,7 @@ public class HttpOidcProviders implements OidcProviders {
 
     public String identifier(final String idToken, String providerType) {
         final OidcPublicKeyId oidcPublicKeyId = oidcPublicKeyId(idToken);
-        final OidcPublicKeys oidcPublicKeys = httpOidcClient.authKeys();
+        final OidcPublicKeys oidcPublicKeys = httpOidcClient.authKeys(providerType);
         final OidcPublicKey oidcPublicKey = oidcPublicKeys.findByOidcPublicKeyId(oidcPublicKeyId);
         final PublicKey publicKey = publicKey(oidcPublicKey);
         final Claims claims = parseClaims(idToken, publicKey);
@@ -42,7 +41,7 @@ public class HttpOidcProviders implements OidcProviders {
 
     private OidcPublicKeyId oidcPublicKeyId(final String idToken) {
         try {
-            final String headerString = Arrays.toString(Base64.getUrlDecoder().decode(idToken.split("\\.")[0]));
+            final String headerString = new String(Base64.getUrlDecoder().decode(idToken.split("\\.")[0]));
             return objectMapper.readValue(headerString, OidcPublicKeyId.class);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);

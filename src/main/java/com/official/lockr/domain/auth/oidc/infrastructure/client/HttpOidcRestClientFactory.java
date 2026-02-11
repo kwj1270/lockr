@@ -13,19 +13,25 @@ import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 
-import java.net.URI;
+import java.util.Map;
 
 @Configuration
 public class HttpOidcRestClientFactory {
 
-    @Bean(name = "oidcRestClient")
-    public RestClient oidcRestClient(
+    @Bean(name = "oidcRestClients")
+    public Map<String, RestClient> oidcRestClients(
             final RestClient.Builder restClientBuilder
     ) {
-        return restClientBuilder
-                .baseUrl(URI.create("https://appleid.apple.com"))
-                .requestFactory(clientHttpRequestFactory())
-                .build();
+        return Map.of(
+                "APPLE", restClientBuilder.clone()
+                        .baseUrl("https://appleid.apple.com/auth/keys")
+                        .requestFactory(clientHttpRequestFactory())
+                        .build(),
+                "GOOGLE", restClientBuilder.clone()
+                        .baseUrl("https://www.googleapis.com/oauth2/v3/certs")
+                        .requestFactory(clientHttpRequestFactory())
+                        .build()
+        );
     }
 
     private static ClientHttpRequestFactory clientHttpRequestFactory() {
