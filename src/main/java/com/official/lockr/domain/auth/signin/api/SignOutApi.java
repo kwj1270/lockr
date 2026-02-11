@@ -6,9 +6,8 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RestController;
-
-import static java.util.Objects.isNull;
 
 @RequestMapping("/api/v1/auth/sign_out")
 @RestController
@@ -22,13 +21,11 @@ public class SignOutApi {
 
     @PostMapping
     public ResponseEntity<Void> logout(
+            @RequestAttribute("signInSession") final SignInSession signInSession,
             final HttpSession httpSession
     ) {
-        final SignInSession signInSession = (SignInSession) httpSession.getAttribute("signIn");
-        if (signInSession != null) {
-            final String userId = signInSession.userId();
-            deleteSignInTokenUseCase.delete(userId);
-        }
+        final String userId = signInSession.userId();
+        deleteSignInTokenUseCase.delete(userId);
         httpSession.invalidate();
         return ResponseEntity.ok().build();
     }

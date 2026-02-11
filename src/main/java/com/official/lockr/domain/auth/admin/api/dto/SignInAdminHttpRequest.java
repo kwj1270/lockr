@@ -1,4 +1,4 @@
-package com.official.lockr.domain.auth.signin.api.dto;
+package com.official.lockr.domain.auth.admin.api.dto;
 
 public record SignInAdminHttpRequest(
         String id,

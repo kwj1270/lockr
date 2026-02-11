@@ -1,12 +1,26 @@
 package com.official.lockr.global;
 
+import com.official.lockr.global.auth.AuthInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
+
+    @Override
+    public void addInterceptors(final InterceptorRegistry registry) {
+        registry.addInterceptor(new AuthInterceptor())
+                .addPathPatterns("/api/**")
+                .excludePathPatterns(
+                        "/api/v1/auth/sign_in/admin",
+                        "/api/v1/auth/sign_in/auto",
+                        "/api/v1/auth/oidc/**",
+                        "/api/v1/users"
+                );
+    }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
