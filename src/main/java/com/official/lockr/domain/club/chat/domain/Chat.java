@@ -16,6 +16,7 @@ public class Chat extends AggregateRoot {
     private final String quotedSenderName;
     private final String quotedContent;
     private final LocalDateTime createdAt;
+    private LocalDateTime deletedAt;
 
     public static Chat init(
             final String id,
@@ -102,5 +103,17 @@ public class Chat extends AggregateRoot {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public LocalDateTime getDeletedAt() {
+        return deletedAt;
+    }
+
+    public boolean isDeleted() {
+        return deletedAt != null;
+    }
+
+    public void markDeleted() {
+        this.deletedAt = LocalDateTime.now();
     }
 }

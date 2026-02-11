@@ -3,8 +3,10 @@ package com.official.lockr.domain.club.chat.api;
 import com.official.lockr.domain.auth.signin.domain.SignInSession;
 import com.official.lockr.domain.club.chat.application.usecase.GetChatRoomsUseCase;
 import com.official.lockr.domain.club.chat.application.usecase.GetMessagesUseCase;
+import com.official.lockr.domain.club.chat.application.usecase.GetPinnedMessagesUseCase;
 import com.official.lockr.domain.club.chat.domain.Chat;
 import com.official.lockr.domain.club.chat.domain.ChatRoom;
+import com.official.lockr.domain.club.chat.domain.PinnedMessage;
 import com.official.lockr.domain.club.chat.infrastructure.sse.SseChatEventPublisher;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
@@ -25,15 +27,18 @@ public class ChatQueryApi {
 
     private final GetMessagesUseCase getMessagesUseCase;
     private final GetChatRoomsUseCase getChatRoomsUseCase;
+    private final GetPinnedMessagesUseCase getPinnedMessagesUseCase;
     private final SseChatEventPublisher sseEventPublisher;
 
     public ChatQueryApi(
             final GetMessagesUseCase getMessagesUseCase,
             final GetChatRoomsUseCase getChatRoomsUseCase,
+            final GetPinnedMessagesUseCase getPinnedMessagesUseCase,
             final SseChatEventPublisher sseEventPublisher
     ) {
         this.getMessagesUseCase = getMessagesUseCase;
         this.getChatRoomsUseCase = getChatRoomsUseCase;
+        this.getPinnedMessagesUseCase = getPinnedMessagesUseCase;
         this.sseEventPublisher = sseEventPublisher;
     }
 
@@ -58,6 +63,17 @@ public class ChatQueryApi {
         final SignInSession session = session(httpSession);
         final List<Chat> messages = getMessagesUseCase.getMessages(chatRoomId, session.userId(), lastChatId, limit);
         return ResponseEntity.ok(messages);
+    }
+
+    @GetMapping("/rooms/{chatRoomId}/pinned-messages")
+    public ResponseEntity<List<PinnedMessage>> getPinnedMessages(
+            final HttpSession httpSession,
+            @PathVariable final String clubId,
+            @PathVariable final String chatRoomId
+    ) {
+        final SignInSession session = session(httpSession);
+        final List<PinnedMessage> pinnedMessages = getPinnedMessagesUseCase.getPinnedMessages(chatRoomId, session.userId());
+        return ResponseEntity.ok(pinnedMessages);
     }
 
     @GetMapping(value = "/test-stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
