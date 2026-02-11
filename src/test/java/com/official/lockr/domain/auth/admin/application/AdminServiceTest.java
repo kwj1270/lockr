@@ -3,8 +3,9 @@ package com.official.lockr.domain.auth.admin.application;
 import com.official.lockr.domain.auth.admin.application.command.RegisterAdminCommand;
 import com.official.lockr.domain.auth.admin.domain.Admin;
 import com.official.lockr.domain.auth.admin.domain.AdminRepository;
-import com.official.lockr.domain.auth.signup.domain.SignUp;
-import com.official.lockr.domain.auth.signup.domain.SignUpRepository;
+import com.official.lockr.domain.users.application.RegisterUsersUseCase;
+import com.official.lockr.domain.users.application.command.SaveUsersCommand;
+import com.official.lockr.domain.users.domain.Users;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,7 +27,7 @@ class AdminServiceTest {
     private AdminRepository adminRepository;
 
     @Mock
-    private SignUpRepository signUpRepository;
+    private RegisterUsersUseCase registerUsersUseCase;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -35,7 +36,7 @@ class AdminServiceTest {
 
     @BeforeEach
     void setUp() {
-        adminService = new AdminService(adminRepository, signUpRepository, passwordEncoder);
+        adminService = new AdminService(adminRepository, registerUsersUseCase, passwordEncoder);
     }
 
     @Test
@@ -91,7 +92,7 @@ class AdminServiceTest {
         when(passwordEncoder.encode(rawPassword)).thenReturn(encodedPassword);
         when(passwordEncoder.matches(rawPassword, encodedPassword)).thenReturn(true);
         when(adminRepository.save(any(Admin.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(signUpRepository.save()).thenReturn(new SignUp(generatedUserId));
+        when(registerUsersUseCase.register(any(SaveUsersCommand.class))).thenReturn(Users.init());
 
         final RegisterAdminCommand command = new RegisterAdminCommand(adminId, rawPassword);
 
@@ -104,18 +105,19 @@ class AdminServiceTest {
     }
 
     @Test
-    void shouldAssignUserIdFromSignUpRepositoryWhenCreatingNewAdmin() {
+    void shouldAssignUserIdFromRegisterUsersUseCaseWhenCreatingNewAdmin() {
         // given
         final String adminId = "newAdmin";
         final String rawPassword = "password123";
         final String encodedPassword = "encodedPassword123";
         final String generatedUserId = "generatedUserId123";
+        final Users users = new Users(generatedUserId, null, LocalDateTime.now(), LocalDateTime.now(), null);
 
         when(adminRepository.findById(adminId)).thenReturn(null);
         when(passwordEncoder.encode(rawPassword)).thenReturn(encodedPassword);
         when(passwordEncoder.matches(rawPassword, encodedPassword)).thenReturn(true);
         when(adminRepository.save(any(Admin.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(signUpRepository.save()).thenReturn(new SignUp(generatedUserId));
+        when(registerUsersUseCase.register(any(SaveUsersCommand.class))).thenReturn(users);
 
         final RegisterAdminCommand command = new RegisterAdminCommand(adminId, rawPassword);
 
@@ -124,7 +126,7 @@ class AdminServiceTest {
 
         // then
         assertThat(result.getUserId()).isEqualTo(generatedUserId);
-        verify(signUpRepository).save();
+        verify(registerUsersUseCase).register(any(SaveUsersCommand.class));
     }
 
     @Test
@@ -139,7 +141,7 @@ class AdminServiceTest {
         when(passwordEncoder.encode(rawPassword)).thenReturn(encodedPassword);
         when(passwordEncoder.matches(rawPassword, encodedPassword)).thenReturn(true);
         when(adminRepository.save(any(Admin.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(signUpRepository.save()).thenReturn(new SignUp(generatedUserId));
+        when(registerUsersUseCase.register(any(SaveUsersCommand.class))).thenReturn(Users.init());
 
         final RegisterAdminCommand command = new RegisterAdminCommand(adminId, rawPassword);
 

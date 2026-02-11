@@ -1,4 +1,4 @@
-package com.official.lockr.domain.auth.oidc.application;
+package com.official.lockr.domain.auth.oidc.application.usecase;
 
 import com.official.lockr.domain.auth.oidc.application.command.RegisterOidcCommand;
 import com.official.lockr.domain.auth.oidc.domain.Oidc;
