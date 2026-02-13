@@ -8,8 +8,8 @@ import com.official.lockr.global.vo.BirthDate;
 import com.official.lockr.global.vo.Foot;
 import com.official.lockr.global.vo.Position;
 import jakarta.annotation.Nullable;
-import jakarta.servlet.http.HttpSession;
 import org.jooq.Configuration;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.jooq.generated.tables.daos.SquadPlayersDao;
 import org.jooq.generated.tables.daos.SquadsDao;
 import org.jooq.generated.tables.pojos.SquadPlayersEntity;
@@ -19,8 +19,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,10 +54,9 @@ public class SquadQueryApi {
     @GetMapping("/me")
     public ResponseEntity<SquadPlayer> findMySquadPlayer(
             @PathVariable String clubId,
-            final HttpSession httpSession
+            @RequestAttribute("signInSession") final SignInSession signInSession
     ) {
-        final SignInSession signIn = session(httpSession);
-        final SquadPlayer mySquadPlayer = findMySquadPlayerByUserIdAndClubId(signIn.userId(), clubId);
+        final SquadPlayer mySquadPlayer = findMySquadPlayerByUserIdAndClubId(signInSession.userId(), clubId);
 
         if (mySquadPlayer == null) {
             return ResponseEntity.notFound().build();
@@ -165,13 +162,5 @@ public class SquadQueryApi {
         }
 
         return playerDomain(playerEntity);
-    }
-
-    private SignInSession session(final HttpSession httpSession) {
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
-        if (isNull(signIn)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
-        }
-        return signIn;
     }
 }

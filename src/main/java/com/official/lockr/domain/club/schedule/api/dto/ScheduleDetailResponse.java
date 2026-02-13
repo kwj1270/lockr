@@ -1,5 +1,9 @@
 package com.official.lockr.domain.club.schedule.api.dto;
 
+import com.official.lockr.domain.club.schedule.domain.AttendanceStatus;
+import com.official.lockr.domain.club.schedule.domain.ScheduleStatus;
+import com.official.lockr.domain.club.schedule.domain.ScheduleType;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -10,9 +14,9 @@ public record ScheduleDetailResponse(
     String content,
     ScheduleLocationResponse location,
     LocalDateTime scheduleTime,
-    String type,
+    ScheduleType type,
     String detailData,
-    String status,
+    ScheduleStatus status,
     Integer minParticipants,
     Integer maxParticipants,
     Integer deadlineDays,
@@ -20,7 +24,7 @@ public record ScheduleDetailResponse(
     int attendingCount,
     int notAttendingCount,
     int noResponseCount,
-    String myAttendanceStatus,  // 현재 사용자의 참석 상태
+    AttendanceStatus myAttendanceStatus,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {

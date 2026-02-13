@@ -1,20 +1,20 @@
 package com.official.lockr.domain.club.feed.application;
 
 import com.official.lockr.domain.club.club.domain.Member;
-import com.official.lockr.domain.club.feed.application.dto.*;
-import com.official.lockr.domain.club.feed.application.usecase.*;
+import com.official.lockr.domain.club.feed.application.command.CreateFeedCommand;
+import com.official.lockr.domain.club.feed.application.command.DeleteFeedCommand;
+import com.official.lockr.domain.club.feed.application.command.UpdateFeedCommand;
+import com.official.lockr.domain.club.feed.application.usecase.CreateFeedUseCase;
+import com.official.lockr.domain.club.feed.application.usecase.DeleteFeedUseCase;
+import com.official.lockr.domain.club.feed.application.usecase.UpdateFeedUseCase;
 import com.official.lockr.domain.club.feed.domain.*;
-import com.official.lockr.domain.club.feed.domain.comment.CommentImages;
-import com.official.lockr.domain.club.feed.domain.comment.CommentVideos;
 import org.springframework.stereotype.Service;
 
 import static com.official.lockr.global.util.UlidUtils.generateUlid;
 import static java.util.Objects.isNull;
 
 @Service
-public class FeedService implements CreateFeedUseCase, UpdateFeedUseCase, DeleteFeedUseCase,
-        AddCommentUseCase, UpdateCommentUseCase, AddCommentHeartUseCase, RemoveCommentHeartUseCase,
-        AddHeartUseCase, RemoveHeartUseCase {
+public class FeedService implements CreateFeedUseCase, UpdateFeedUseCase, DeleteFeedUseCase {
 
     private final FeedRepository feedRepository;
     private final FeedClub feedClub;
@@ -73,76 +73,6 @@ public class FeedService implements CreateFeedUseCase, UpdateFeedUseCase, Delete
         feed.delete(command.userId(), member.isStaff());
 
         feedRepository.save(feed);
-    }
-
-    @Override
-    public Feed addComment(final AddCommentCommand command) {
-        verifyMember(command.userId(), findFeedOrThrow(command.feedId()).getClubId());
-        final Feed feed = findFeedOrThrow(command.feedId());
-
-        final String commentId = generateUlid();
-        final CommentImages images = CommentImages.from(command.imageUrls(), command.userId(), commentId);
-        final CommentVideos videos = CommentVideos.from(command.videoUrls(), command.userId(), commentId);
-
-        feed.addComment(commentId, command.userId(), command.content(), images, videos);
-
-        return feedRepository.save(feed);
-    }
-
-    @Override
-    public Feed updateComment(final UpdateCommentCommand command) {
-        verifyMember(command.userId(), findFeedOrThrow(command.feedId()).getClubId());
-        final Feed feed = findFeedOrThrow(command.feedId());
-
-        final CommentImages images = CommentImages.from(command.imageUrls(), command.userId(), command.commentId());
-        final CommentVideos videos = CommentVideos.from(command.videoUrls(), command.userId(), command.commentId());
-
-        feed.updateComment(command.commentId(), command.userId(), command.content(), images, videos);
-
-        return feedRepository.save(feed);
-    }
-
-    @Override
-    public Feed addCommentHeart(final AddCommentHeartCommand command) {
-        verifyMember(command.userId(), findFeedOrThrow(command.feedId()).getClubId());
-        final Feed feed = findFeedOrThrow(command.feedId());
-
-        feed.addCommentHeart(command.commentId(), command.userId(), generateUlid());
-
-        return feedRepository.save(feed);
-    }
-
-    @Override
-    public Feed removeCommentHeart(final RemoveCommentHeartCommand command) {
-        final Feed feed = findFeedOrThrow(command.feedId());
-
-        feed.removeCommentHeart(command.commentId(), command.userId());
-
-        return feedRepository.save(feed);
-    }
-
-    @Override
-    public Feed addHeart(final AddHeartCommand command) {
-        verifyMember(command.userId(), findFeedOrThrow(command.feedId()).getClubId());
-        final Feed feed = findFeedOrThrow(command.feedId());
-
-        feed.addHeart(generateUlid(), command.userId());
-
-        return feedRepository.save(feed);
-    }
-
-    /**
-     * Redis 에 add/delete 정보 넣어서 5초 단위로 반영하는 로직 추가 or kafka 사용하기
-     * @param command
-     * @return
-     */
-    @Override
-    public Feed removeHeart(final RemoveHeartCommand command) {
-        final Feed feed = findFeedOrThrow(command.feedId());
-
-        feed.removeHeart(command.userId());
-
-        return feedRepository.save(feed);
     }
 
     private Feed findFeedOrThrow(final String feedId) {

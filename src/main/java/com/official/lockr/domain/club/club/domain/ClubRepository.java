@@ -12,6 +12,4 @@ public interface ClubRepository {
 
     @Nullable
     Club findById(String id);
-
-    List<Club> findAllByUserId(String userId);
 }

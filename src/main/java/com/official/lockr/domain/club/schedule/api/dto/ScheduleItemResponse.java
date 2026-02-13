@@ -1,5 +1,8 @@
 package com.official.lockr.domain.club.schedule.api.dto;
 
+import com.official.lockr.domain.club.schedule.domain.ScheduleStatus;
+import com.official.lockr.domain.club.schedule.domain.ScheduleType;
+
 import java.time.LocalDateTime;
 
 public record ScheduleItemResponse(
@@ -7,10 +10,10 @@ public record ScheduleItemResponse(
     String clubId,
     String title,
     String content,
-    String location,
+    ScheduleLocationResponse location,
     LocalDateTime scheduleTime,
-    String type,
-    String status,
+    ScheduleType type,
+    ScheduleStatus status,
     int attendingCount,
     int notAttendingCount,
     int noResponseCount,

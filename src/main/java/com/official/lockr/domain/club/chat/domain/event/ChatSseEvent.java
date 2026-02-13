@@ -26,7 +26,7 @@ public record ChatSseEvent(
     }
 
     public static ChatSseEvent messageDeleted(final String chatRoomId, final String clubId, final String chatId) {
-        final Chat deletedChat = new Chat(chatId, chatRoomId, null, null, null, null, null, null, null);
+        final Chat deletedChat = new Chat(chatId, chatRoomId, null, null, null, null, null, null);
         return new ChatSseEvent(chatRoomId, clubId, ChatSseEventType.MESSAGE_DELETED, deletedChat, null);
     }
 
@@ -35,7 +35,7 @@ public record ChatSseEvent(
     }
 
     public static ChatSseEvent messageUnpinned(final String chatRoomId, final String clubId, final String chatId) {
-        final Chat unpinnedChat = new Chat(chatId, chatRoomId, null, null, null, null, null, null, null);
+        final Chat unpinnedChat = new Chat(chatId, chatRoomId, null, null, null, null, null, null);
         return new ChatSseEvent(chatRoomId, clubId, ChatSseEventType.MESSAGE_UNPINNED, unpinnedChat, null);
     }
 }

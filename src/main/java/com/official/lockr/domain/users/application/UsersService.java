@@ -1,23 +1,23 @@
 package com.official.lockr.domain.users.application;
 
-import com.official.lockr.domain.club.club.domain.ClubRepository;
 import com.official.lockr.domain.users.application.command.SaveUsersCommand;
 import com.official.lockr.domain.users.application.command.UpdateUserAdditionalInfoCommand;
 import com.official.lockr.domain.users.application.command.WithdrawUsersCommand;
+import com.official.lockr.domain.users.domain.ClubMembershipQuery;
 import com.official.lockr.domain.users.domain.Users;
 import com.official.lockr.domain.users.domain.UsersRepository;
 import org.springframework.stereotype.Service;
 
 
 @Service
-public class UsersService implements RegisterUsersUsecase, UpdateUserAdditionalInfoUsecase, WithdrawUsersUsecase {
+public class UsersService implements RegisterUsersUseCase, UpdateUserAdditionalInfoUseCase, WithdrawUsersUseCase {
 
     private final UsersRepository usersRepository;
-    private final ClubRepository clubRepository;
+    private final ClubMembershipQuery clubMembershipQuery;
 
-    public UsersService(final UsersRepository usersRepository, final ClubRepository clubRepository) {
+    public UsersService(final UsersRepository usersRepository, final ClubMembershipQuery clubMembershipQuery) {
         this.usersRepository = usersRepository;
-        this.clubRepository = clubRepository;
+        this.clubMembershipQuery = clubMembershipQuery;
     }
 
     @Override
@@ -39,7 +39,7 @@ public class UsersService implements RegisterUsersUsecase, UpdateUserAdditionalI
         if (users == null) {
             throw new IllegalArgumentException("존재하지 않는 회원입니다.");
         }
-        if (!clubRepository.findAllByUserId(command.userId()).isEmpty()) {
+        if (clubMembershipQuery.hasActiveClubMembership(command.userId())) {
             throw new IllegalStateException("클럽에서 먼저 탈퇴해주세요.");
         }
         users.withdraw();

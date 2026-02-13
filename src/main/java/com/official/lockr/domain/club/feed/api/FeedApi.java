@@ -2,16 +2,11 @@ package com.official.lockr.domain.club.feed.api;
 
 import com.official.lockr.domain.auth.signin.domain.SignInSession;
 import com.official.lockr.domain.club.feed.api.dto.*;
-import com.official.lockr.domain.club.feed.application.dto.*;
+import com.official.lockr.domain.club.feed.application.command.*;
 import com.official.lockr.domain.club.feed.application.usecase.*;
 import com.official.lockr.domain.club.feed.domain.Feed;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
-
-import static java.util.Objects.isNull;
 
 @RequestMapping("/api/v1/clubs/{clubId}/feeds")
 @RestController
@@ -51,114 +46,97 @@ public class FeedApi {
 
     @PostMapping
     public ResponseEntity<FeedResponse> createFeed(
-            final HttpSession httpSession,
+            @RequestAttribute("signInSession") final SignInSession signInSession,
             @PathVariable final String clubId,
             @RequestBody final CreateFeedRequest request
     ) {
-        final SignInSession session = session(httpSession);
-        final Feed feed = createFeedUseCase.create(request.toCommand(session.userId(), clubId));
+        final Feed feed = createFeedUseCase.create(request.toCommand(signInSession.userId(), clubId));
         return ResponseEntity.ok(FeedResponse.from(feed));
     }
 
     @PostMapping("/{feedId}/update")
     public ResponseEntity<FeedResponse> updateFeed(
-            final HttpSession httpSession,
+            @RequestAttribute("signInSession") final SignInSession signInSession,
             @PathVariable final String clubId,
             @PathVariable final String feedId,
             @RequestBody final UpdateFeedRequest request
     ) {
-        final SignInSession session = session(httpSession);
-        final Feed feed = updateFeedUseCase.update(request.toCommand(feedId, session.userId(), clubId));
+        final Feed feed = updateFeedUseCase.update(request.toCommand(feedId, signInSession.userId(), clubId));
         return ResponseEntity.ok(FeedResponse.from(feed));
     }
 
     @PostMapping("/{feedId}/delete")
     public ResponseEntity<Void> deleteFeed(
-            final HttpSession httpSession,
+            @RequestAttribute("signInSession") final SignInSession signInSession,
             @PathVariable final String clubId,
             @PathVariable final String feedId
     ) {
-        final SignInSession session = session(httpSession);
-        deleteFeedUseCase.delete(new DeleteFeedCommand(feedId, session.userId(), clubId));
+        deleteFeedUseCase.delete(new DeleteFeedCommand(feedId, signInSession.userId(), clubId));
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{feedId}/comments")
     public ResponseEntity<FeedResponse> addComment(
-            final HttpSession httpSession,
+            @RequestAttribute("signInSession") final SignInSession signInSession,
             @PathVariable final String clubId,
             @PathVariable final String feedId,
             @RequestBody final AddCommentRequest request
     ) {
-        final SignInSession session = session(httpSession);
-        final Feed feed = addCommentUseCase.addComment(request.toCommand(feedId, session.userId(), clubId));
+        final Feed feed = addCommentUseCase.addComment(request.toCommand(feedId, signInSession.userId(), clubId));
         return ResponseEntity.ok(FeedResponse.from(feed));
     }
 
     @PostMapping("/{feedId}/comments/{commentId}/update")
     public ResponseEntity<FeedResponse> updateComment(
-            final HttpSession httpSession,
+            @RequestAttribute("signInSession") final SignInSession signInSession,
             @PathVariable final String clubId,
             @PathVariable final String feedId,
             @PathVariable final String commentId,
             @RequestBody final UpdateCommentRequest request
     ) {
-        final SignInSession session = session(httpSession);
-        final Feed feed = updateCommentUseCase.updateComment(request.toCommand(feedId, commentId, session.userId(), clubId));
+        final Feed feed = updateCommentUseCase.updateComment(request.toCommand(feedId, commentId, signInSession.userId(), clubId));
         return ResponseEntity.ok(FeedResponse.from(feed));
     }
 
     @PostMapping("/{feedId}/comments/{commentId}/hearts/add")
     public ResponseEntity<FeedResponse> addCommentHeart(
-            final HttpSession httpSession,
+            @RequestAttribute("signInSession") final SignInSession signInSession,
             @PathVariable final String clubId,
             @PathVariable final String feedId,
             @PathVariable final String commentId
     ) {
-        final SignInSession session = session(httpSession);
-        final Feed feed = addCommentHeartUseCase.addCommentHeart(new AddCommentHeartCommand(feedId, commentId, session.userId(), clubId));
+        final Feed feed = addCommentHeartUseCase.addCommentHeart(new AddCommentHeartCommand(feedId, commentId, signInSession.userId(), clubId));
         return ResponseEntity.ok(FeedResponse.from(feed));
     }
 
     @PostMapping("/{feedId}/comments/{commentId}/hearts/remove")
     public ResponseEntity<FeedResponse> removeCommentHeart(
-            final HttpSession httpSession,
+            @RequestAttribute("signInSession") final SignInSession signInSession,
             @PathVariable final String clubId,
             @PathVariable final String feedId,
             @PathVariable final String commentId
     ) {
-        final SignInSession session = session(httpSession);
-        final Feed feed = removeCommentHeartUseCase.removeCommentHeart(new RemoveCommentHeartCommand(feedId, commentId, session.userId(), clubId));
+        final Feed feed = removeCommentHeartUseCase.removeCommentHeart(new RemoveCommentHeartCommand(feedId, commentId, signInSession.userId(), clubId));
         return ResponseEntity.ok(FeedResponse.from(feed));
     }
 
     @PostMapping("/{feedId}/hearts/add")
     public ResponseEntity<FeedResponse> addHeart(
-            final HttpSession httpSession,
+            @RequestAttribute("signInSession") final SignInSession signInSession,
             @PathVariable final String clubId,
             @PathVariable final String feedId
     ) {
-        final SignInSession session = session(httpSession);
-        final Feed feed = addHeartUseCase.addHeart(new AddHeartCommand(feedId, session.userId(), clubId));
+        final Feed feed = addHeartUseCase.addHeart(new AddHeartCommand(feedId, signInSession.userId(), clubId));
         return ResponseEntity.ok(FeedResponse.from(feed));
     }
 
     @PostMapping("/{feedId}/hearts/remove")
     public ResponseEntity<FeedResponse> removeHeart(
-            final HttpSession httpSession,
+            @RequestAttribute("signInSession") final SignInSession signInSession,
             @PathVariable final String clubId,
             @PathVariable final String feedId
     ) {
-        final SignInSession session = session(httpSession);
-        final Feed feed = removeHeartUseCase.removeHeart(new RemoveHeartCommand(feedId, session.userId(), clubId));
+        final Feed feed = removeHeartUseCase.removeHeart(new RemoveHeartCommand(feedId, signInSession.userId(), clubId));
         return ResponseEntity.ok(FeedResponse.from(feed));
-    }
-
-    private SignInSession session(final HttpSession httpSession) {
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
-        if (isNull(signIn)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
-        }
-        return signIn;
     }
 }

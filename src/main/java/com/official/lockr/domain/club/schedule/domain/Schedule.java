@@ -1,9 +1,9 @@
 package com.official.lockr.domain.club.schedule.domain;
 
 import com.official.lockr.domain.club.schedule.domain.vo.ScheduleDetailData;
+import com.official.lockr.domain.club.schedule.domain.event.AttendanceStatusChangedEvent;
 import com.official.lockr.domain.club.schedule.domain.event.CancelledScheduleEvent;
 import com.official.lockr.domain.club.schedule.domain.event.CreatedScheduleEvent;
-import com.official.lockr.domain.club.schedule.domain.event.RespondedToScheduleEvent;
 import com.official.lockr.domain.club.schedule.domain.event.UpdatedScheduleEvent;
 import com.official.lockr.global.ddd.AggregateRoot;
 
@@ -25,8 +25,8 @@ public class Schedule extends AggregateRoot {
     private ScheduleDetailData scheduleDetailData;
     private final List<Attendance> attendances;
     private ScheduleStatus status;
-    private int minParticipants;
-    private int maxParticipants;
+    private Integer minParticipants;
+    private Integer maxParticipants;
     private int deadlineDays;
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -46,17 +46,47 @@ public class Schedule extends AggregateRoot {
             final Integer maxParticipants,
             final int deadlineDays
     ) {
-        validateScheduleTime(scheduleTime);
-        final LocalDateTime now = LocalDateTime.now();
+        return create(id, clubId, title, content, scheduleLocation, scheduleTime,
+                scheduleType, detail, userIds, minParticipants, maxParticipants, deadlineDays, LocalDateTime.now());
+    }
+
+    public static Schedule create(
+            final String id,
+            final String clubId,
+            final String title,
+            final String content,
+            final String scheduleLocation,
+            final LocalDateTime scheduleTime,
+            final ScheduleType scheduleType,
+            final ScheduleDetailData detail,
+            final List<String> userIds,
+            final Integer minParticipants,
+            final Integer maxParticipants,
+            final int deadlineDays,
+            final LocalDateTime now
+    ) {
+        validateScheduleTime(scheduleTime, now);
+        validateParticipants(minParticipants, maxParticipants);
+        validateDeadlineDays(deadlineDays);
         final Schedule schedule = new Schedule(
                 id, clubId, title, content, scheduleLocation, scheduleTime, scheduleType,
                 detail, createInitialAttendances(userIds), SCHEDULED, minParticipants, maxParticipants, deadlineDays, now, now, null
         );
-        schedule.addEvent(new CreatedScheduleEvent(id, clubId, scheduleType, scheduleTime));
+        schedule.addEvent(new CreatedScheduleEvent(id, clubId, title, scheduleType, detail, scheduleTime));
         return schedule;
     }
 
-    public Schedule(
+    public static Schedule reconstruct(
+            final String id, final String clubId, final String title, final String content, final String location,
+            final LocalDateTime scheduleTime, final ScheduleType scheduleType, final ScheduleDetailData scheduleDetailData,
+            final List<Attendance> attendances, final ScheduleStatus status, final Integer minParticipants, final Integer maxParticipants, final int deadlineDays,
+            final LocalDateTime createdAt, final LocalDateTime updatedAt, final LocalDateTime deletedAt
+    ) {
+        return new Schedule(id, clubId, title, content, location, scheduleTime, scheduleType, scheduleDetailData,
+                attendances, status, minParticipants, maxParticipants, deadlineDays, createdAt, updatedAt, deletedAt);
+    }
+
+    Schedule(
             final String id, final String clubId, final String title, final String content, final String location,
             final LocalDateTime scheduleTime, final ScheduleType scheduleType, final ScheduleDetailData scheduleDetailData,
             final List<Attendance> attendances, final ScheduleStatus status, final Integer minParticipants, final Integer maxParticipants, final int deadlineDays,
@@ -81,12 +111,53 @@ public class Schedule extends AggregateRoot {
     }
 
     public void respond(final String userId, final AttendanceStatus status, final String reason) {
+        respond(userId, status, reason, LocalDateTime.now());
+    }
+
+    public void respond(final String userId, final AttendanceStatus status, final String reason, final LocalDateTime now) {
+        doRespond(userId, userId, "PLAYER", status, reason, now);
+    }
+
+    public void adminRespond(
+            final String targetUserId,
+            final String adminUserId,
+            final String adminRole,
+            final AttendanceStatus status,
+            final String reason
+    ) {
+        adminRespond(targetUserId, adminUserId, adminRole, status, reason, LocalDateTime.now());
+    }
+
+    public void adminRespond(
+            final String targetUserId,
+            final String adminUserId,
+            final String adminRole,
+            final AttendanceStatus status,
+            final String reason,
+            final LocalDateTime now
+    ) {
+        doRespond(targetUserId, adminUserId, adminRole, status, reason, now);
+    }
+
+    private void doRespond(
+            final String targetUserId,
+            final String changedBy,
+            final String changedByRole,
+            final AttendanceStatus status,
+            final String reason,
+            final LocalDateTime now
+    ) {
         validateNotCancelled();
-        final Attendance attendance = findAttendance(userId);
+        final Attendance attendance = findAttendance(targetUserId);
         final AttendanceStatus previousStatus = attendance.getStatus();
         attendance.respond(status, reason);
-        this.updatedAt = LocalDateTime.now();
-        addEvent(new RespondedToScheduleEvent(id, clubId, userId, previousStatus, status));
+        this.updatedAt = now;
+        if (previousStatus != status) {
+            addEvent(new AttendanceStatusChangedEvent(
+                    attendance.getId(), id, targetUserId, changedBy, changedByRole,
+                    previousStatus, status, reason, now
+            ));
+        }
     }
 
     public void update(
@@ -95,12 +166,29 @@ public class Schedule extends AggregateRoot {
             final String scheduleLocation,
             final LocalDateTime scheduleTime,
             final ScheduleDetailData scheduleDetailData,
-            final int minParticipants,
-            final int maxParticipants,
+            final Integer minParticipants,
+            final Integer maxParticipants,
             final int deadlineDays
     ) {
+        update(title, content, scheduleLocation, scheduleTime, scheduleDetailData,
+                minParticipants, maxParticipants, deadlineDays, LocalDateTime.now());
+    }
+
+    public void update(
+            final String title,
+            final String content,
+            final String scheduleLocation,
+            final LocalDateTime scheduleTime,
+            final ScheduleDetailData scheduleDetailData,
+            final Integer minParticipants,
+            final Integer maxParticipants,
+            final int deadlineDays,
+            final LocalDateTime now
+    ) {
         validateNotCancelled();
-        validateScheduleTime(scheduleTime);
+        validateScheduleTime(scheduleTime, now);
+        validateParticipants(minParticipants, maxParticipants);
+        validateDeadlineDays(deadlineDays);
 
         this.title = title;
         this.content = content;
@@ -110,15 +198,19 @@ public class Schedule extends AggregateRoot {
         this.minParticipants = minParticipants;
         this.maxParticipants = maxParticipants;
         this.deadlineDays = deadlineDays;
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = now;
         addEvent(new UpdatedScheduleEvent(id, clubId, scheduleTime));
     }
 
     public void cancel() {
+        cancel(LocalDateTime.now());
+    }
+
+    public void cancel(final LocalDateTime now) {
         validateNotCancelled();
         this.status = ScheduleStatus.CANCELLED;
-        this.updatedAt = LocalDateTime.now();
-        this.deletedAt = LocalDateTime.now();
+        this.updatedAt = now;
+        this.deletedAt = now;
         addEvent(new CancelledScheduleEvent(id, clubId, scheduleType));
     }
 
@@ -154,6 +246,11 @@ public class Schedule extends AggregateRoot {
                 .count();
     }
 
+    public boolean isDeadlinePassed(final LocalDateTime now) {
+        final LocalDateTime deadline = scheduleTime.minusDays(deadlineDays);
+        return now.isAfter(deadline);
+    }
+
     public boolean isCancelled() {
         return status == ScheduleStatus.CANCELLED;
     }
@@ -176,11 +273,29 @@ public class Schedule extends AggregateRoot {
     }
 
     // 유효성 검증
-    private static void validateScheduleTime(final LocalDateTime scheduleTime) {
+    private static void validateParticipants(final Integer minParticipants, final Integer maxParticipants) {
+        if (minParticipants != null && minParticipants < 0) {
+            throw new IllegalArgumentException("minParticipants must not be negative");
+        }
+        if (maxParticipants != null && maxParticipants < 0) {
+            throw new IllegalArgumentException("maxParticipants must not be negative");
+        }
+        if (minParticipants != null && maxParticipants != null && minParticipants > maxParticipants) {
+            throw new IllegalArgumentException("minParticipants must not be greater than maxParticipants");
+        }
+    }
+
+    private static void validateDeadlineDays(final int deadlineDays) {
+        if (deadlineDays < 0) {
+            throw new IllegalArgumentException("deadlineDays must not be negative");
+        }
+    }
+
+    private static void validateScheduleTime(final LocalDateTime scheduleTime, final LocalDateTime now) {
         if (scheduleTime == null) {
             throw new IllegalArgumentException("Schedule time is required");
         }
-        if (scheduleTime.isBefore(LocalDateTime.now())) {
+        if (scheduleTime.isBefore(now)) {
             throw new IllegalArgumentException("Schedule time must be in the future");
         }
     }

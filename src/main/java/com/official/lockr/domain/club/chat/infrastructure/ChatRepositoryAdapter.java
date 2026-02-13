@@ -112,6 +112,9 @@ public class ChatRepositoryAdapter implements ChatRepository {
         return dbChats;
     }
 
+    /**
+     * 특정 메시지 ID 이후의 메시지 조회 (SSE 재연결 시 누락 메시지 복구용)
+     */
     @Override
     public List<Chat> findAllAfterChatId(final String chatRoomId, final String afterChatId, final int limit) {
         try {

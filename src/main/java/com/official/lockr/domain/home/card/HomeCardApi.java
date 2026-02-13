@@ -1,18 +1,13 @@
 package com.official.lockr.domain.home.card;
 
 import com.official.lockr.domain.auth.signin.domain.SignInSession;
-import jakarta.servlet.http.HttpSession;
 import org.jooq.Configuration;
 import org.jooq.generated.tables.daos.UserPinnedClubsDao;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
-
-import static java.util.Objects.isNull;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,9 +31,7 @@ public class HomeCardApi {
     }
 
     @GetMapping
-    public ResponseEntity<HomeCardsResponse> cards(final HttpSession httpSession) {
-        final SignInSession signIn = session(httpSession);
-
+    public ResponseEntity<HomeCardsResponse> cards(@RequestAttribute("signInSession") final SignInSession signInSession) {
         var MEMBERS_COUNT = MEMBERS.as("m2");
         var memberCountField = selectCount()
                 .from(MEMBERS_COUNT)
@@ -69,8 +62,8 @@ public class HomeCardApi {
                 .from(USER_PINNED_CLUBS)
                 .innerJoin(CLUBS).on(CLUBS.ID.eq(USER_PINNED_CLUBS.CLUB_ID))
                 .innerJoin(MEMBERS).on(MEMBERS.CLUB_ID.eq(CLUBS.ID)
-                        .and(MEMBERS.USER_ID.eq(signIn.userId())))
-                .where(USER_PINNED_CLUBS.USER_ID.eq(signIn.userId()))
+                        .and(MEMBERS.USER_ID.eq(signInSession.userId())))
+                .where(USER_PINNED_CLUBS.USER_ID.eq(signInSession.userId()))
                 .orderBy(USER_PINNED_CLUBS.PIN_ORDER.asc())
                 .fetch()
                 .map(record -> {
@@ -95,14 +88,12 @@ public class HomeCardApi {
     @Transactional
     public ResponseEntity<Void> pinClubs(
             @RequestBody PinClubsRequest request,
-            HttpSession httpSession
+            @RequestAttribute("signInSession") final SignInSession signInSession
     ) {
         // 최대 2개 제한
         if (request.clubs().size() > 2) {
             return ResponseEntity.badRequest().build();
         }
-
-        final SignInSession signIn = session(httpSession);
 
         // 가입하지 않은 클럽은 핀 설정 불가
         for (PinClubItem club : request.clubs()) {
@@ -111,7 +102,7 @@ public class HomeCardApi {
                             selectOne()
                                     .from(MEMBERS)
                                     .where(MEMBERS.CLUB_ID.eq(club.clubId())
-                                            .and(MEMBERS.USER_ID.eq(signIn.userId()))
+                                            .and(MEMBERS.USER_ID.eq(signInSession.userId()))
                                             .and(MEMBERS.DELETED_AT.isNull()))
                     );
             if (!isMember) {
@@ -122,7 +113,7 @@ public class HomeCardApi {
         // 기존 핀 삭제
         userPinnedClubsDao.ctx()
                 .deleteFrom(USER_PINNED_CLUBS)
-                .where(USER_PINNED_CLUBS.USER_ID.eq(signIn.userId()))
+                .where(USER_PINNED_CLUBS.USER_ID.eq(signInSession.userId()))
                 .execute();
 
         // 새 핀 생성
@@ -131,7 +122,7 @@ public class HomeCardApi {
             userPinnedClubsDao.ctx()
                     .insertInto(USER_PINNED_CLUBS)
                     .set(USER_PINNED_CLUBS.ID, UUID.randomUUID().toString())
-                    .set(USER_PINNED_CLUBS.USER_ID, signIn.userId())
+                    .set(USER_PINNED_CLUBS.USER_ID, signInSession.userId())
                     .set(USER_PINNED_CLUBS.CLUB_ID, club.clubId())
                     .set(USER_PINNED_CLUBS.BACKGROUND_COLOR, club.backgroundColor())
                     .set(USER_PINNED_CLUBS.PIN_ORDER, i + 1)
@@ -159,12 +150,4 @@ public class HomeCardApi {
             String location,
             String nextScheduleDate
     ) {}
-
-    private SignInSession session(final HttpSession httpSession) {
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
-        if (isNull(signIn)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
-        }
-        return signIn;
-    }
 }

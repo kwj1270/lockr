@@ -19,7 +19,6 @@ import com.official.lockr.domain.club.feed.api.dto.FeedItemResponse;
 import com.official.lockr.domain.club.feed.api.dto.FeedsResponse;
 import com.official.lockr.domain.club.feed.api.dto.HeartItemResponse;
 import com.official.lockr.domain.club.feed.api.dto.HeartsResponse;
-import jakarta.servlet.http.HttpSession;
 import org.jooq.Configuration;
 import org.jooq.generated.tables.daos.FeedsDao;
 import org.jooq.impl.DSL;
@@ -28,13 +27,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
 
 import java.util.List;
-
-import static java.util.Objects.isNull;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -51,13 +47,10 @@ public class FeedQueryApi {
     @GetMapping
     public ResponseEntity<FeedsResponse> getFeeds(
             @PathVariable String clubId,
-            final HttpSession httpSession,
+            @RequestAttribute("signInSession") final SignInSession signInSession,
             @RequestParam(value = "cursor", required = false, defaultValue = "") String cursor,
             @RequestParam(value = "limit", defaultValue = "20") int limit
     ) {
-        // Get current user from session
-        final SignInSession signIn = session(httpSession);
-
         // Check if user is a member of the club
         final boolean isMember = feedsDao.ctx()
                 .fetchExists(
@@ -65,7 +58,7 @@ public class FeedQueryApi {
                                 .selectOne()
                                 .from(MEMBERS)
                                 .where(MEMBERS.CLUB_ID.eq(clubId))
-                                .and(MEMBERS.USER_ID.eq(signIn.userId()))
+                                .and(MEMBERS.USER_ID.eq(signInSession.userId()))
                                 .and(MEMBERS.DELETED_AT.isNull())
                 );
 
@@ -97,7 +90,7 @@ public class FeedQueryApi {
         // Step 2: Get images, videos, and likes (in-memory join)
         final Map<String, List<String>> feedImages = fetchFeedImages(feedIds);
         final Map<String, List<String>> feedVideos = fetchFeedVideos(feedIds);
-        final Map<String, Boolean> feedLikes = fetchFeedLikes(feedIds, signIn.userId());
+        final Map<String, Boolean> feedLikes = fetchFeedLikes(feedIds, signInSession.userId());
 
         // Step 3: Fetch full feed data with joins and aggregations
         final List<FeedItemResponse> feeds = feedsDao.ctx()
@@ -203,13 +196,10 @@ public class FeedQueryApi {
     public ResponseEntity<CommentsResponse> getComments(
             @PathVariable String clubId,
             @PathVariable String feedId,
-            final HttpSession httpSession,
+            @RequestAttribute("signInSession") final SignInSession signInSession,
             @RequestParam(value = "cursor", required = false, defaultValue = "") String cursor,
             @RequestParam(value = "limit", defaultValue = "20") int limit
     ) {
-        // Get current user from session
-        final SignInSession signIn = session(httpSession);
-
         // Check if user is a member of the club
         final boolean isMember = feedsDao.ctx()
                 .fetchExists(
@@ -217,7 +207,7 @@ public class FeedQueryApi {
                                 .selectOne()
                                 .from(MEMBERS)
                                 .where(MEMBERS.CLUB_ID.eq(clubId))
-                                .and(MEMBERS.USER_ID.eq(signIn.userId()))
+                                .and(MEMBERS.USER_ID.eq(signInSession.userId()))
                                 .and(MEMBERS.DELETED_AT.isNull())
                 );
 
@@ -249,7 +239,7 @@ public class FeedQueryApi {
         // Step 2: Get images, videos, and likes (in-memory join)
         final Map<String, List<String>> commentImages = fetchCommentImages(commentIds);
         final Map<String, List<String>> commentVideos = fetchCommentVideos(commentIds);
-        final Map<String, Boolean> commentLikes = fetchCommentLikes(commentIds, signIn.userId());
+        final Map<String, Boolean> commentLikes = fetchCommentLikes(commentIds, signInSession.userId());
 
         // Step 3: Fetch full comment data with user info and aggregations
         final List<CommentItemResponse> comments = feedsDao.ctx()
@@ -338,13 +328,10 @@ public class FeedQueryApi {
     public ResponseEntity<HeartsResponse> getHearts(
             @PathVariable String clubId,
             @PathVariable String feedId,
-            final HttpSession httpSession,
+            @RequestAttribute("signInSession") final SignInSession signInSession,
             @RequestParam(value = "cursor", required = false, defaultValue = "") String cursor,
             @RequestParam(value = "limit", defaultValue = "20") int limit
     ) {
-        // Get current user from session
-        final SignInSession signIn = session(httpSession);
-
         // Check if user is a member of the club
         final boolean isMember = feedsDao.ctx()
                 .fetchExists(
@@ -352,7 +339,7 @@ public class FeedQueryApi {
                                 .selectOne()
                                 .from(MEMBERS)
                                 .where(MEMBERS.CLUB_ID.eq(clubId))
-                                .and(MEMBERS.USER_ID.eq(signIn.userId()))
+                                .and(MEMBERS.USER_ID.eq(signInSession.userId()))
                                 .and(MEMBERS.DELETED_AT.isNull())
                 );
 
@@ -397,11 +384,8 @@ public class FeedQueryApi {
     public ResponseEntity<FeedItemResponse> getFeed(
             @PathVariable String clubId,
             @PathVariable String feedId,
-            final HttpSession httpSession
+            @RequestAttribute("signInSession") final SignInSession signInSession
     ) {
-        // Get current user from session
-        final SignInSession signIn = session(httpSession);
-
         // Check if user is a member of the club
         final boolean isMember = feedsDao.ctx()
                 .fetchExists(
@@ -409,7 +393,7 @@ public class FeedQueryApi {
                                 .selectOne()
                                 .from(MEMBERS)
                                 .where(MEMBERS.CLUB_ID.eq(clubId))
-                                .and(MEMBERS.USER_ID.eq(signIn.userId()))
+                                .and(MEMBERS.USER_ID.eq(signInSession.userId()))
                                 .and(MEMBERS.DELETED_AT.isNull())
                 );
 
@@ -420,7 +404,7 @@ public class FeedQueryApi {
         // Get images, videos, and likes
         final Map<String, List<String>> feedImages = fetchFeedImages(List.of(feedId));
         final Map<String, List<String>> feedVideos = fetchFeedVideos(List.of(feedId));
-        final Map<String, Boolean> feedLikes = fetchFeedLikes(List.of(feedId), signIn.userId());
+        final Map<String, Boolean> feedLikes = fetchFeedLikes(List.of(feedId), signInSession.userId());
 
         // Fetch feed data
         final FeedItemResponse feed = feedsDao.ctx()
@@ -480,13 +464,5 @@ public class FeedQueryApi {
         }
 
         return ResponseEntity.ok(feed);
-    }
-
-    private SignInSession session(final HttpSession httpSession) {
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
-        if (isNull(signIn)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
-        }
-        return signIn;
     }
 }

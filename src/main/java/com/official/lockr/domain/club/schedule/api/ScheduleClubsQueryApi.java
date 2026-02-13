@@ -2,19 +2,25 @@ package com.official.lockr.domain.club.schedule.api;
 
 import com.official.lockr.domain.auth.signin.domain.SignInSession;
 import com.official.lockr.domain.club.schedule.api.dto.*;
-import jakarta.servlet.http.HttpSession;
+import com.official.lockr.domain.club.schedule.domain.AttendanceStatus;
+import com.official.lockr.domain.club.schedule.domain.ScheduleStatus;
+import com.official.lockr.domain.club.schedule.domain.ScheduleType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jooq.Condition;
 import org.jooq.Configuration;
 import org.jooq.generated.tables.daos.SchedulesDao;
 import org.jooq.impl.DSL;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
-
-import static java.util.Objects.isNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -30,23 +36,27 @@ import static org.jooq.generated.tables.UserAdditionalInfoJOOQEntity.USER_ADDITI
 public class ScheduleClubsQueryApi {
 
     private final SchedulesDao schedulesDao;
+    private final ObjectMapper objectMapper;
 
-    public ScheduleClubsQueryApi(final Configuration configuration) {
+    public ScheduleClubsQueryApi(final Configuration configuration, final ObjectMapper objectMapper) {
         this.schedulesDao = new SchedulesDao(configuration);
+        this.objectMapper = objectMapper;
     }
+
+    private static final int DEFAULT_LIMIT = 20;
+    private static final int MAX_LIMIT = 100;
 
     @GetMapping
     public ResponseEntity<SchedulesResponse> getSchedules(
             @PathVariable String clubId,
-            final HttpSession httpSession,
-            @RequestParam(value = "status", required = false) String status,
+            @RequestAttribute("signInSession") final SignInSession signInSession,
+            @RequestParam(value = "status", required = false) ScheduleStatus status,
             @RequestParam(value = "from", required = false) LocalDateTime from,
             @RequestParam(value = "to", required = false) LocalDateTime to,
-            @RequestParam(value = "type", required = false) String type
+            @RequestParam(value = "type", required = false) ScheduleType type,
+            @RequestParam(value = "limit", required = false) Integer limit,
+            @RequestParam(value = "offset", required = false) Integer offset
     ) {
-        // Get current user from session
-        final SignInSession signIn = session(httpSession);
-
         // Check if user is a member of the club
         final boolean isMember = schedulesDao.ctx()
                 .fetchExists(
@@ -54,12 +64,12 @@ public class ScheduleClubsQueryApi {
                                 .selectOne()
                                 .from(MEMBERS)
                                 .where(MEMBERS.CLUB_ID.eq(clubId))
-                                .and(MEMBERS.USER_ID.eq(signIn.userId()))
+                                .and(MEMBERS.USER_ID.eq(signInSession.userId()))
                                 .and(MEMBERS.DELETED_AT.isNull())
                 );
 
         if (!isMember) {
-            return ResponseEntity.status(403).build();
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User is not a member of this club");
         }
 
         // Build conditions
@@ -67,8 +77,8 @@ public class ScheduleClubsQueryApi {
         conditions.add(SCHEDULES.CLUB_ID.eq(clubId));
         conditions.add(SCHEDULES.DELETED_AT.isNull());
 
-        if (status != null && !status.isEmpty()) {
-            conditions.add(SCHEDULES.STATUS.eq(status));
+        if (status != null) {
+            conditions.add(SCHEDULES.STATUS.eq(status.name()));
         }
         if (from != null) {
             conditions.add(SCHEDULES.SCHEDULE_TIME.greaterOrEqual(from));
@@ -76,16 +86,21 @@ public class ScheduleClubsQueryApi {
         if (to != null) {
             conditions.add(SCHEDULES.SCHEDULE_TIME.lessOrEqual(to));
         }
-        if (type != null && !type.isEmpty()) {
-            conditions.add(SCHEDULES.TYPE.eq(type));
+        if (type != null) {
+            conditions.add(SCHEDULES.TYPE.eq(type.name()));
         }
 
-        // Step 1: Get schedule IDs with filtering
+        // Step 1: Get schedule IDs with filtering and pagination
+        final int effectiveLimit = Math.min(limit != null && limit > 0 ? limit : DEFAULT_LIMIT, MAX_LIMIT);
+        final int effectiveOffset = offset != null && offset >= 0 ? offset : 0;
+
         final var scheduleIds = schedulesDao.ctx()
                 .select(SCHEDULES.ID)
                 .from(SCHEDULES)
                 .where(conditions)
                 .orderBy(SCHEDULES.SCHEDULE_TIME.desc())
+                .limit(effectiveLimit)
+                .offset(effectiveOffset)
                 .fetch()
                 .map(record -> record.get(SCHEDULES.ID));
 
@@ -122,10 +137,10 @@ public class ScheduleClubsQueryApi {
                             record.get(SCHEDULES.CLUB_ID),
                             record.get(SCHEDULES.TITLE),
                             record.get(SCHEDULES.CONTENT),
-                            record.get(SCHEDULES.LOCATION),
+                            ScheduleLocationResponse.from(record.get(SCHEDULES.LOCATION), objectMapper),
                             record.get(SCHEDULES.SCHEDULE_TIME),
-                            record.get(SCHEDULES.TYPE),
-                            record.get(SCHEDULES.STATUS),
+                            ScheduleType.valueOf(record.get(SCHEDULES.TYPE)),
+                            ScheduleStatus.valueOf(record.get(SCHEDULES.STATUS)),
                             counts.getOrDefault("ATTENDING", 0),
                             counts.getOrDefault("NOT_ATTENDING", 0),
                             counts.getOrDefault("NO_RESPONSE", 0),
@@ -141,22 +156,20 @@ public class ScheduleClubsQueryApi {
     public ResponseEntity<ScheduleDetailResponse> getSchedule(
             @PathVariable String clubId,
             @PathVariable String scheduleId,
-            final HttpSession httpSession
+            @RequestAttribute("signInSession") final SignInSession signInSession
     ) {
-        final SignInSession signIn = session(httpSession);
-
         final boolean isMember = schedulesDao.ctx()
                 .fetchExists(
                         schedulesDao.ctx()
                                 .selectOne()
                                 .from(MEMBERS)
                                 .where(MEMBERS.CLUB_ID.eq(clubId))
-                                .and(MEMBERS.USER_ID.eq(signIn.userId()))
+                                .and(MEMBERS.USER_ID.eq(signInSession.userId()))
                                 .and(MEMBERS.DELETED_AT.isNull())
                 );
 
         if (!isMember) {
-            return ResponseEntity.status(403).build();
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User is not a member of this club");
         }
 
         // Fetch schedule
@@ -168,7 +181,7 @@ public class ScheduleClubsQueryApi {
                 .fetchOne();
 
         if (scheduleRecord == null) {
-            return ResponseEntity.status(404).build();
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Schedule not found");
         }
 
         // Fetch attendances with user info
@@ -189,27 +202,27 @@ public class ScheduleClubsQueryApi {
                         record.get(ATTENDANCES.ID),
                         record.get(ATTENDANCES.USER_ID),
                         record.get("user_name", String.class),
-                        record.get(ATTENDANCES.STATUS),
+                        AttendanceStatus.valueOf(record.get(ATTENDANCES.STATUS)),
                         record.get(ATTENDANCES.REASON)
                 ));
 
         // Calculate attendance counts
         final int attendingCount = (int) attendances.stream()
-                .filter(a -> "ATTENDING".equals(a.status()))
+                .filter(a -> AttendanceStatus.ATTENDING == a.status())
                 .count();
         final int notAttendingCount = (int) attendances.stream()
-                .filter(a -> "NOT_ATTENDING".equals(a.status()))
+                .filter(a -> AttendanceStatus.NOT_ATTENDING == a.status())
                 .count();
         final int noResponseCount = (int) attendances.stream()
-                .filter(a -> "NO_RESPONSE".equals(a.status()))
+                .filter(a -> AttendanceStatus.NO_RESPONSE == a.status())
                 .count();
 
         // Find current user's attendance status
-        final String myAttendanceStatus = attendances.stream()
-                .filter(a -> signIn.userId().equals(a.userId()))
+        final AttendanceStatus myAttendanceStatus = attendances.stream()
+                .filter(a -> signInSession.userId().equals(a.userId()))
                 .findFirst()
                 .map(AttendanceItemResponse::status)
-                .orElse("NO_RESPONSE");
+                .orElse(AttendanceStatus.NO_RESPONSE);
 
         final String detailData = scheduleRecord.get(SCHEDULES.DETAIL_DATA) != null
                 ? scheduleRecord.get(SCHEDULES.DETAIL_DATA).toString()
@@ -220,11 +233,11 @@ public class ScheduleClubsQueryApi {
                 scheduleRecord.get(SCHEDULES.CLUB_ID),
                 scheduleRecord.get(SCHEDULES.TITLE),
                 scheduleRecord.get(SCHEDULES.CONTENT),
-                ScheduleLocationResponse.from(scheduleRecord.get(SCHEDULES.LOCATION)),
+                ScheduleLocationResponse.from(scheduleRecord.get(SCHEDULES.LOCATION), objectMapper),
                 scheduleRecord.get(SCHEDULES.SCHEDULE_TIME),
-                scheduleRecord.get(SCHEDULES.TYPE),
+                ScheduleType.valueOf(scheduleRecord.get(SCHEDULES.TYPE)),
                 detailData,
-                scheduleRecord.get(SCHEDULES.STATUS),
+                ScheduleStatus.valueOf(scheduleRecord.get(SCHEDULES.STATUS)),
                 scheduleRecord.get(SCHEDULES.MIN_PARTICIPANTS),
                 scheduleRecord.get(SCHEDULES.MAX_PARTICIPANTS),
                 scheduleRecord.get(SCHEDULES.DEADLINE_DAYS),
@@ -259,13 +272,5 @@ public class ScheduleClubsQueryApi {
                                 record -> record.get("count", Integer.class)
                         )
                 ));
-    }
-
-    private SignInSession session(final HttpSession httpSession) {
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
-        if (isNull(signIn)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
-        }
-        return signIn;
     }
 }

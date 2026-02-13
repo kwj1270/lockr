@@ -12,6 +12,10 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import org.jooq.DSLContext;
+import org.jooq.impl.DSL;
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -41,7 +45,6 @@ public class JOOQChatRepository implements ChatRepository {
                 .set(CHATS.ID, chat.getId())
                 .set(CHATS.CHAT_ROOM_ID, chat.getChatRoomId())
                 .set(CHATS.SENDER_ID, chat.getSenderId())
-                .set(CHATS.SENDER_NAME, chat.getSenderName())
                 .set(CHATS.MESSAGE, chat.getMessage())
                 .set(CHATS.REPLIED_TO_ID, chat.getRepliedToId())
                 .set(CHATS.QUOTED_SENDER_NAME, chat.getQuotedSenderName())
@@ -143,7 +146,6 @@ public class JOOQChatRepository implements ChatRepository {
                 entity.getId(),
                 entity.getChatRoomId(),
                 entity.getSenderId(),
-                entity.getSenderName(),
                 entity.getMessage(),
                 entity.getRepliedToId(),
                 entity.getQuotedSenderName(),

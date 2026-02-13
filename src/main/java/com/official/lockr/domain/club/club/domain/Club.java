@@ -2,6 +2,7 @@ package com.official.lockr.domain.club.club.domain;
 
 import com.official.lockr.domain.club.club.domain.event.AddedClubMemberEvent;
 import com.official.lockr.domain.club.club.domain.event.FoundClubEvent;
+import com.official.lockr.domain.club.club.domain.event.RemovedClubMemberEvent;
 import com.official.lockr.global.ddd.AggregateRoot;
 import reactor.util.annotation.Nullable;
 
@@ -51,6 +52,11 @@ public class Club extends AggregateRoot {
     public void addMember(final Member member) {
         members.add(member);
         this.addEvent(new AddedClubMemberEvent(member, sportType));
+    }
+
+    public void removeMember(final String userId) {
+        members.removeIf(member -> member.isSame(userId));
+        this.addEvent(new RemovedClubMemberEvent(this.id, userId));
     }
 
     public boolean isEqual(final String id) {

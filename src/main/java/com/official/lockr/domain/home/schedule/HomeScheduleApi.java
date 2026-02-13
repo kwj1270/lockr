@@ -2,22 +2,20 @@ package com.official.lockr.domain.home.schedule;
 
 import com.official.lockr.domain.auth.signin.domain.SignInSession;
 import com.official.lockr.domain.club.schedule.api.dto.ScheduleLocationResponse;
-import jakarta.servlet.http.HttpSession;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jooq.Configuration;
 import org.jooq.generated.tables.daos.SchedulesDao;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Objects;
 
 import static org.jooq.generated.tables.SchedulesJOOQEntity.SCHEDULES;
 import static org.jooq.generated.tables.AttendancesJOOQEntity.ATTENDANCES;
@@ -28,19 +26,20 @@ import static org.jooq.generated.tables.ClubsJOOQEntity.CLUBS;
 public class HomeScheduleApi {
 
     private final SchedulesDao schedulesDao;
+    private final ObjectMapper objectMapper;
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
-    public HomeScheduleApi(final Configuration configuration) {
+    public HomeScheduleApi(final Configuration configuration, final ObjectMapper objectMapper) {
         this.schedulesDao = new SchedulesDao(configuration);
+        this.objectMapper = objectMapper;
     }
 
     @GetMapping
     public ResponseEntity<HomeSchedulesResponse> schedules(
-            final HttpSession httpSession,
+            @RequestAttribute("signInSession") final SignInSession signInSession,
             @RequestParam(value = "limit", required = false) String limit,
             @RequestParam(value = "days", required = false) String days
     ) {
-        final SignInSession signIn = session(httpSession);
 
         final int limitCount = limit != null ? Integer.parseInt(limit) : 10;
         final int daysCount = days != null ? Integer.parseInt(days) : 7;
@@ -53,7 +52,7 @@ public class HomeScheduleApi {
         final List<String> scheduleIds = schedulesDao.ctx()
                 .select(ATTENDANCES.SCHEDULE_ID)
                 .from(ATTENDANCES)
-                .where(ATTENDANCES.USER_ID.eq(signIn.userId()))
+                .where(ATTENDANCES.USER_ID.eq(signInSession.userId()))
                 .and(ATTENDANCES.STATUS.eq("ATTENDING"))
                 .and(ATTENDANCES.DELETED_AT.isNull())
                 .fetch()
@@ -87,7 +86,7 @@ public class HomeScheduleApi {
                     final long daysUntil = ChronoUnit.DAYS.between(now.toLocalDate(), scheduleTime.toLocalDate());
 
                     final String locationJson = record.get(SCHEDULES.LOCATION);
-                    final ScheduleLocationResponse location = ScheduleLocationResponse.from(locationJson);
+                    final ScheduleLocationResponse location = ScheduleLocationResponse.from(locationJson, objectMapper);
 
                     return new HomeScheduleResponse(
                             record.get(SCHEDULES.ID),
@@ -102,14 +101,6 @@ public class HomeScheduleApi {
                 });
 
         return ResponseEntity.ok(new HomeSchedulesResponse(schedules));
-    }
-
-    private static SignInSession session(final HttpSession httpSession) {
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
-        if (Objects.isNull(signIn)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
-        }
-        return signIn;
     }
 
     record HomeSchedulesResponse(

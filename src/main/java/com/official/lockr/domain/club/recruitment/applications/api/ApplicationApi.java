@@ -8,15 +8,10 @@ import com.official.lockr.domain.club.recruitment.applications.application.useca
 import com.official.lockr.domain.club.recruitment.applications.application.usecase.CancelApplicationUseCase;
 import com.official.lockr.domain.club.recruitment.applications.application.usecase.RejectApplicationUseCase;
 import com.official.lockr.domain.club.recruitment.applications.application.usecase.SubmitApplicationUseCase;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
 
 import java.net.URI;
-
-import static java.util.Objects.isNull;
 
 @RestController
 @RequestMapping("/api/v1/clubs/{clubId}/applications")
@@ -43,52 +38,40 @@ public class ApplicationApi {
     public ResponseEntity<Application> submit(
             @PathVariable("clubId") final String clubId,
             @RequestBody final SubmitApplicationRequest request,
-            final HttpSession httpSession
+            @RequestAttribute("signInSession") final SignInSession signInSession
     ) {
-        final SignInSession signIn = session(httpSession);
-        final Application application = submitApplicationUseCase.submit(request.toCommand(clubId, signIn.userId()));
+        final Application application = submitApplicationUseCase.submit(request.toCommand(clubId, signInSession.userId()));
         return ResponseEntity.created(URI.create("/api/v1/clubs/" + clubId + "/applications/" + application.getId())).body(application);
     }
 
     @PostMapping("/{applicationId}/cancel")
     public ResponseEntity<Application> cancel(
-            final HttpSession httpSession,
+            @RequestAttribute("signInSession") final SignInSession signInSession,
             @PathVariable("clubId") final String clubId,
             @PathVariable("applicationId") final String tryoutId
     ) {
-        final SignInSession signIn = session(httpSession);
-        final Application application = cancelApplicationUseCase.cancel(clubId, tryoutId, signIn.userId());
+        final Application application = cancelApplicationUseCase.cancel(clubId, tryoutId, signInSession.userId());
         return ResponseEntity.ok().body(application);
     }
 
     @PostMapping("/{applicationId}/approve")
     public ResponseEntity<Application> approve(
-            final HttpSession httpSession,
+            @RequestAttribute("signInSession") final SignInSession signInSession,
             @PathVariable("clubId") final String clubId,
             @PathVariable("applicationId") final String applicationId
     ) {
-        final SignInSession signIn = session(httpSession);
-        final Application application = approveApplicationUseCase.approve(clubId, applicationId, signIn.userId());
+        final Application application = approveApplicationUseCase.approve(clubId, applicationId, signInSession.userId());
         return ResponseEntity.ok().body(application);
     }
 
     @PostMapping("/{applicationId}/reject")
     public ResponseEntity<Application> reject(
-            final HttpSession httpSession,
+            @RequestAttribute("signInSession") final SignInSession signInSession,
             @PathVariable("clubId") final String clubId,
             @PathVariable("applicationId") final String applicationId,
             @RequestBody final RejectApplicationRequest request
     ) {
-        final SignInSession signIn = session(httpSession);
-        final Application application = rejectApplicationUseCase.reject(request.toCommand(clubId, applicationId, signIn.userId()));
+        final Application application = rejectApplicationUseCase.reject(request.toCommand(clubId, applicationId, signInSession.userId()));
         return ResponseEntity.ok().body(application);
-    }
-
-    private SignInSession session(final HttpSession httpSession) {
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
-        if (isNull(signIn)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
-        }
-        return signIn;
     }
 }

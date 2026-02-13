@@ -168,25 +168,6 @@ public class JOOQClubRepository implements ClubRepository {
         return domain(teamsEntity, findAllMember(id));
     }
 
-    @Override
-    public List<Club> findAllByUserId(final String userId) {
-        List<String> clubIds = memberDao.ctx()
-                .select(MEMBERS.CLUB_ID)
-                .from(MEMBERS)
-                .where(MEMBERS.USER_ID.eq(userId))
-                .and(MEMBERS.DELETED_AT.isNull())
-                .fetchInto(String.class);
-
-        if (clubIds.isEmpty()) {
-            return List.of();
-        }
-
-        return clubIds.stream()
-                .map(this::findById)
-                .filter(Objects::nonNull)
-                .toList();
-    }
-
     private List<Member> findAllMember(final String teamId) {
         return memberDao.ctx()
                 .selectFrom(MEMBERS)

@@ -5,18 +5,15 @@ import com.official.lockr.domain.users.api.dto.FindUsersByProviderRequest;
 import com.official.lockr.domain.users.api.dto.FindUsersByProviderResponse;
 import com.official.lockr.domain.users.api.dto.UserAdditionalInfoResponse;
 import com.official.lockr.global.vo.Gender;
-import jakarta.servlet.http.HttpSession;
 import org.jooq.Configuration;
 import org.jooq.generated.tables.daos.UserAdditionalInfoDao;
 import org.jooq.generated.tables.daos.UsersDao;
-import org.jooq.generated.tables.pojos.UsersEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
-
-import static java.util.Objects.isNull;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RestController;
 import static org.jooq.generated.tables.UserAdditionalInfoJOOQEntity.USER_ADDITIONAL_INFO;
 
 @RequestMapping(value = "/api/v1/users")
@@ -34,12 +31,11 @@ public class UsersQueryApi {
     @Transactional(readOnly = true)
     @GetMapping("/additional-info")
     public ResponseEntity<UserAdditionalInfoResponse> getMyAdditionalInfo(
-            final HttpSession httpSession
+            @RequestAttribute("signInSession") final SignInSession signInSession
     ) {
-        final SignInSession signIn = session(httpSession);
         final var record = userAdditionalInfoDao.ctx()
                 .selectFrom(USER_ADDITIONAL_INFO)
-                .where(USER_ADDITIONAL_INFO.USER_ID.eq(signIn.userId()))
+                .where(USER_ADDITIONAL_INFO.USER_ID.eq(signInSession.userId()))
                 .and(USER_ADDITIONAL_INFO.DELETED_AT.isNull())
                 .fetchOne();
 
@@ -57,13 +53,5 @@ public class UsersQueryApi {
         );
 
         return ResponseEntity.ok(response);
-    }
-
-    private SignInSession session(final HttpSession httpSession) {
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
-        if (isNull(signIn)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
-        }
-        return signIn;
     }
 }

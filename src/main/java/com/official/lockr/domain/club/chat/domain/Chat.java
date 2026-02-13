@@ -10,7 +10,6 @@ public class Chat extends AggregateRoot {
     private final String id;
     private final String chatRoomId;
     private final String senderId;
-    private final String senderName;
     private final String message;
     private final String repliedToId;
     private final String quotedSenderName;
@@ -22,14 +21,13 @@ public class Chat extends AggregateRoot {
             final String id,
             final String chatRoomId,
             final String senderId,
-            final String senderNickname,
             final String message,
             final String repliedToId,
             final String quotedSenderName,
             final String quotedContent
     ) {
         final Chat chat = new Chat(
-                id, chatRoomId, senderId, senderNickname, message,
+                id, chatRoomId, senderId, message,
                 repliedToId, quotedSenderName, quotedContent, LocalDateTime.now()
         );
         // clubId는 ChatEventListener에서 ChatRoom 조회를 통해 가져옴
@@ -38,7 +36,6 @@ public class Chat extends AggregateRoot {
                 chat.chatRoomId,
                 null, // clubId는 EventListener에서 채움
                 chat.senderId,
-                chat.senderName,
                 chat.message,
                 chat.repliedToId,
                 chat.quotedSenderName,
@@ -51,7 +48,6 @@ public class Chat extends AggregateRoot {
             final String id,
             final String chatRoomId,
             final String senderId,
-            final String senderName,
             final String message,
             final String repliedToId,
             final String quotedSenderName,
@@ -61,7 +57,6 @@ public class Chat extends AggregateRoot {
         this.id = id;
         this.chatRoomId = chatRoomId;
         this.senderId = senderId;
-        this.senderName = senderName;
         this.message = message;
         this.repliedToId = repliedToId;
         this.quotedSenderName = quotedSenderName;
@@ -79,10 +74,6 @@ public class Chat extends AggregateRoot {
 
     public String getSenderId() {
         return senderId;
-    }
-
-    public String getSenderName() {
-        return senderName;
     }
 
     public String getMessage() {

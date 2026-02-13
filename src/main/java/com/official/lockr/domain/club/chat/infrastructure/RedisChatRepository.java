@@ -97,6 +97,32 @@ public class RedisChatRepository implements ChatRepository {
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
+    @Override
+    public List<Chat> findAllAfterChatId(final String chatRoomId, final String afterChatId, final int limit) {
+        final String key = getChatRoomKey(chatRoomId);
+        final Double afterScore = findScoreByMessageId(key, afterChatId);
+        if (Objects.isNull(afterScore)) {
+            return List.of();
+        }
+        // afterChatId 이후의 메시지를 오래된순으로 조회
+        final Set<String> messages = redisTemplate.opsForZSet()
+                .rangeByScore(key, afterScore, Double.POSITIVE_INFINITY, 0, limit + 1);
+        if (Collections.isEmpty(messages)) {
+            return List.of();
+        }
+        return messages.stream()
+                .map(this::deserialize)
+                .filter(chat -> !chat.getId().equals(afterChatId))
+                .limit(limit)
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    @Override
+    public void softDelete(final String chatId) {
+        // Redis는 캐시 용도이므로 TTL에 의해 자연 만료
+        // 명시적 삭제가 필요하면 구현 가능하나, 현재는 no-op
+    }
+
     private List<Chat> findAllChatRoomId(final int limit, final String key) {
         final Set<String> messages = redisTemplate.opsForZSet().reverseRange(key, 0, limit - 1);
         if (messages == null) {
@@ -146,7 +172,6 @@ public class RedisChatRepository implements ChatRepository {
         public String id;
         public String chatRoomId;
         public String senderId;
-        public String senderNickname;
         public String message;
         public String repliedToId;
         public String quotedSenderName;
@@ -160,7 +185,6 @@ public class RedisChatRepository implements ChatRepository {
             this.id = chat.getId();
             this.chatRoomId = chat.getChatRoomId();
             this.senderId = chat.getSenderId();
-            this.senderNickname = chat.getSenderName();
             this.message = chat.getMessage();
             this.repliedToId = chat.getRepliedToId();
             this.quotedSenderName = chat.getQuotedSenderName();
@@ -170,7 +194,7 @@ public class RedisChatRepository implements ChatRepository {
 
         public Chat toDomain() {
             return new Chat(
-                    id, chatRoomId, senderId, senderNickname, message,
+                    id, chatRoomId, senderId, message,
                     repliedToId, quotedSenderName, quotedContent, createdAt
             );
         }

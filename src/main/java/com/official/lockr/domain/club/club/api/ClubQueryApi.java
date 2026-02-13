@@ -3,19 +3,14 @@ package com.official.lockr.domain.club.club.api;
 import com.official.lockr.domain.auth.signin.domain.SignInSession;
 import com.official.lockr.domain.club.club.api.dto.*;
 import com.official.lockr.domain.club.club.domain.MemberRole;
-import jakarta.servlet.http.HttpSession;
 import org.jooq.Configuration;
 import org.jooq.generated.tables.daos.ClubsDao;
 import org.jooq.generated.tables.pojos.MembersEntity;
 import org.jooq.impl.DSL;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
 
 import java.util.List;
-
-import static java.util.Objects.isNull;
 
 import static java.util.stream.Collectors.toMap;
 import static org.jooq.generated.tables.ClubsJOOQEntity.CLUBS;
@@ -36,11 +31,10 @@ public class ClubQueryApi {
 
     @GetMapping
     public ResponseEntity<FindClubsResponse> clubs(
-            final HttpSession httpSession,
+            @RequestAttribute("signInSession") final SignInSession signInSession,
             @RequestParam("name") final String name,
             @RequestParam("sportType") final String sportType
     ) {
-        final SignInSession signIn = session(httpSession);
         final FindClubsResponse findClubsResponses = new FindClubsResponse(clubsDao.ctx()
                 .select(CLUBS)
                 .from(CLUBS)
@@ -55,17 +49,15 @@ public class ClubQueryApi {
 
     @GetMapping("/my")
     public ResponseEntity<MyClubsResponse> getMyClubs(
-            final HttpSession httpSession,
+            @RequestAttribute("signInSession") final SignInSession signInSession,
             @RequestParam(value = "cursor", required = false, defaultValue = "") String cursor,
             @RequestParam(value = "limit", defaultValue = "5") int limit
     ) {
-        final SignInSession signIn = session(httpSession);
-
         var myClubDataQuery = clubsDao.ctx()
                 .select(CLUBS.ID, MEMBERS.MEMBER_ROLE)
                 .from(CLUBS)
                 .innerJoin(MEMBERS).on(MEMBERS.CLUB_ID.eq(CLUBS.ID))
-                .where(MEMBERS.USER_ID.eq(signIn.userId()))
+                .where(MEMBERS.USER_ID.eq(signInSession.userId()))
                 .and(CLUBS.DELETED_AT.isNull())
                 .and(MEMBERS.DELETED_AT.isNull());
 
@@ -125,15 +117,13 @@ public class ClubQueryApi {
 
     @GetMapping("/{clubId}/me")
     public ResponseEntity<MyMemberInfoResponse> getMyMemberInfo(
-            final HttpSession httpSession,
+            @RequestAttribute("signInSession") final SignInSession signInSession,
             @PathVariable final String clubId
     ) {
-        final SignInSession signIn = session(httpSession);
-
         final MembersEntity member = clubsDao.ctx()
                 .selectFrom(MEMBERS)
                 .where(MEMBERS.CLUB_ID.eq(clubId))
-                .and(MEMBERS.USER_ID.eq(signIn.userId()))
+                .and(MEMBERS.USER_ID.eq(signInSession.userId()))
                 .and(MEMBERS.DELETED_AT.isNull())
                 .fetchOneInto(MembersEntity.class);
 
@@ -156,11 +146,9 @@ public class ClubQueryApi {
 
     @GetMapping("/{clubId}/members")
     public ResponseEntity<MembersResponse> getMembers(
-            final HttpSession httpSession,
+            @RequestAttribute("signInSession") final SignInSession signInSession,
             @PathVariable final String clubId
     ) {
-        session(httpSession);
-
         final var profileImageField = DSL.coalesce(MEMBERS.PROFILE_IMAGE, SQUAD_PLAYERS.PROFILE_IMAGE).as("profile_image");
 
         final List<MemberResponse> members = clubsDao.ctx()
@@ -196,13 +184,5 @@ public class ClubQueryApi {
                 ));
 
         return ResponseEntity.ok(new MembersResponse(members));
-    }
-
-    private SignInSession session(final HttpSession httpSession) {
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
-        if (isNull(signIn)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
-        }
-        return signIn;
     }
 }
