@@ -11,7 +11,6 @@ public record CreatedChatEvent(
         String chatRoomId,
         String clubId,
         String senderId,
-        String senderNickname,
         String message,
         String repliedToId,
         String quotedSenderName,

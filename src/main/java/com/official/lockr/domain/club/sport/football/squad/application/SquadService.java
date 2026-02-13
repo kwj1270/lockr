@@ -1,7 +1,7 @@
 package com.official.lockr.domain.club.sport.football.squad.application;
 
 import com.official.lockr.domain.club.sport.football.squad.application.command.UpdateSquadPlayerCommand;
-import com.official.lockr.domain.club.sport.football.squad.application.dto.AddFootBallPlayerCommand;
+import com.official.lockr.domain.club.sport.football.squad.application.command.AddFootBallPlayerCommand;
 import com.official.lockr.domain.club.sport.football.squad.application.usecase.AddSquadPlayerUseCase;
 import com.official.lockr.domain.club.sport.football.squad.application.usecase.UpdateSquadPlayerUseCase;
 import com.official.lockr.domain.club.sport.football.squad.domain.Squad;

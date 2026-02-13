@@ -43,7 +43,8 @@ class ScheduleRepositoryTest {
 
         Schedule schedule = Schedule.create(
                 scheduleId, clubId, title, content, location, scheduleTime,
-                scheduleType, detail, userIds, minParticipants, maxParticipants, deadlineDays
+                scheduleType, detail, userIds, minParticipants, maxParticipants, deadlineDays,
+                LocalDateTime.now()
         );
 
         // when
@@ -76,7 +77,7 @@ class ScheduleRepositoryTest {
                 LocalDateTime.now().plusDays(7),
                 ScheduleType.TRAINING, new TrainingDetailData(),
                 List.of("user-001", "user-002"),
-                5, 20, 3
+                5, 20, 3, LocalDateTime.now()
         );
         scheduleRepository.save(schedule);
 

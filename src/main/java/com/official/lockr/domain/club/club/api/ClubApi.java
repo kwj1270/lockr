@@ -10,15 +10,10 @@ import com.official.lockr.domain.club.club.application.usecase.AssignMangerUseCa
 import com.official.lockr.domain.club.club.application.usecase.FoundClubUseCase;
 import com.official.lockr.domain.club.club.application.usecase.UpdateMemberProfileImageUseCase;
 import com.official.lockr.domain.club.club.domain.Club;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
 
 import java.net.URI;
-
-import static java.util.Objects.isNull;
 
 @RestController
 @RequestMapping("/api/v1/clubs")
@@ -42,49 +37,37 @@ public class ClubApi {
 
     @PostMapping
     public ResponseEntity<Club> found(
-            final HttpSession httpSession,
+            @RequestAttribute("signInSession") final SignInSession signInSession,
             @RequestBody final FoundClubRequest request
     ) {
-        final SignInSession signIn = session(httpSession);
-        final Club club = foundClubUseCase.found(request.toCommand(signIn.userId()));
+        final Club club = foundClubUseCase.found(request.toCommand(signInSession.userId()));
         return ResponseEntity.created(URI.create("/api/v1/clubs/" + club.getId())).body(club);
     }
 
     @PostMapping("/{clubId}/coach")
     public ResponseEntity<Club> assignCoach(
-            final HttpSession httpSession,
+            @RequestAttribute("signInSession") final SignInSession signInSession,
             @PathVariable final String clubId,
             @RequestBody final AssignCoachRequest request
     ) {
-        final SignInSession signIn = session(httpSession);
-        return ResponseEntity.ok(assignCoachUseCase.assignCoach(request.toCommand(clubId, signIn.userId())));
+        return ResponseEntity.ok(assignCoachUseCase.assignCoach(request.toCommand(clubId, signInSession.userId())));
     }
 
     @PostMapping("/{clubId}/manager")
     public ResponseEntity<Club> assignManager(
-            final HttpSession httpSession,
+            @RequestAttribute("signInSession") final SignInSession signInSession,
             @PathVariable final String clubId,
             @RequestBody final AssignManagerRequest request
     ) {
-        final SignInSession signIn = session(httpSession);
-        return ResponseEntity.ok(assignMangerUseCase.assignManager(request.toCommand(clubId, signIn.userId())));
+        return ResponseEntity.ok(assignMangerUseCase.assignManager(request.toCommand(clubId, signInSession.userId())));
     }
 
-    @PutMapping("/{clubId}/members/me/profile-image")
+    @PostMapping("/{clubId}/members/me/profile-image")
     public ResponseEntity<Club> updateMemberProfileImage(
-            final HttpSession httpSession,
+            @RequestAttribute("signInSession") final SignInSession signInSession,
             @PathVariable final String clubId,
             @RequestBody final UpdateMemberProfileImageRequest request
     ) {
-        final SignInSession signIn = session(httpSession);
-        return ResponseEntity.ok(updateMemberProfileImageUseCase.updateMemberProfileImage(request.toCommand(clubId, signIn.userId())));
-    }
-
-    private SignInSession session(final HttpSession httpSession) {
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
-        if (isNull(signIn)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
-        }
-        return signIn;
+        return ResponseEntity.ok(updateMemberProfileImageUseCase.updateMemberProfileImage(request.toCommand(clubId, signInSession.userId())));
     }
 }

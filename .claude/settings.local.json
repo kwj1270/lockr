@@ -25,9 +25,35 @@
       "Bash(node -e:*)",
       "Bash(htpasswd:*)",
       "Bash(lsof:*)",
-      "Bash(xargs kill:*)"
+      "Bash(xargs kill:*)",
+      "Bash(git log:*)",
+      "Bash(xargs:*)",
+      "Bash(docker-compose ps:*)",
+      "Bash(chmod:*)",
+      "Bash(npm install:*)",
+      "mcp__filesystem__directory_tree",
+      "mcp__filesystem__read_text_file",
+      "mcp__filesystem__list_directory",
+      "mcp__filesystem__list_allowed_directories",
+      "mcp__filesystem__read_multiple_files",
+      "Bash(brew install:*)",
+      "Bash(tmux:*)",
+      "Bash(JAVA_HOME=/Users/kimwoojae/Library/Java/JavaVirtualMachines/azul-24.0.2/Contents/Home ./gradlew build:*)",
+      "Bash(while read f)",
+      "Bash(do python3 -c \"\nimport re\nwith open\\(''''$f''''\\) as fh:\n    content = fh.read\\(\\)\n# Find Schedule.create blocks - match from ''''Schedule.create\\('''' to the closing ''''\\);\\\\n'''' or ''''\\)\\)\\\\n''''\nblocks = re.findall\\(r''''Schedule\\\\.create\\\\\\([^;]*?\\\\\\)'''', content, re.DOTALL\\)\nfor b in blocks:\n    if ''''LocalDateTime.now\\(\\)'''' not in b.split\\(''''Schedule.create\\(''''\\)[-1]:\n        print\\(f''''MISSING in $f: {b[:80]}...''''\\)\n\")",
+      "Bash(done)",
+      "mcp__plugin_oh-my-claudecode_t__ast_grep_replace",
+      "Bash(git stash:*)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "mcp__plugin_oh-my-claudecode_t__lsp_diagnostics"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "enabledMcpjsonServers": [
+    "context7",
+    "filesystem",
+    "memory"
+  ]
 }

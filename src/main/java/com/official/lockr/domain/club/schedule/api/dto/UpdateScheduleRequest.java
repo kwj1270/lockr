@@ -1,17 +1,26 @@
 package com.official.lockr.domain.club.schedule.api.dto;
 
+import com.official.lockr.domain.club.schedule.application.command.UpdateScheduleCommand;
 import com.official.lockr.domain.club.schedule.domain.vo.ScheduleDetailData;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
 
 public record UpdateScheduleRequest(
-        String title,
+        @NotBlank String title,
         String content,
         String location,
-        LocalDateTime scheduleTime,
+        @NotNull LocalDateTime scheduleTime,
         ScheduleDetailData detail,
-        int minParticipants,
-        int maxParticipants,
+        Integer minParticipants,
+        Integer maxParticipants,
         int deadlineDays
 ) {
+    public UpdateScheduleCommand toCommand(final String scheduleId, final String userId, final String clubId) {
+        return new UpdateScheduleCommand(
+                scheduleId, userId, clubId, title, content, location, scheduleTime, detail,
+                minParticipants, maxParticipants, deadlineDays
+        );
+    }
 }

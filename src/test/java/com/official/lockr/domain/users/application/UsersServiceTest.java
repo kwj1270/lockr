@@ -1,15 +1,12 @@
 package com.official.lockr.domain.users.application;
 
-import com.official.lockr.domain.club.club.domain.Club;
-import com.official.lockr.domain.club.club.domain.ClubRepository;
 import com.official.lockr.domain.users.application.command.WithdrawUsersCommand;
+import com.official.lockr.domain.users.domain.ClubMembershipQuery;
 import com.official.lockr.domain.users.domain.Users;
 import com.official.lockr.domain.users.domain.UsersRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -20,14 +17,14 @@ import static org.mockito.Mockito.when;
 class UsersServiceTest {
 
     private UsersRepository usersRepository;
-    private ClubRepository clubRepository;
+    private ClubMembershipQuery clubMembershipQuery;
     private UsersService usersService;
 
     @BeforeEach
     void setUp() {
         usersRepository = mock(UsersRepository.class);
-        clubRepository = mock(ClubRepository.class);
-        usersService = new UsersService(usersRepository, clubRepository);
+        clubMembershipQuery = mock(ClubMembershipQuery.class);
+        usersService = new UsersService(usersRepository, clubMembershipQuery);
     }
 
     @Test
@@ -53,7 +50,7 @@ class UsersServiceTest {
         WithdrawUsersCommand command = new WithdrawUsersCommand(userId);
 
         when(usersRepository.findById(userId)).thenReturn(user);
-        when(clubRepository.findAllByUserId(userId)).thenReturn(List.of(mock(Club.class)));
+        when(clubMembershipQuery.hasActiveClubMembership(userId)).thenReturn(true);
 
         // when & then
         assertThatThrownBy(() -> usersService.withdraw(command))
@@ -70,7 +67,7 @@ class UsersServiceTest {
         WithdrawUsersCommand command = new WithdrawUsersCommand(userId);
 
         when(usersRepository.findById(userId)).thenReturn(user);
-        when(clubRepository.findAllByUserId(userId)).thenReturn(List.of());
+        when(clubMembershipQuery.hasActiveClubMembership(userId)).thenReturn(false);
 
         // when
         usersService.withdraw(command);

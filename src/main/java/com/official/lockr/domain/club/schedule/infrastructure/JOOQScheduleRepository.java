@@ -8,7 +8,6 @@ import com.official.lockr.domain.club.schedule.domain.ScheduleStatus;
 import com.official.lockr.domain.club.schedule.domain.ScheduleType;
 import com.official.lockr.domain.club.schedule.domain.Attendance;
 import com.official.lockr.domain.club.schedule.domain.AttendanceStatus;
-import com.official.lockr.domain.club.schedule.domain.event.AttendanceStatusChangedEvent;
 import com.official.lockr.domain.club.schedule.domain.vo.MatchDetailData;
 import com.official.lockr.domain.club.schedule.domain.vo.ScheduleDetailData;
 import com.official.lockr.domain.club.schedule.domain.vo.SocialDetailData;
@@ -25,8 +24,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
 import static org.jooq.generated.tables.AttendancesJOOQEntity.ATTENDANCES;
@@ -111,24 +108,12 @@ public class JOOQScheduleRepository implements ScheduleRepository {
 
     private void syncAttendances(final Schedule schedule) {
         final String scheduleId = schedule.getId();
-        final Map<String, AttendanceStatus> existingStatusMap = loadExistingAttendanceStatuses(scheduleId);
         final List<String> existingUserIds = loadExistingUserIds(scheduleId);
         final List<Attendance> newAttendances = schedule.getAttendances();
         deleteRemovedAttendances(scheduleId, existingUserIds, newAttendances);
-        upsertAttendances(scheduleId, existingStatusMap, newAttendances);
-    }
-
-    private Map<String, AttendanceStatus> loadExistingAttendanceStatuses(final String scheduleId) {
-        return attendancesDao.ctx()
-                .select(ATTENDANCES.ID, ATTENDANCES.STATUS)
-                .from(ATTENDANCES)
-                .where(ATTENDANCES.SCHEDULE_ID.eq(scheduleId))
-                .fetch()
-                .stream()
-                .collect(Collectors.toMap(
-                        record -> record.get(ATTENDANCES.ID),
-                        record -> AttendanceStatus.valueOf(record.get(ATTENDANCES.STATUS))
-                ));
+        for (Attendance attendance : newAttendances) {
+            upsertAttendance(scheduleId, attendance);
+        }
     }
 
     private List<String> loadExistingUserIds(final String scheduleId) {
@@ -157,16 +142,6 @@ public class JOOQScheduleRepository implements ScheduleRepository {
         }
     }
 
-    private void upsertAttendances(final String scheduleId, final Map<String, AttendanceStatus> existingStatusMap, final List<Attendance> newAttendances) {
-        for (Attendance attendance : newAttendances) {
-            final AttendanceStatus previousStatus = existingStatusMap.get(attendance.getId());
-            final AttendanceStatus newStatus = attendance.getStatus();
-
-            upsertAttendance(scheduleId, attendance);
-            publishAttendanceStatusChangeEventIfNeeded(scheduleId, attendance, previousStatus, newStatus);
-        }
-    }
-
     private void upsertAttendance(final String scheduleId, final Attendance attendance) {
         attendancesDao.ctx()
                 .insertInto(ATTENDANCES)
@@ -186,25 +161,12 @@ public class JOOQScheduleRepository implements ScheduleRepository {
                 .execute();
     }
 
-    private void publishAttendanceStatusChangeEventIfNeeded(final String scheduleId, final Attendance attendance, final AttendanceStatus previousStatus, final AttendanceStatus newStatus) {
-        if (previousStatus != null && previousStatus != newStatus) {
-            final AttendanceStatusChangedEvent event = AttendanceStatusChangedEvent.of(
-                    attendance.getId(),
-                    scheduleId,
-                    attendance.getUserId(),
-                    previousStatus,
-                    newStatus
-            );
-            domainEventPublisher.publish(event);
-        }
-    }
-
     private Schedule toDomain(final SchedulesEntity entity) {
         final List<Attendance> attendances = findAttendancesByScheduleId(entity.getId());
         final ScheduleType scheduleType = ScheduleType.valueOf(entity.getType());
         final ScheduleDetailData detail = deserializeDetailFromJson(scheduleType, entity.getDetailData());
 
-        return new Schedule(
+        return Schedule.reconstruct(
                 entity.getId(),
                 entity.getClubId(),
                 entity.getTitle(),

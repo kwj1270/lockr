@@ -6,6 +6,7 @@ import com.official.lockr.domain.club.chat.domain.ChatRoomRepository;
 import com.official.lockr.domain.club.chat.domain.event.ChatSseEvent;
 import com.official.lockr.domain.club.chat.domain.event.CreatedChatEvent;
 import com.official.lockr.domain.club.chat.domain.event.CreatedChatRoomEvent;
+import com.official.lockr.domain.club.chat.domain.event.RemovedChatterEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
@@ -26,48 +27,60 @@ public class ChatEventListener {
         this.chatRoomRepository = chatRoomRepository;
     }
 
-    /**
-     * 채팅방 생성 이벤트 처리
-     */
     @EventListener
     public void createdChatRoomEvent(final CreatedChatRoomEvent event) {
-        log.debug("Processing CreatedChatRoomEvent: chatRoomId={}, clubId={}", event.id(), event.clubId());
-        sseChatEventPublisher.publish(ChatSseEvent.chatRoomUpdated(event.id(), event.clubId()));
+        try {
+            log.debug("Processing CreatedChatRoomEvent: chatRoomId={}, clubId={}", event.id(), event.clubId());
+            sseChatEventPublisher.publish(ChatSseEvent.chatRoomUpdated(event.id(), event.clubId()));
+        } catch (Exception e) {
+            log.error("Failed to publish SSE for chat room creation. chatRoomId={}, clubId={}",
+                    event.id(), event.clubId(), e);
+        }
     }
 
-    /**
-     * 채팅 메시지 생성 이벤트 처리
-     * - ChatRoom 조회하여 clubId 획득
-     * - SSE로 실시간 전송
-     */
+    @EventListener
+    public void removedChatterEvent(final RemovedChatterEvent event) {
+        try {
+            log.debug("Processing RemovedChatterEvent: chatRoomId={}, clubId={}, userId={}",
+                    event.chatRoomId(), event.clubId(), event.userId());
+            sseChatEventPublisher.publish(ChatSseEvent.chatterLeft(event.chatRoomId(), event.clubId(), event.userId()));
+            log.info("Chatter left event published via SSE. chatRoomId={}, clubId={}, userId={}",
+                    event.chatRoomId(), event.clubId(), event.userId());
+        } catch (Exception e) {
+            log.error("Failed to publish SSE for chatter removal. chatRoomId={}, clubId={}, userId={}",
+                    event.chatRoomId(), event.clubId(), event.userId(), e);
+        }
+    }
+
     @EventListener
     public void createdChatEvent(final CreatedChatEvent event) {
-        log.debug("Processing CreatedChatEvent: chatId={}, chatRoomId={}", event.chatId(), event.chatRoomId());
+        try {
+            log.debug("Processing CreatedChatEvent: chatId={}, chatRoomId={}", event.chatId(), event.chatRoomId());
 
-        // ChatRoom 조회하여 clubId 가져오기
-        final ChatRoom chatRoom = chatRoomRepository.findById(event.chatRoomId());
-        if (chatRoom == null) {
-            log.warn("ChatRoom not found for chat message. chatRoomId={}, chatId={}",
-                    event.chatRoomId(), event.chatId());
-            return;
+            final ChatRoom chatRoom = chatRoomRepository.findById(event.chatRoomId());
+            if (chatRoom == null) {
+                log.warn("ChatRoom not found for chat message. chatRoomId={}, chatId={}",
+                        event.chatRoomId(), event.chatId());
+                return;
+            }
+
+            final Chat chat = new Chat(
+                    event.chatId(),
+                    event.chatRoomId(),
+                    event.senderId(),
+                    event.message(),
+                    event.repliedToId(),
+                    event.quotedSenderName(),
+                    event.quotedContent(),
+                    java.time.LocalDateTime.now()
+            );
+
+            sseChatEventPublisher.publish(ChatSseEvent.newMessage(chat, chatRoom.getClubId()));
+            log.info("Chat message published via SSE. chatId={}, chatRoomId={}, clubId={}",
+                    event.chatId(), event.chatRoomId(), chatRoom.getClubId());
+        } catch (Exception e) {
+            log.error("Failed to publish SSE for chat message. chatId={}, chatRoomId={}",
+                    event.chatId(), event.chatRoomId(), e);
         }
-
-        // Chat 도메인 객체 재구성
-        final Chat chat = new Chat(
-                event.chatId(),
-                event.chatRoomId(),
-                event.senderId(),
-                event.senderNickname(),
-                event.message(),
-                event.repliedToId(),
-                event.quotedSenderName(),
-                event.quotedContent(),
-                java.time.LocalDateTime.now()
-        );
-
-        // SSE로 전송
-        sseChatEventPublisher.publish(ChatSseEvent.newMessage(chat, chatRoom.getClubId()));
-        log.info("Chat message published via SSE. chatId={}, chatRoomId={}, clubId={}",
-                event.chatId(), event.chatRoomId(), chatRoom.getClubId());
     }
 }

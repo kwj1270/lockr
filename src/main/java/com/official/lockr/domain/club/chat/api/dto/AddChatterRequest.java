@@ -1,6 +1,6 @@
 package com.official.lockr.domain.club.chat.api.dto;
 
-import com.official.lockr.domain.club.chat.application.dto.AddChatterCommand;
+import com.official.lockr.domain.club.chat.application.command.AddChatterCommand;
 
 public record AddChatterRequest(
         String userId

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.official.lockr.domain.auth.signin.domain.SignInSession;
 import com.official.lockr.domain.club.schedule.api.dto.*;
+import com.official.lockr.domain.club.schedule.application.command.CancelScheduleCommand;
+import com.official.lockr.domain.club.schedule.application.usecase.AdminUpdateAttendanceUseCase;
 import com.official.lockr.domain.club.schedule.application.usecase.CancelScheduleUseCase;
 import com.official.lockr.domain.club.schedule.application.usecase.RegisterScheduleUseCase;
 import com.official.lockr.domain.club.schedule.application.usecase.RespondToScheduleUseCase;
@@ -14,13 +16,18 @@ import com.official.lockr.domain.club.schedule.domain.vo.MatchDetailData;
 import com.official.lockr.domain.club.schedule.domain.vo.ScheduleDetailData;
 import com.official.lockr.domain.club.schedule.domain.vo.SocialDetailData;
 import com.official.lockr.domain.club.schedule.domain.vo.TrainingDetailData;
+import com.official.lockr.global.util.SessionUtils;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
-
-import static java.util.Objects.isNull;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RequestMapping("/api/v1/clubs/{clubId}/schedules")
 @RestController
@@ -30,6 +37,7 @@ public class ScheduleApi {
     private final UpdateScheduleUseCase updateScheduleUseCase;
     private final RespondToScheduleUseCase respondToScheduleUseCase;
     private final CancelScheduleUseCase cancelScheduleUseCase;
+    private final AdminUpdateAttendanceUseCase adminUpdateAttendanceUseCase;
     private final ObjectMapper objectMapper;
 
     public ScheduleApi(
@@ -37,12 +45,14 @@ public class ScheduleApi {
             final UpdateScheduleUseCase updateScheduleUseCase,
             final CancelScheduleUseCase cancelScheduleUseCase,
             final RespondToScheduleUseCase respondToScheduleUseCase,
+            final AdminUpdateAttendanceUseCase adminUpdateAttendanceUseCase,
             final ObjectMapper objectMapper
     ) {
         this.registerScheduleUseCase = registerScheduleUseCase;
         this.updateScheduleUseCase = updateScheduleUseCase;
         this.cancelScheduleUseCase = cancelScheduleUseCase;
         this.respondToScheduleUseCase = respondToScheduleUseCase;
+        this.adminUpdateAttendanceUseCase = adminUpdateAttendanceUseCase;
         this.objectMapper = objectMapper;
     }
 
@@ -50,57 +60,67 @@ public class ScheduleApi {
     public ResponseEntity<ScheduleResponse> register(
             final HttpSession httpSession,
             @PathVariable final String clubId,
-            @RequestBody final CreateScheduleRequest request
+            @Valid @RequestBody final CreateScheduleRequest request
     ) {
-        final SignInSession session = session(httpSession);
+        final SignInSession session = SessionUtils.getSignInSession(httpSession);
         final Schedule schedule = registerScheduleUseCase.create(
-                session.userId(), clubId, request.title(), request.content(),
-                request.location(), request.scheduleTime(), request.scheduleType(),
-                scheduleDetail(request.scheduleType(), request.detail()),
-                request.minParticipants(), request.maxParticipants(), request.deadlineDays()
+                request.toCommand(session.userId(), clubId, scheduleDetail(request.scheduleType(), request.detail()))
         );
         return ResponseEntity.ok(ScheduleResponse.from(schedule));
     }
 
-    @PostMapping("/{scheduleId}/update")
-    public ResponseEntity<Schedule> update(
+    @PutMapping("/{scheduleId}")
+    public ResponseEntity<ScheduleResponse> update(
             final HttpSession httpSession,
             @PathVariable final String clubId,
             @PathVariable final String scheduleId,
-            @RequestBody final UpdateScheduleRequest request
+            @Valid @RequestBody final UpdateScheduleRequest request
     ) {
-        final SignInSession session = session(httpSession);
+        final SignInSession session = SessionUtils.getSignInSession(httpSession);
         final Schedule schedule = updateScheduleUseCase.update(
-                scheduleId, session.userId(), clubId, request.title(), request.content(),
-                request.location(), request.scheduleTime(), request.detail(),
-                request.minParticipants(), request.maxParticipants(), request.deadlineDays()
+                request.toCommand(scheduleId, session.userId(), clubId)
         );
-        return ResponseEntity.ok().body(schedule);
+        return ResponseEntity.ok(ScheduleResponse.from(schedule));
     }
 
-    @PostMapping("/{scheduleId}/cancel")
-    public ResponseEntity<Schedule> cancelSchedule(
+    @DeleteMapping("/{scheduleId}")
+    public ResponseEntity<ScheduleResponse> cancelSchedule(
             final HttpSession httpSession,
             @PathVariable final String clubId,
             @PathVariable final String scheduleId
     ) {
-        final SignInSession session = session(httpSession);
-        final Schedule schedule = cancelScheduleUseCase.cancel(session.userId(), clubId, scheduleId);
-        return ResponseEntity.ok().body(schedule);
+        final SignInSession session = SessionUtils.getSignInSession(httpSession);
+        final Schedule schedule = cancelScheduleUseCase.cancel(
+                new CancelScheduleCommand(session.userId(), clubId, scheduleId)
+        );
+        return ResponseEntity.ok(ScheduleResponse.from(schedule));
     }
 
-    @PostMapping("/{scheduleId}/respond")
+    @PutMapping("/{scheduleId}/respond")
     public ResponseEntity<Void> respond(
             final HttpSession httpSession,
             @PathVariable final String clubId,
             @PathVariable final String scheduleId,
-            @RequestBody final RespondToScheduleRequest request
+            @Valid @RequestBody final RespondToScheduleRequest request
     ) {
-        final SignInSession session = session(httpSession);
+        final SignInSession session = SessionUtils.getSignInSession(httpSession);
         respondToScheduleUseCase.respond(
-                scheduleId, session.userId(), clubId, request.status(), request.reason()
+                request.toCommand(scheduleId, session.userId(), clubId)
         );
-        // Command API는 성공 응답만 반환
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{scheduleId}/attendances/{targetUserId}")
+    public ResponseEntity<Void> adminUpdateAttendance(
+            @RequestAttribute("signInSession") final SignInSession signInSession,
+            @PathVariable final String clubId,
+            @PathVariable final String scheduleId,
+            @PathVariable final String targetUserId,
+            @Valid @RequestBody final AdminUpdateAttendanceRequest request
+    ) {
+        adminUpdateAttendanceUseCase.update(
+                request.toCommand(scheduleId, signInSession.userId(), clubId, targetUserId)
+        );
         return ResponseEntity.ok().build();
     }
 
@@ -116,15 +136,8 @@ public class ScheduleApi {
         try {
             return objectMapper.readValue(detail, classType);
         } catch (JsonProcessingException e) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Invalid schedule detail format: " + e.getMessage());
         }
     }
 
-    private SignInSession session(final HttpSession httpSession) {
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
-        if (isNull(signIn)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
-        }
-        return signIn;
-    }
 }

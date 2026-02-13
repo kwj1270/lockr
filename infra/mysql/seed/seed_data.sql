@@ -722,7 +722,22 @@ INSERT IGNORE INTO `schedules` (`id`, `club_id`, `title`, `content`, `location`,
 ('01HXS00000000000000000013', '01HXC00000000000000000004', '주말 오전 훈련', '기초 체력 및 미니게임', '여의도공원 축구장', DATE_ADD(NOW(), INTERVAL 4 DAY), 'TRAINING', '{"focus": "체력", "intensity": "중"}', 'SCHEDULED', 8, 20, 2, NOW(), NOW(), NULL),
 ('01HXS00000000000000000014', '01HXC00000000000000000004', '송파 유나이티드전', '리그 경기', '올림픽공원 축구장', DATE_ADD(NOW(), INTERVAL 5 DAY), 'MATCH', '{"opponent": "송파 유나이티드", "matchType": "리그"}', 'SCHEDULED', 11, 18, 2, NOW(), NOW(), NULL),
 ('01HXS00000000000000000015', '01HXC00000000000000000004', '초보자 환영 번개', '축구 처음인 분들 환영', '영등포구민체육센터', DATE_ADD(NOW(), INTERVAL 8 DAY), 'TRAINING', '{"focus": "기본기", "intensity": "하"}', 'SCHEDULED', 4, 12, 1, NOW(), NOW(), NULL),
-('01HXS00000000000000000016', '01HXC00000000000000000004', '지난 친선경기', 'FC 강남 2군전', '여의도공원 축구장', DATE_SUB(NOW(), INTERVAL 10 DAY), 'MATCH', '{"opponent": "FC 강남 2군", "matchType": "친선", "result": "1:1 무"}', 'COMPLETED', 11, 18, 3, DATE_SUB(NOW(), INTERVAL 17 DAY), NOW(), NULL);
+('01HXS00000000000000000016', '01HXC00000000000000000004', '지난 친선경기', 'FC 강남 2군전', '여의도공원 축구장', DATE_SUB(NOW(), INTERVAL 10 DAY), 'MATCH', '{"opponent": "FC 강남 2군", "matchType": "친선", "result": "1:1 무"}', 'COMPLETED', 11, 18, 3, DATE_SUB(NOW(), INTERVAL 17 DAY), NOW(), NULL),
+
+-- 추가 COMPLETED MATCH 일정 (Stats API 테스트용)
+-- FC 강남 추가 경기
+('01HXS00000000000000000017', '01HXC00000000000000000001', '송파 유나이티드전', '지난 리그 경기', '강남구민체육센터 축구장', DATE_SUB(NOW(), INTERVAL 7 DAY), 'MATCH', '{"opponent": "송파 유나이티드", "matchType": "리그", "result": "3:1 승"}', 'COMPLETED', 11, 18, 3, DATE_SUB(NOW(), INTERVAL 14 DAY), NOW(), NULL),
+('01HXS00000000000000000018', '01HXC00000000000000000001', '영등포 FC전', '지난 친선경기', '월드컵공원 축구장', DATE_SUB(NOW(), INTERVAL 14 DAY), 'MATCH', '{"opponent": "영등포 FC", "matchType": "친선", "result": "2:2 무"}', 'COMPLETED', 11, 18, 3, DATE_SUB(NOW(), INTERVAL 21 DAY), NOW(), NULL),
+
+-- 마포 FC 추가 경기
+('01HXS00000000000000000019', '01HXC00000000000000000002', 'FC 강남전', '지난 리그 경기', '상암 월드컵경기장 보조구장', DATE_SUB(NOW(), INTERVAL 10 DAY), 'MATCH', '{"opponent": "FC 강남", "matchType": "리그", "result": "0:1 패"}', 'COMPLETED', 11, 18, 3, DATE_SUB(NOW(), INTERVAL 17 DAY), NOW(), NULL),
+
+-- 송파 유나이티드 추가 경기
+('01HXS00000000000000000020', '01HXC00000000000000000003', '마포 FC전', '지난 친선경기', '잠실종합운동장 보조구장', DATE_SUB(NOW(), INTERVAL 12 DAY), 'MATCH', '{"opponent": "마포 FC", "matchType": "친선", "result": "1:2 패"}', 'COMPLETED', 11, 18, 3, DATE_SUB(NOW(), INTERVAL 19 DAY), NOW(), NULL),
+('01HXS00000000000000000021', '01HXC00000000000000000003', '영등포 FC전', '지난 리그 경기', '올림픽공원 축구장', DATE_SUB(NOW(), INTERVAL 21 DAY), 'MATCH', '{"opponent": "영등포 FC", "matchType": "리그", "result": "3:0 승"}', 'COMPLETED', 11, 18, 3, DATE_SUB(NOW(), INTERVAL 28 DAY), NOW(), NULL),
+
+-- 영등포 FC 추가 경기
+('01HXS00000000000000000022', '01HXC00000000000000000004', '마포 FC전', '지난 리그 경기', '여의도공원 축구장', DATE_SUB(NOW(), INTERVAL 18 DAY), 'MATCH', '{"opponent": "마포 FC", "matchType": "리그", "result": "2:1 승"}', 'COMPLETED', 11, 18, 3, DATE_SUB(NOW(), INTERVAL 25 DAY), NOW(), NULL);
 
 -- =====================================================
 -- 15. Attendances (각 예정된 일정당 전체 멤버 출석 데이터)
@@ -882,4 +897,11 @@ SELECT c.name AS club_name, COUNT(s.id) AS schedule_count,
        SUM(CASE WHEN s.status = 'COMPLETED' THEN 1 ELSE 0 END) AS completed
 FROM clubs c
 LEFT JOIN schedules s ON c.id = s.club_id
+GROUP BY c.id, c.name;
+
+SELECT '=== Club COMPLETED Matches ===' AS message;
+SELECT c.name AS club_name,
+       COUNT(s.id) AS completed_match_count
+FROM clubs c
+LEFT JOIN schedules s ON c.id = s.club_id AND s.type = 'MATCH' AND s.status = 'COMPLETED'
 GROUP BY c.id, c.name;

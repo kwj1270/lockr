@@ -1,6 +1,6 @@
 package com.official.lockr.domain.club.chat.api.dto;
 
-import com.official.lockr.domain.club.chat.application.dto.SendMessageCommand;
+import com.official.lockr.domain.club.chat.application.command.SendMessageCommand;
 
 public record SendMessageRequest(
         String message,

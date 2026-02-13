@@ -12,6 +12,7 @@ import org.jooq.Configuration;
 import org.jooq.JSON;
 import org.jooq.generated.tables.daos.NotificationsDao;
 import org.jooq.generated.tables.pojos.NotificationsEntity;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ import static java.util.Objects.isNull;
 import static org.jooq.generated.tables.NotificationsJOOQEntity.NOTIFICATIONS;
 import static org.jooq.impl.DSL.excluded;
 
+@ConditionalOnMissingBean(InMemoryNotificationRepository.class)
 @Repository
 public class JOOQNotificationRepository implements NotificationRepository {
 

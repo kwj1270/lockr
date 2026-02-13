@@ -1,0 +1,1 @@
+ALTER TABLE chats MODIFY COLUMN sender_name VARCHAR(255) NULL;

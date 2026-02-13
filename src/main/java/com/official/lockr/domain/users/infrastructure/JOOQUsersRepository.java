@@ -23,11 +23,13 @@ public class JOOQUsersRepository implements UsersRepository {
 
     private final UsersDao usersDao;
     private final UserAdditionalInfoDao userAdditionalInfoDao;
+    private final DomainEventPublisher domainEventPublisher;
 
     public JOOQUsersRepository(final Configuration configuration,
                                final DomainEventPublisher domainEventPublisher) {
         this.usersDao = new UsersDao(configuration);
         this.userAdditionalInfoDao = new UserAdditionalInfoDao(configuration);
+        this.domainEventPublisher = domainEventPublisher;
     }
 
     @Transactional
@@ -35,6 +37,7 @@ public class JOOQUsersRepository implements UsersRepository {
     public Users save(final Users users) {
         upsertUser(users);
         upsertUserAdditionalInfo(users.getUserAdditionalInfo());
+        users.publish(domainEventPublisher);
         return users;
     }
 

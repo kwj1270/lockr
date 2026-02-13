@@ -13,18 +13,14 @@ public record ScheduleLocationResponse(
     String source,
     String category
 ) {
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-
-    public static ScheduleLocationResponse from(String locationJson) {
+    public static ScheduleLocationResponse from(final String locationJson, final ObjectMapper objectMapper) {
         if (locationJson == null || locationJson.isBlank()) {
             return new ScheduleLocationResponse(null, null, null, null, null, null, null, null);
         }
 
         try {
-            // JSON 문자열을 파싱
             return objectMapper.readValue(locationJson, ScheduleLocationResponse.class);
         } catch (JsonProcessingException e) {
-            // JSON 파싱 실패 시 name만 설정
             return new ScheduleLocationResponse(locationJson, null, null, null, null, null, null, null);
         }
     }

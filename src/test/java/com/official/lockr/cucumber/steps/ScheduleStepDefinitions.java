@@ -77,7 +77,7 @@ public class ScheduleStepDefinitions {
                 ScheduleType.TRAINING,
                 new TrainingDetailData(),
                 userIds,
-                5, 20, 3
+                5, 20, 3, LocalDateTime.now()
         );
     }
 
@@ -108,7 +108,7 @@ public class ScheduleStepDefinitions {
                     ScheduleType.TRAINING,
                     new TrainingDetailData(),
                     userIds,
-                    5, 20, 3
+                    5, 20, 3, LocalDateTime.now()
             );
         }
     }
