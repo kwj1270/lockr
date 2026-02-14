@@ -50,7 +50,7 @@ public class ScheduleStepDefinitions {
     @그리고("{string}은 스케줄 클럽의 회장이다")
     @그리고("{string}이 스케줄 클럽의 회장이다")
     public void 은_스케줄_클럽의_회장이다(String userId) {
-        Member president = Member.president(userId, clubId, null);
+        Member president = Member.president(userId, clubId, null, null);
         members.put(userId, president);
         club.addMember(president);
     }
@@ -58,7 +58,7 @@ public class ScheduleStepDefinitions {
     @그리고("{string}는 스케줄 클럽의 일반 멤버이다")
     @그리고("{string}은 스케줄 클럽의 일반 멤버이다")
     public void 는_스케줄_클럽의_일반_멤버이다(String userId) {
-        Member member = Member.basic(userId, clubId, null);
+        Member member = Member.basic(userId, clubId, null, null);
         members.put(userId, member);
         club.addMember(member);
     }

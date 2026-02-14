@@ -2,6 +2,7 @@ package com.official.lockr.domain.club.club.api;
 
 import com.official.lockr.domain.club.club.application.command.AddMemberCommand;
 import com.official.lockr.domain.club.club.application.usecase.RegisterClubMemberUseCase;
+import com.official.lockr.domain.club.club.domain.MemberRole;
 import com.official.lockr.domain.club.recruitment.applications.domain.event.ApprovedApplicationEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,8 +31,7 @@ public class ClubEventConsumer {
     public void addMember(final ApprovedApplicationEvent event) {
         try {
             retryTemplate.execute(ctx -> {
-                registerClubMemberUseCase.addMember(
-                        new AddMemberCommand(event.clubId(), event.userId(), event.profileImage()));
+                registerClubMemberUseCase.addMember(AddMemberCommand.basic(event.clubId(), event.userId(), null, event.profileImage()));
                 return null;
             });
         } catch (Exception e) {

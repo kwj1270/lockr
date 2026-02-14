@@ -88,8 +88,8 @@ class NotificationServiceTest {
         final String scheduleTime = "2026-01-20 15:00";
 
         final LocalDateTime now = LocalDateTime.now();
-        final Member staffMember = new Member("member-001", "staff-user-001", MemberRole.MANAGER, targetClubId, null, now, now, null);
-        final Member basicMember = new Member("member-002", "basic-user-001", MemberRole.BASIC, targetClubId, null, now, now, null);
+        final Member staffMember = new Member("member-001", "staff-user-001", MemberRole.MANAGER, targetClubId, null, null, now, now, null);
+        final Member basicMember = new Member("member-002", "basic-user-001", MemberRole.BASIC, targetClubId, null, null, now, now, null);
         final Club targetClub = new Club(
                 targetClubId, "founder-001", "상대팀", "SOCCER", "서울", "강남구", "설명",
                 null, null, List.of(staffMember, basicMember), now, now, null

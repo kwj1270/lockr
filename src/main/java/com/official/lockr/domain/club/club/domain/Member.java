@@ -11,16 +11,18 @@ public class Member {
     private final String userId;
     private MemberRole role;
     private final String clubId;
+    private String name;
     private String profileImage;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
     private final LocalDateTime deletedAt;
 
-    public Member(final String id, final String userId, final MemberRole role, final String clubId, final String profileImage, final LocalDateTime createdAt, final LocalDateTime updatedAt, final LocalDateTime deletedAt) {
+    public Member(final String id, final String userId, final MemberRole role, final String clubId, final String name, final String profileImage, final LocalDateTime createdAt, final LocalDateTime updatedAt, final LocalDateTime deletedAt) {
         this.id = id;
         this.userId = userId;
         this.role = role;
         this.clubId = clubId;
+        this.name = name;
         this.profileImage = profileImage;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -45,6 +47,14 @@ public class Member {
 
     public String getClubId() {
         return clubId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void updateName(final String name) {
+        this.name = name;
     }
 
     public String getProfileImage() {
@@ -103,11 +113,12 @@ public class Member {
         return Objects.hashCode(id);
     }
 
-    public static Member president(final String userId, final String clubId, final String profileImage) {
-        return new Member(generateUlid(), userId, MemberRole.PRESIDENT, clubId, profileImage, LocalDateTime.now(), LocalDateTime.now(), null);
+    public static Member president(final String userId, final String clubId, final String name, final String profileImage) {
+        return new Member(generateUlid(), userId, MemberRole.PRESIDENT, clubId, name, profileImage, LocalDateTime.now(), LocalDateTime.now(), null);
     }
 
-    public static Member basic(final String userId, final String clubId, final String profileImage) {
-        return new Member(generateUlid(), userId, MemberRole.BASIC, clubId, profileImage, LocalDateTime.now(), LocalDateTime.now(), null);
+    public static Member basic(final String userId, final String clubId, final String name, final String profileImage) {
+        return new Member(generateUlid(), userId, MemberRole.BASIC, clubId, name, profileImage, LocalDateTime.now(), LocalDateTime.now(), null);
     }
+
 }

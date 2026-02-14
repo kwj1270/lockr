@@ -4,7 +4,6 @@ import com.official.lockr.domain.club.club.domain.event.AddedClubMemberEvent;
 import com.official.lockr.domain.club.club.domain.event.FoundClubEvent;
 import com.official.lockr.domain.club.club.domain.event.RemovedClubMemberEvent;
 import com.official.lockr.global.ddd.AggregateRoot;
-import reactor.util.annotation.Nullable;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -180,4 +179,5 @@ public class Club extends AggregateRoot {
                 .orElseThrow(IllegalArgumentException::new);
         member.updateProfileImage(profileImage);
     }
+
 }

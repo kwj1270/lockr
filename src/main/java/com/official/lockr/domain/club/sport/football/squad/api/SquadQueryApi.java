@@ -113,8 +113,6 @@ public class SquadQueryApi {
                 entity.getId(),
                 entity.getSquadId(),
                 entity.getUserId(),
-                entity.getName(),
-                entity.getProfileImage(),
                 Objects.nonNull(entity.getBirthDate()) ? new BirthDate(entity.getBirthDate()) : null,
                 entity.getHeight(),
                 entity.getWeight(),

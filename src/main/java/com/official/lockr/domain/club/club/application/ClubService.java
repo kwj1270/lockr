@@ -42,8 +42,6 @@ public class ClubService implements FoundClubUseCase, RegisterClubMemberUseCase,
                 command.userId(), command.name(), command.sportType(), command.city(),
                 command.district(), command.description(), command.profileImageUrl(), command.backgroundImageUrl()
         );
-        final String founderProfileImage = getFounderProfileImage(command.userId());
-        club.addMember(president(command.userId(), club.getId(), founderProfileImage));
         return clubRepository.save(club);
     }
 
@@ -64,9 +62,26 @@ public class ClubService implements FoundClubUseCase, RegisterClubMemberUseCase,
         if (club.isExistedUser(command.userId())) {
             return club;
         }
+        final String name = resolveName(command);
         final String profileImage = resolveProfileImage(command);
-        club.addMember(basic(command.userId(), club.getId(), profileImage));
+        if(command.memberRole().isPresident()) {
+            club.addMember(president(command.userId(), club.getId(), name, profileImage));
+        }
+        if(command.memberRole().isBasic()) {
+            club.addMember(basic(command.userId(), club.getId(), name, profileImage));
+        }
         return clubRepository.save(club);
+    }
+
+    private String resolveName(final AddMemberCommand command) {
+        if (nonNull(command.name())) {
+            return command.name();
+        }
+        final Users user = usersRepository.findById(command.userId());
+        if (isNull(user) || isNull(user.getUserAdditionalInfo())) {
+            return null;
+        }
+        return user.name();
     }
 
     private String resolveProfileImage(final AddMemberCommand command) {

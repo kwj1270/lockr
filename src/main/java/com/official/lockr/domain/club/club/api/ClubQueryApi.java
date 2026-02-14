@@ -15,9 +15,9 @@ import java.util.List;
 import static java.util.stream.Collectors.toMap;
 import static org.jooq.generated.tables.ClubsJOOQEntity.CLUBS;
 import static org.jooq.generated.tables.MembersJOOQEntity.MEMBERS;
-import static org.jooq.generated.tables.UserAdditionalInfoJOOQEntity.USER_ADDITIONAL_INFO;
-import static org.jooq.generated.tables.SquadsJOOQEntity.SQUADS;
 import static org.jooq.generated.tables.SquadPlayersJOOQEntity.SQUAD_PLAYERS;
+import static org.jooq.generated.tables.SquadsJOOQEntity.SQUADS;
+import static org.jooq.generated.tables.UserAdditionalInfoJOOQEntity.USER_ADDITIONAL_INFO;
 
 @RestController
 @RequestMapping("/api/v1/clubs")
@@ -135,6 +135,7 @@ public class ClubQueryApi {
                 member.getId(),
                 member.getUserId(),
                 member.getClubId(),
+                member.getName(),
                 MemberRole.valueOf(member.getMemberRole()),
                 member.getProfileImage(),
                 member.getCreatedAt(),
@@ -149,15 +150,15 @@ public class ClubQueryApi {
             @RequestAttribute("signInSession") final SignInSession signInSession,
             @PathVariable final String clubId
     ) {
-        final var profileImageField = DSL.coalesce(MEMBERS.PROFILE_IMAGE, SQUAD_PLAYERS.PROFILE_IMAGE).as("profile_image");
+        final var nameField = DSL.coalesce(MEMBERS.NAME, USER_ADDITIONAL_INFO.NAME).as("name");
 
         final List<MemberResponse> members = clubsDao.ctx()
                 .select(
                         MEMBERS.USER_ID,
-                        USER_ADDITIONAL_INFO.NAME,
+                        nameField,
                         MEMBERS.MEMBER_ROLE,
                         MEMBERS.CREATED_AT,
-                        profileImageField,
+                        MEMBERS.PROFILE_IMAGE,
                         SQUAD_PLAYERS.POSITIONS,
                         SQUAD_PLAYERS.BACK_NUMBER,
                         USER_ADDITIONAL_INFO.PHONE
@@ -174,15 +175,33 @@ public class ClubQueryApi {
                 .fetch()
                 .map(record -> new MemberResponse(
                         record.get(MEMBERS.USER_ID),
-                        record.get(USER_ADDITIONAL_INFO.NAME),
+                        record.get("name", String.class),
                         record.get(MEMBERS.MEMBER_ROLE),
                         record.get(MEMBERS.CREATED_AT),
-                        record.get("profile_image", String.class),
+                        record.get(MEMBERS.PROFILE_IMAGE),
                         record.get(SQUAD_PLAYERS.POSITIONS),
                         record.get(SQUAD_PLAYERS.BACK_NUMBER),
                         record.get(USER_ADDITIONAL_INFO.PHONE)
                 ));
 
         return ResponseEntity.ok(new MembersResponse(members));
+    }
+
+    @GetMapping("/{clubId}/me/profile-image")
+    public ResponseEntity<MemberProfileResponse> getMemberProfileImage(
+            @RequestAttribute("signInSession") final SignInSession signInSession,
+            @PathVariable final String clubId
+    ) {
+        final String profileImage = clubsDao.ctx()
+                .select(MEMBERS.PROFILE_IMAGE)
+                .from(MEMBERS)
+                .where(MEMBERS.CLUB_ID.eq(clubId))
+                .and(MEMBERS.USER_ID.eq(signInSession.userId()))
+                .and(MEMBERS.DELETED_AT.isNull())
+                .fetchOneInto(String.class);
+        if (profileImage == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(new MemberProfileResponse(profileImage));
     }
 }

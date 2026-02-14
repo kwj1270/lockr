@@ -8,6 +8,7 @@ public record MyMemberInfoResponse(
         String memberId,
         String userId,
         String clubId,
+        String name,
         MemberRole role,
         String profileImage,
         LocalDateTime createdAt,

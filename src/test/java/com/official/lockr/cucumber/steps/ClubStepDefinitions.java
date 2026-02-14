@@ -40,7 +40,7 @@ public class ClubStepDefinitions {
     @만약("{string}가 {string} 클럽을 창단한다")
     public void 클럽을_창단한다(String userId, String clubName) {
         club = Club.init(userId, clubName, "FOOTBALL", "서울", "강남구", "테스트 클럽", null, null);
-        Member president = Member.president(userId, club.getId(), null);
+        Member president = Member.president(userId, club.getId(), null, null);
         club.addMember(president);
         members.put(userId, president);
     }
@@ -73,7 +73,7 @@ public class ClubStepDefinitions {
     @그리고("{string}은 클럽의 회장이다")
     @그리고("{string}이 클럽의 회장이다")
     public void 은_클럽의_회장이다(String userId) {
-        Member president = Member.president(userId, club.getId(), null);
+        Member president = Member.president(userId, club.getId(), null, null);
         club.addMember(president);
         members.put(userId, president);
     }
@@ -81,7 +81,7 @@ public class ClubStepDefinitions {
     @만약("회장이 {string}를 멤버로 추가한다")
     @만약("회장이 {string}을 멤버로 추가한다")
     public void 회장이_멤버로_추가한다(String userId) {
-        Member newMember = Member.basic(userId, club.getId(), null);
+        Member newMember = Member.basic(userId, club.getId(), null, null);
         club.addMember(newMember);
         members.put(userId, newMember);
     }
@@ -97,7 +97,7 @@ public class ClubStepDefinitions {
     @그리고("{string}는 클럽의 일반 멤버이다")
     @그리고("{string}은 클럽의 일반 멤버이다")
     public void 는_클럽의_일반_멤버이다(String userId) {
-        Member member = Member.basic(userId, club.getId(), null);
+        Member member = Member.basic(userId, club.getId(), null, null);
         club.addMember(member);
         members.put(userId, member);
     }

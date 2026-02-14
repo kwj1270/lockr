@@ -1,8 +1,12 @@
 package com.official.lockr.domain.club.sport.football.squad.api;
 
 import com.official.lockr.domain.club.club.domain.event.AddedClubMemberEvent;
+import com.official.lockr.domain.club.club.domain.event.FoundClubEvent;
+import com.official.lockr.domain.club.sport.football.lineup.application.command.AddLineupsCommand;
 import com.official.lockr.domain.club.sport.football.squad.application.command.AddFootBallPlayerCommand;
+import com.official.lockr.domain.club.sport.football.squad.application.command.CreateSquadCommand;
 import com.official.lockr.domain.club.sport.football.squad.application.usecase.AddSquadPlayerUseCase;
+import com.official.lockr.domain.club.sport.football.squad.application.usecase.CreateSquadUseCase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.retry.support.RetryTemplate;
@@ -15,15 +19,34 @@ public class SquadEventConsumer {
     private static final Logger log = LoggerFactory.getLogger(SquadEventConsumer.class);
 
     private final AddSquadPlayerUseCase addSquadPlayerUseCase;
+    private final CreateSquadUseCase createSquadUseCase;
     private final RetryTemplate retryTemplate;
 
-    public SquadEventConsumer(final AddSquadPlayerUseCase addSquadPlayerUseCase) {
+    public SquadEventConsumer(final AddSquadPlayerUseCase addSquadPlayerUseCase,
+                              final CreateSquadUseCase createSquadUseCase
+    ) {
         this.addSquadPlayerUseCase = addSquadPlayerUseCase;
+        this.createSquadUseCase = createSquadUseCase;
         this.retryTemplate = RetryTemplate.builder()
                 .maxAttempts(3)
                 .exponentialBackoff(1000, 1.5, 5000)
                 .retryOn(Exception.class)
                 .build();
+    }
+
+    @TransactionalEventListener
+    public void consume(final FoundClubEvent event) {
+        if (!"FOOT_BALL".equals(event.sportType())) {
+            return;
+        }
+        try {
+            retryTemplate.execute(ctx -> {
+                createSquadUseCase.create(new CreateSquadCommand(event.id(), event.foundUserId()));
+                return null;
+            });
+        } catch (Exception e) {
+            log.error("Failed to create squad after all retries. clubId={}", event.id(), e);
+        }
     }
 
     @TransactionalEventListener

@@ -22,10 +22,21 @@ public class SquadApi {
     public ResponseEntity<Squad> registerOrUpdatePlayer(
             @PathVariable String clubId,
             @PathVariable String squadId,
+            @RequestAttribute("signInSession") final SignInSession signInSession,
+            @RequestBody UpdateSquadPlayerRequest request
+    ) {
+        final Squad squad = updateSquadPlayerUseCase.updatePlayer(request.toCommand(signInSession.userId(), clubId, squadId));
+        return ResponseEntity.ok(squad);
+    }
+
+    @PostMapping("/player")
+    public ResponseEntity<Squad> UpdatePlayer(
+            @PathVariable String clubId,
+            @PathVariable String squadId,
             @RequestBody UpdateSquadPlayerRequest request,
             @RequestAttribute("signInSession") final SignInSession signInSession
     ) {
-        final UpdateSquadPlayerCommand command = request.toCommand(signInSession.userId(), clubId);
+        final UpdateSquadPlayerCommand command = request.toCommand(signInSession.userId(), clubId, squadId);
         final Squad squad = updateSquadPlayerUseCase.updatePlayer(command);
         return ResponseEntity.ok(squad);
     }

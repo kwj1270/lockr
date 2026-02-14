@@ -338,7 +338,7 @@ class StatsServiceTest {
     private Club createClubWithMember(final String clubId, final String userId, final MemberRole role) {
         final Member member = new Member(
                 "member-001", userId, role, clubId,
-                null, LocalDateTime.now(), LocalDateTime.now(), null
+                null, null, LocalDateTime.now(), LocalDateTime.now(), null
         );
         return new Club(
                 clubId, "founder-001", "테스트클럽", "FOOTBALL",
