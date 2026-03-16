@@ -1,0 +1,5 @@
+{"t":0,"agent":"ac09187","agent_type":"unknown","event":"agent_stop","success":true}
+{"t":0,"agent":"afd4871","agent_type":"unknown","event":"agent_stop","success":true}
+{"t":0,"agent":"a91e4a0","agent_type":"unknown","event":"agent_stop","success":true}
+{"t":0,"agent":"aad4489","agent_type":"unknown","event":"agent_stop","success":true}
+{"t":0,"agent":"system","event":"keyword_detected","keyword":"research"}
