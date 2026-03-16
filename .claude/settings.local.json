@@ -61,7 +61,8 @@
       "Bash(gh pr view:*)",
       "Bash(wc:*)",
       "WebFetch(domain:www.spond.com)",
-      "WebFetch(domain:bcoach.app)"
+      "WebFetch(domain:bcoach.app)",
+      "Bash(git branch:*)"
     ],
     "deny": [],
     "ask": []
