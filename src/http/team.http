@@ -1,0 +1,70 @@
+#### 팀 창단
+POST http://127.0.0.1:8080/api/v1/teams
+Cookie: {{SESSION_COOKIE}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+{
+  "name": "team",
+  "description": "test team"
+}
+> {%
+    client.global.set("TEAM_ID", response.body.id);
+%}
+
+#### 일반 선수 생성
+// @no-cookie-jar
+POST http://127.0.0.1:8080/api/v1/admin/auth/sign_in
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+{
+  "providerId": "2",
+  "providerType": "TEST"
+}
+> {%
+    client.global.set("SESSION_COOKIE_2", response.headers.valueOf("Set-Cookie"));
+%}
+
+#### 입단 신청
+POST http://127.0.0.1:8080/api/v1/teams/{{TEAM_ID}}/resume
+Cookie: {{SESSION_COOKIE_2}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 2
+X-DEVICE-INFO: web
+
+{
+  "birth": "1998-07-15",
+  "height": "180",
+  "weight": "75",
+  "name": "홍길동",
+  "email": "gildong@example.com",
+  "address": "서울특별시 강남구 테헤란로 123",
+  "phone": "010-1234-5678",
+  "emergencyContactPhone": "010-8765-4321",
+  "nationality": "KOR",
+  "preferredPosition": ["CF", "RW"],
+  "dominantFoot": "RIGHT",
+  "advantages": "스피드와 결정력 우수",
+  "disadvantages": "수비 시 위치선정 보완 필요"
+}
+> {%
+    client.global.set("RESUME_ID", response.body.id);
+%}
+
+#### 계약
+POST http://127.0.0.1:8080/api/v1/teams/{{TEAM_ID}}/resume/sign
+Cookie: {{SESSION_COOKIE}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+{
+  "resumeId": "{{RESUME_ID}}"
+}

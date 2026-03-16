@@ -1,6 +1,5 @@
 package com.official.lockr.domain.users.infrastructure;
 
-import com.official.lockr.domain.users.api.dto.SaveUsersResponse;
 import com.official.lockr.domain.users.domain.Users;
 import com.official.lockr.domain.users.domain.UsersRepository;
 import org.jooq.Configuration;

@@ -2,10 +2,12 @@ package com.official.lockr.global.http;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.official.lockr.domain.auth.domain.auth.SignInSession;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -19,6 +21,7 @@ import java.time.LocalTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
@@ -44,23 +47,22 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
             final HttpServletResponse response,
             final FilterChain filterChain
     ) throws ServletException, IOException {
-
+        final HttpSession session = request.getSession(false);
         final HttpHeaderContext headerContext = new HttpHeaderContext(request);
         httpHeaders.set(headerContext);
-
         final var contentCachingRequestWrapper = new ContentCachingRequestWrapper(request);
         final var contentCachingResponseWrapper = new ContentCachingResponseWrapper(response);
-        saveHttpRequest(headerContext, contentCachingRequestWrapper);
-
         try {
             filterChain.doFilter(contentCachingRequestWrapper, contentCachingResponseWrapper);
         } finally {
+            saveHttpRequest(session, headerContext, contentCachingRequestWrapper);
+            saveHttpResponse(session, headerContext, contentCachingRequestWrapper, contentCachingResponseWrapper);
             contentCachingResponseWrapper.copyBodyToResponse();
-            saveHttpResponse(headerContext, contentCachingRequestWrapper, contentCachingResponseWrapper);
         }
     }
 
     private void saveHttpRequest(
+            final HttpSession httpSession,
             final HttpHeaderContext headerContext,
             final ContentCachingRequestWrapper request
     ) {
@@ -71,7 +73,7 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
                     LocalDate.now().toString(),
                     LocalTime.now().toString(),
                     headerContext.ipAddress(),
-                    "test",
+                    userId(httpSession),
                     request.getMethod(),
                     request.getRequestURI(),
                     "0000",
@@ -83,7 +85,16 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
         }
     }
 
+    private static String userId(final HttpSession httpSession) {
+        if (Objects.isNull(httpSession)) {
+            return "";
+        }
+        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
+        return signIn.userId();
+    }
+
     private void saveHttpResponse(
+            final HttpSession httpSession,
             final HttpHeaderContext headerContext,
             final ContentCachingRequestWrapper request,
             final ContentCachingResponseWrapper response
@@ -95,7 +106,7 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
                     LocalDate.now().toString(),
                     LocalTime.now().toString(),
                     headerContext.ipAddress(),
-                    "test",
+                    userId(httpSession),
                     request.getMethod(),
                     request.getRequestURI(),
                     String.valueOf(response.getStatus()),
