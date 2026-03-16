@@ -1,10 +1,10 @@
 package com.official.lockr.domain.game.game.domain;
 
 import com.official.lockr.domain.game.game.domain.event.*;
-import com.official.lockr.domain.relay.domain.RelayEventType;
+import com.official.lockr.domain.game.relay.domain.RelayEventType;
 import com.official.lockr.domain.game.game.domain.team.Team;
-import com.official.lockr.domain.game.game.domain.team.player.Bench;
-import com.official.lockr.domain.game.game.domain.team.player.Field;
+import com.official.lockr.domain.game.game.domain.team.player.BenchPlayers;
+import com.official.lockr.domain.game.game.domain.team.player.FieldPlayers;
 import com.official.lockr.global.ddd.AggregateRoot;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -47,9 +47,9 @@ public class Game extends AggregateRoot {
         this.deletedAt = deletedAt;
     }
 
-    public void registerEntry(final String teamId, final Field field, final Bench bench) {
+    public void registerEntry(final String teamId, final FieldPlayers fieldPlayers, final BenchPlayers benchPlayers) {
         final Team team = findTeam(teamId);
-        team.registerEntry(field, bench);
+        team.registerEntry(fieldPlayers, benchPlayers);
     }
 
     public void start() {

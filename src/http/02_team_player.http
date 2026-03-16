@@ -15,7 +15,7 @@ X-DEVICE-INFO: web
 %}
 
 #### 입단 신청
-POST http://127.0.0.1:8080/api/v1/teams/{{TEAM_ID}}/resume
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/resume
 Cookie: {{SESSION_COOKIE_3}}
 Content-Type: application/json
 Authorization: test
@@ -45,7 +45,7 @@ X-DEVICE-INFO: web
 %}
 
 #### 계약 - 대표
-POST http://127.0.0.1:8080/api/v1/teams/{{TEAM_ID}}/contract
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/contract
 Cookie: {{SESSION_COOKIE}}
 Content-Type: application/json
 Authorization: test
@@ -62,7 +62,7 @@ X-DEVICE-INFO: web
 
 
 #### 계약 - 개인
-POST http://127.0.0.1:8080/api/v1/teams/{{TEAM_ID}}/contract/sign
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/contract/sign
 Cookie: {{SESSION_COOKIE_3}}
 Content-Type: application/json
 Authorization: test

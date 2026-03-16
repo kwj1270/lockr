@@ -1,7 +1,7 @@
 package com.official.lockr.domain.club.contract.infrastructure;
 
-import com.official.lockr.domain.club.common.Foot;
-import com.official.lockr.domain.club.common.Position;
+import com.official.lockr.global.vo.Foot;
+import com.official.lockr.global.vo.Position;
 import com.official.lockr.domain.club.contract.domain.Resume;
 import com.official.lockr.domain.club.contract.domain.ResumeRepository;
 import jakarta.annotation.Nullable;

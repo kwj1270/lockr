@@ -1,5 +1,5 @@
 ### 스쿼드 조회
-GET http://127.0.0.1:8080/api/v1/teams/{{TEAM_ID}}/squads
+GET http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/squads
 Cookie: {{SESSION_COOKIE_2}}
 Content-Type: application/json
 Authorization: test
@@ -8,11 +8,12 @@ X-DEVICE-INFO: web
 
 > {%
     client.global.set("SQUAD_ID", response.body.id);
-    client.global.set("SQUAD_PLAYER_ID", response.body.players[2].id);
+    client.global.set("CLUB_ID", response.body.clubId);
+    client.global.set("SQUAD_PLAYER_ID_3", response.body.squadPlayers[2].id);
 %}
 
 #### 전술 보드 생성
-POST http://127.0.0.1:8080/api/v1/squads/{{SQUAD_ID}}/boards
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/boards
 Cookie: {{SESSION_COOKIE_2}}
 Content-Type: application/json
 Authorization: test
@@ -27,7 +28,7 @@ X-DEVICE-INFO: web
 %}
 
 ###
-POST http://127.0.0.1:8080/api/v1/squads/{{SQUAD_ID}}/boards/{{TACTICAL_BOARD_ID}}/player
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/boards/{{TACTICAL_BOARD_ID}}/player
 Cookie: {{SESSION_COOKIE_2}}
 Content-Type: application/json
 Authorization: test
@@ -35,14 +36,14 @@ X-DEVICE-ID: 1
 X-DEVICE-INFO: web
 
 {
-  "squadPlayerId": "{{SQUAD_PLAYER_ID}}",
-  "squadPlayerType": "FIELD",
+  "playerId": "{{SQUAD_PLAYER_ID_3}}",
+  "playerType": "FIELD",
   "x": 40,
   "y": 80
 }
 
 ###
-POST http://127.0.0.1:8080/api/v1/squads/{{SQUAD_ID}}/boards/{{TACTICAL_BOARD_ID}}/formation
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/boards/{{TACTICAL_BOARD_ID}}/formation
 Cookie: {{SESSION_COOKIE_2}}
 Content-Type: application/json
 Authorization: test
@@ -50,5 +51,33 @@ X-DEVICE-ID: 1
 X-DEVICE-INFO: web
 
 {
-  "formationName": "3-5-2"
+  "formationName": "352"
+}
+
+###
+GET http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/squads
+Cookie: {{SESSION_COOKIE_2}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+> {%
+    client.global.set("SQUAD_ID", response.body.id);
+    client.global.set("CLUB_ID", response.body.clubId);
+    client.global.set("SQUAD_PLAYER_ID_3", response.body.squadPlayers[2].id);
+%}
+
+###
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/boards/{{TACTICAL_BOARD_ID}}/move/location
+Cookie: {{SESSION_COOKIE_2}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+{
+  "playerId": "{{SQUAD_PLAYER_ID_3}}",
+  "x": 20,
+  "y": 80
 }

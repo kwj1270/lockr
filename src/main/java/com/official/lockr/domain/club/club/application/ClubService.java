@@ -28,7 +28,7 @@ public class ClubService implements FoundClubUseCase, RegisterClubMemberUseCase,
         if (Objects.nonNull(existedClub)) {
             throw new IllegalStateException();
         }
-        final Club club = new Club(UlidUtils.generateUlid(), command.name(), command.description());
+        final Club club = Club.init(UlidUtils.generateUlid(), command.userId(), command.name(), command.description());
         club.addMember(president(UlidUtils.generateUlid(), command.userId(), club.getId()));
         return clubRepository.save(club);
     }

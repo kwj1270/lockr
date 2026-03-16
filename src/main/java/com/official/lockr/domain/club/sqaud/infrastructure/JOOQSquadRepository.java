@@ -1,12 +1,12 @@
 package com.official.lockr.domain.club.sqaud.infrastructure;
 
-import com.official.lockr.domain.club.common.Foot;
-import com.official.lockr.domain.club.common.Position;
-import com.official.lockr.domain.club.sqaud.domain.squad.SquadPlayer;
-import com.official.lockr.domain.club.sqaud.domain.squad.Squad;
-import com.official.lockr.domain.club.sqaud.domain.squad.SquadRepository;
-import com.official.lockr.domain.club.common.BackNumber;
-import com.official.lockr.domain.club.sqaud.domain.squad.vo.PlayerRole;
+import com.official.lockr.global.vo.Foot;
+import com.official.lockr.global.vo.Position;
+import com.official.lockr.domain.club.sqaud.domain.SquadPlayer;
+import com.official.lockr.domain.club.sqaud.domain.Squad;
+import com.official.lockr.domain.club.sqaud.domain.SquadRepository;
+import com.official.lockr.global.vo.BackNumber;
+import com.official.lockr.domain.club.sqaud.domain.vo.SquadPlayerRole;
 import com.official.lockr.global.ddd.DomainEventPublisher;
 import jakarta.annotation.Nullable;
 import org.jooq.Configuration;
@@ -94,7 +94,7 @@ public class JOOQSquadRepository implements SquadRepository {
                 .where(SQUAD_PLAYERS.SQUAD_ID.eq(squad.getId()))
                 .fetchInto(String.class);
 
-        final List<String> currentPlayerIds = squad.getPlayers().stream()
+        final List<String> currentPlayerIds = squad.getSquadPlayers().stream()
                 .map(SquadPlayer::getId)
                 .toList();
 
@@ -111,8 +111,8 @@ public class JOOQSquadRepository implements SquadRepository {
         }
 
         // 3. 추가/수정할 플레이어 (UPSERT)
-        if (!squad.getPlayers().isEmpty()) {
-            upsertPlayers(squad.getPlayers());
+        if (!squad.getSquadPlayers().isEmpty()) {
+            upsertPlayers(squad.getSquadPlayers());
         }
     }
 
@@ -155,7 +155,7 @@ public class JOOQSquadRepository implements SquadRepository {
                     squadPlayer.getHeight(),
                     squadPlayer.getWeight(),
                     Objects.nonNull(squadPlayer.getFoot()) ? squadPlayer.getFoot().name() : null,
-                    squadPlayer.getBackNumber().getValue(),
+                    squadPlayer.getBackNumber().value(),
                     squadPlayer.getPlayerRole().name(),
                     squadPlayer.getCreatedAt(),
                     squadPlayer.getUpdatedAt(),
@@ -216,7 +216,7 @@ public class JOOQSquadRepository implements SquadRepository {
                 entity.getWeight(),
                 Objects.nonNull(entity.getFoot()) ? Foot.valueOf(entity.getFoot()) : null,
                 new BackNumber(entity.getBackNumber()),
-                PlayerRole.valueOf(entity.getPlayerRole()),
+                SquadPlayerRole.valueOf(entity.getPlayerRole()),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt(),
                 entity.getDeletedAt()

@@ -1,7 +1,7 @@
 package com.official.lockr.domain.club.contract.domain;
 
-import com.official.lockr.domain.club.common.Foot;
-import com.official.lockr.domain.club.common.Position;
+import com.official.lockr.global.vo.Foot;
+import com.official.lockr.global.vo.Position;
 
 import java.time.LocalDateTime;
 import java.util.List;

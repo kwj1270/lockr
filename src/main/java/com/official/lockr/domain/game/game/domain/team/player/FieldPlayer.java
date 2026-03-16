@@ -6,7 +6,7 @@ import com.official.lockr.domain.game.common.Position;
 
 import java.util.Objects;
 
-public class FieldPlayer extends Player {
+public class FieldPlayer extends GamePlayer {
 
     private final Position position;
     private final Location location;
@@ -27,8 +27,8 @@ public class FieldPlayer extends Player {
     }
 
     @Override
-    public PlayerType getEntryType() {
-        return PlayerType.FIELD;
+    public GamePlayerType getEntryType() {
+        return GamePlayerType.FIELD;
     }
 
     public Position getPosition() {

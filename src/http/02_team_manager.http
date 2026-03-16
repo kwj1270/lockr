@@ -15,7 +15,7 @@ X-DEVICE-INFO: web
 %}
 
 #### 입단 신청
-POST http://127.0.0.1:8080/api/v1/teams/{{TEAM_ID}}/resume
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/resume
 Cookie: {{SESSION_COOKIE_2}}
 Content-Type: application/json
 Authorization: test
@@ -46,7 +46,7 @@ X-DEVICE-INFO: web
 %}
 
 #### 계약 - 대표
-POST http://127.0.0.1:8080/api/v1/teams/{{TEAM_ID}}/contract
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/contract
 Cookie: {{SESSION_COOKIE}}
 Content-Type: application/json
 Authorization: test
@@ -63,7 +63,7 @@ X-DEVICE-INFO: web
 
 
 #### 계약 - 개인
-POST http://127.0.0.1:8080/api/v1/teams/{{TEAM_ID}}/contract/sign
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/contract/sign
 Cookie: {{SESSION_COOKIE_2}}
 Content-Type: application/json
 Authorization: test
@@ -76,7 +76,7 @@ X-DEVICE-INFO: web
 }
 
 ### 팀 조회(일단 스쿼드로 조회)
-GET http://127.0.0.1:8080/api/v1/teams/{{TEAM_ID}}/squads
+GET http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/squads
 Cookie: {{SESSION_COOKIE}}
 Content-Type: application/json
 Authorization: test
@@ -85,12 +85,13 @@ X-DEVICE-INFO: web
 
 > {%
     client.global.set("SQUAD_ID", response.body.id);
-    client.global.set("PLAYER_ID_2", response.body.players[1].memberId);
+    client.global.set("CLUB_ID", response.body.clubId);
+    client.global.set("PLAYER_ID_2", response.body.squadPlayers[1].memberId);
 %}
 
 
 #### 매니저 임명
-POST http://127.0.0.1:8080/api/v1/teams/{{TEAM_ID}}/manager
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/manager
 Cookie: {{SESSION_COOKIE}}
 Content-Type: application/json
 Authorization: test
