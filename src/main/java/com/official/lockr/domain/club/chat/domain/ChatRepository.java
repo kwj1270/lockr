@@ -15,4 +15,6 @@ public interface ChatRepository {
     List<Chat> findAllAfterChatId(final String chatRoomId, final String afterChatId, final int limit);
 
     void softDelete(final String chatId);
+
+    void updateContent(final String chatId, final String content);
 }

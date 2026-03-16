@@ -11,5 +11,7 @@ public interface LineupRepository {
 
     List<Lineup> saveAll(final List<Lineup> lineups);
 
+    void delete(final Lineup lineup);
+
 }
 

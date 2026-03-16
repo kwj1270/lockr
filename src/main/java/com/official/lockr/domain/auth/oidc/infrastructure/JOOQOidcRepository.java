@@ -8,6 +8,7 @@ import org.jooq.generated.tables.daos.OidcDao;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 import static org.jooq.generated.Tables.OIDC;
@@ -52,6 +53,17 @@ public class JOOQOidcRepository implements OidcRepository {
                 record.getUpdatedAt(),
                 record.getDeletedAt()
         );
+    }
+
+    @Transactional
+    @Override
+    public void deleteByUserId(final String userId) {
+        userOidcDao.ctx()
+                .update(OIDC)
+                .set(OIDC.DELETED_AT, LocalDateTime.now())
+                .where(OIDC.USER_ID.eq(userId))
+                .and(OIDC.DELETED_AT.isNull())
+                .execute();
     }
 
     private void upsertOidc(final Oidc oidc) {

@@ -40,4 +40,12 @@ public class InMemoryNotificationRepository implements NotificationRepository {
                 .filter(n -> n.getDeletedAt() == null)
                 .toList();
     }
+
+    @Override
+    public void softDeleteAllByUserId(final String userId) {
+    }
+
+    @Override
+    public void readAllByUserId(final String userId) {
+    }
 }

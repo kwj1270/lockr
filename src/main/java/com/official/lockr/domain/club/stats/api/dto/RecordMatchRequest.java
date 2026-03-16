@@ -2,14 +2,16 @@ package com.official.lockr.domain.club.stats.api.dto;
 
 import com.official.lockr.domain.club.stats.application.command.PlayerPerformanceCommand;
 import com.official.lockr.domain.club.stats.application.command.RecordMatchCommand;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
 import java.util.List;
 
 public record RecordMatchRequest(
         String scheduleId,
-        LocalDate matchDate,
-        String opponentName,
+        @NotNull LocalDate matchDate,
+        @NotBlank String opponentName,
         int ourScore,
         int opponentScore,
         String season,

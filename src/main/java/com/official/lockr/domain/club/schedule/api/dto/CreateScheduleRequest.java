@@ -16,13 +16,12 @@ public record CreateScheduleRequest(
         @NotNull ScheduleType scheduleType,
         String detail,
         Integer minParticipants,
-        Integer maxParticipants,
         int deadlineDays
 ) {
     public CreateScheduleCommand toCommand(final String userId, final String clubId, final ScheduleDetailData parsedDetail) {
         return new CreateScheduleCommand(
                 userId, clubId, title, content, location, scheduleTime, scheduleType, parsedDetail,
-                minParticipants, maxParticipants, deadlineDays
+                minParticipants, deadlineDays
         );
     }
 }

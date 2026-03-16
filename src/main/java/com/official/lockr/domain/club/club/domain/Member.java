@@ -85,6 +85,10 @@ public class Member {
         return role.isPresident();
     }
 
+    public boolean isPresidency() {
+        return role.isPresidency();
+    }
+
     public boolean isManager() {
         return role.isManager();
     }
@@ -99,6 +103,18 @@ public class Member {
 
     public void assignCoach() {
         role = MemberRole.COACH;
+    }
+
+    public void assignPresident() {
+        role = MemberRole.PRESIDENT;
+    }
+
+    public void assignBasic() {
+        role = MemberRole.BASIC;
+    }
+
+    public void changeRole(final MemberRole role) {
+        this.role = role;
     }
 
     @Override

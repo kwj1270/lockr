@@ -18,7 +18,6 @@ public record ScheduleDetailResponse(
     String detailData,
     ScheduleStatus status,
     Integer minParticipants,
-    Integer maxParticipants,
     Integer deadlineDays,
     List<AttendanceItemResponse> attendances,
     int attendingCount,

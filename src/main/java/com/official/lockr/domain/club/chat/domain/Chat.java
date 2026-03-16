@@ -39,7 +39,8 @@ public class Chat extends AggregateRoot {
                 chat.message,
                 chat.repliedToId,
                 chat.quotedSenderName,
-                chat.quotedContent
+                chat.quotedContent,
+                chat.createdAt
         ));
         return chat;
     }

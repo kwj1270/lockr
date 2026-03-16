@@ -13,4 +13,8 @@ public interface NotificationRepository {
     List<Notification> findByUserId(String userId);
 
     List<Notification> findByUserIdAndClubId(String userId, String clubId);
+
+    void softDeleteAllByUserId(String userId);
+
+    void readAllByUserId(String userId);
 }

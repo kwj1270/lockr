@@ -12,6 +12,8 @@ public record CreatedScheduleEvent(
         String title,
         ScheduleType scheduleType,
         ScheduleDetailData detail,
-        LocalDateTime scheduleTime
+        LocalDateTime scheduleTime,
+        String userId,
+        String location
 ) implements DomainEvent {
 }

@@ -73,9 +73,22 @@ public class LineupQueryApi {
         final Map<String, MembersEntity> memberMap = members.stream()
                 .collect(Collectors.toMap(MembersEntity::getUserId, m -> m));
 
+        final List<String> lineupIds = lineups.stream()
+                .map(LineupsEntity::getId)
+                .collect(Collectors.toList());
+
+        final Map<String, List<LineupSlotsEntity>> lineupSlotsMap = lineupIds.isEmpty()
+                ? Map.of()
+                : lineupPlayersDao.ctx()
+                        .selectFrom(LINEUP_SLOTS)
+                        .where(LINEUP_SLOTS.LINEUP_ID.in(lineupIds))
+                        .fetchInto(LineupSlotsEntity.class)
+                        .stream()
+                        .collect(Collectors.groupingBy(LineupSlotsEntity::getLineupId));
+
         final List<SquadPlayerResponse> squadPlayerResponses = createSquadPlayers(squadPlayers, memberMap);
         final List<LineupResponse> lineupResponses = lineups.stream()
-                .map(lineup -> createLineupResponse(lineup, squadPlayerMap, memberMap, squadPlayerResponses))
+                .map(lineup -> createLineupResponse(lineup, squadPlayerMap, memberMap, squadPlayerResponses, lineupSlotsMap))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(new LineupsResponse(lineupResponses, squadPlayerResponses));
     }
@@ -84,12 +97,10 @@ public class LineupQueryApi {
             final LineupsEntity lineup,
             final Map<String, SquadPlayersEntity> squadPlayerMap,
             final Map<String, MembersEntity> memberMap,
-            final List<SquadPlayerResponse> memberPool
+            final List<SquadPlayerResponse> memberPool,
+            final Map<String, List<LineupSlotsEntity>> lineupSlotsMap
     ) {
-        final List<LineupSlotsEntity> lineupPlayers = lineupPlayersDao.ctx()
-                .selectFrom(LINEUP_SLOTS)
-                .where(LINEUP_SLOTS.LINEUP_ID.eq(lineup.getId()))
-                .fetchInto(LineupSlotsEntity.class);
+        final List<LineupSlotsEntity> lineupPlayers = lineupSlotsMap.getOrDefault(lineup.getId(), List.of());
 
         final Map<Integer, LineupSlotsEntity> starterMap = lineupPlayers.stream()
                 .filter(lp -> "starter".equals(lp.getSlotType()))

@@ -14,7 +14,6 @@ public record UpdateScheduleCommand(
         LocalDateTime scheduleTime,
         ScheduleDetailData detail,
         Integer minParticipants,
-        Integer maxParticipants,
         int deadlineDays
 ) {
     public UpdateScheduleCommand {

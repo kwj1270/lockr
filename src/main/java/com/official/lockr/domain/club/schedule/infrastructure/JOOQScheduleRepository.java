@@ -86,7 +86,6 @@ public class JOOQScheduleRepository implements ScheduleRepository {
                 .set(SCHEDULES.DETAIL_DATA, detailData)
                 .set(SCHEDULES.STATUS, schedule.getStatus().name())
                 .set(SCHEDULES.MIN_PARTICIPANTS, schedule.getMinParticipants())
-                .set(SCHEDULES.MAX_PARTICIPANTS, schedule.getMaxParticipants())
                 .set(SCHEDULES.DEADLINE_DAYS, schedule.getDeadlineDays())
                 .set(SCHEDULES.CREATED_AT, schedule.getCreatedAt())
                 .set(SCHEDULES.UPDATED_AT, schedule.getUpdatedAt())
@@ -99,7 +98,6 @@ public class JOOQScheduleRepository implements ScheduleRepository {
                 .set(SCHEDULES.DETAIL_DATA, excluded(SCHEDULES.DETAIL_DATA))
                 .set(SCHEDULES.STATUS, excluded(SCHEDULES.STATUS))
                 .set(SCHEDULES.MIN_PARTICIPANTS, excluded(SCHEDULES.MIN_PARTICIPANTS))
-                .set(SCHEDULES.MAX_PARTICIPANTS, excluded(SCHEDULES.MAX_PARTICIPANTS))
                 .set(SCHEDULES.DEADLINE_DAYS, excluded(SCHEDULES.DEADLINE_DAYS))
                 .set(SCHEDULES.UPDATED_AT, excluded(SCHEDULES.UPDATED_AT))
                 .set(SCHEDULES.DELETED_AT, excluded(SCHEDULES.DELETED_AT))
@@ -111,9 +109,7 @@ public class JOOQScheduleRepository implements ScheduleRepository {
         final List<String> existingUserIds = loadExistingUserIds(scheduleId);
         final List<Attendance> newAttendances = schedule.getAttendances();
         deleteRemovedAttendances(scheduleId, existingUserIds, newAttendances);
-        for (Attendance attendance : newAttendances) {
-            upsertAttendance(scheduleId, attendance);
-        }
+        batchUpsertAttendances(scheduleId, newAttendances);
     }
 
     private List<String> loadExistingUserIds(final String scheduleId) {
@@ -142,17 +138,36 @@ public class JOOQScheduleRepository implements ScheduleRepository {
         }
     }
 
-    private void upsertAttendance(final String scheduleId, final Attendance attendance) {
-        attendancesDao.ctx()
-                .insertInto(ATTENDANCES)
-                .set(ATTENDANCES.ID, attendance.getId())
-                .set(ATTENDANCES.SCHEDULE_ID, scheduleId)
-                .set(ATTENDANCES.USER_ID, attendance.getUserId())
-                .set(ATTENDANCES.STATUS, attendance.getStatus().name())
-                .set(ATTENDANCES.REASON, attendance.getReason())
-                .set(ATTENDANCES.CREATED_AT, attendance.getCreatedAt())
-                .set(ATTENDANCES.UPDATED_AT, attendance.getUpdatedAt())
-                .set(ATTENDANCES.DELETED_AT, attendance.getDeletedAt())
+    private void batchUpsertAttendances(final String scheduleId, final List<Attendance> attendances) {
+        if (attendances.isEmpty()) {
+            return;
+        }
+
+        var insertStep = attendancesDao.ctx().insertInto(ATTENDANCES,
+                ATTENDANCES.ID,
+                ATTENDANCES.SCHEDULE_ID,
+                ATTENDANCES.USER_ID,
+                ATTENDANCES.STATUS,
+                ATTENDANCES.REASON,
+                ATTENDANCES.CREATED_AT,
+                ATTENDANCES.UPDATED_AT,
+                ATTENDANCES.DELETED_AT
+        );
+
+        for (Attendance attendance : attendances) {
+            insertStep = insertStep.values(
+                    attendance.getId(),
+                    scheduleId,
+                    attendance.getUserId(),
+                    attendance.getStatus().name(),
+                    attendance.getReason(),
+                    attendance.getCreatedAt(),
+                    attendance.getUpdatedAt(),
+                    attendance.getDeletedAt()
+            );
+        }
+
+        insertStep
                 .onDuplicateKeyUpdate()
                 .set(ATTENDANCES.STATUS, excluded(ATTENDANCES.STATUS))
                 .set(ATTENDANCES.REASON, excluded(ATTENDANCES.REASON))
@@ -178,7 +193,6 @@ public class JOOQScheduleRepository implements ScheduleRepository {
                 attendances,
                 ScheduleStatus.valueOf(entity.getStatus()),
                 entity.getMinParticipants(),
-                entity.getMaxParticipants(),
                 entity.getDeadlineDays() != null ? entity.getDeadlineDays() : 0,
                 entity.getCreatedAt(),
                 entity.getUpdatedAt(),

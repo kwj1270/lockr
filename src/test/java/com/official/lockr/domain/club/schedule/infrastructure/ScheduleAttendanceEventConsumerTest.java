@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.retry.support.RetryTemplate;
 
 import java.time.LocalDateTime;
 
@@ -23,7 +24,7 @@ class ScheduleAttendanceEventConsumerTest {
     @BeforeEach
     void setUp() {
         historyRepository = mock(ScheduleAttendanceHistoryRepository.class);
-        consumer = new ScheduleAttendanceEventConsumer(historyRepository);
+        consumer = new ScheduleAttendanceEventConsumer(historyRepository, RetryTemplate.builder().maxAttempts(1).build());
     }
 
     @Test

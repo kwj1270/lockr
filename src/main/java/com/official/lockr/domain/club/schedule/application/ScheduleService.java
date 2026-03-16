@@ -36,18 +36,18 @@ public class ScheduleService implements RegisterScheduleUseCase, CancelScheduleU
     }
 
     @Override
-    public Schedule create(final CreateScheduleCommand command) {
+public Schedule create(final CreateScheduleCommand command) {
         verifyStaff(command.userId(), command.clubId());
         final Schedule schedule = Schedule.create(
-                generateUlid(), command.clubId(), command.title(), command.content(), command.location(),
+                generateUlid(), command.clubId(), command.userId(), command.title(), command.content(), command.location(),
                 command.scheduleTime(), command.scheduleType(), command.detail(), attendanceUserIds(command.clubId()),
-                command.minParticipants(), command.maxParticipants(), command.deadlineDays(), LocalDateTime.now()
+                command.minParticipants(), command.deadlineDays(), LocalDateTime.now()
         );
         return scheduleRepository.save(schedule);
     }
 
     @Override
-    public Schedule cancel(final CancelScheduleCommand command) {
+public Schedule cancel(final CancelScheduleCommand command) {
         verifyStaff(command.userId(), command.clubId());
         final Schedule schedule = schedule(command.scheduleId(), command.clubId());
         schedule.cancel();
@@ -55,7 +55,7 @@ public class ScheduleService implements RegisterScheduleUseCase, CancelScheduleU
     }
 
     @Override
-    public Schedule respond(final RespondToScheduleCommand command) {
+public Schedule respond(final RespondToScheduleCommand command) {
         verifyMember(command.userId(), command.clubId());
         final Schedule schedule = schedule(command.scheduleId(), command.clubId());
         schedule.respond(command.userId(), command.status(), command.reason());
@@ -63,18 +63,18 @@ public class ScheduleService implements RegisterScheduleUseCase, CancelScheduleU
     }
 
     @Override
-    public Schedule update(final UpdateScheduleCommand command) {
+public Schedule update(final UpdateScheduleCommand command) {
         verifyStaff(command.userId(), command.clubId());
         final Schedule schedule = schedule(command.scheduleId(), command.clubId());
         schedule.update(
                 command.title(), command.content(), command.location(), command.scheduleTime(), command.detail(),
-                command.minParticipants(), command.maxParticipants(), command.deadlineDays()
+                command.minParticipants(), command.deadlineDays()
         );
         return scheduleRepository.save(schedule);
     }
 
     @Override
-    public void update(final AdminUpdateAttendanceCommand command) {
+public void update(final AdminUpdateAttendanceCommand command) {
         final String adminRole = verifyStaffAndGetRole(command.adminUserId(), command.clubId());
         final Schedule schedule = schedule(command.scheduleId(), command.clubId());
         schedule.adminRespond(command.targetUserId(), command.adminUserId(), adminRole, command.status(), command.reason());

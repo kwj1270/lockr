@@ -8,6 +8,7 @@ public record AddCommentCommand(
         String clubId,
         String content,
         List<String> imageUrls,
-        List<String> videoUrls
+        List<String> videoUrls,
+        String parentCommentId
 ) {
 }

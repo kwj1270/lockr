@@ -167,6 +167,12 @@ public class Notification extends AggregateRoot {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void softDelete() {
+        final LocalDateTime now = LocalDateTime.now();
+        this.deletedAt = now;
+        this.updatedAt = now;
+    }
+
     public String getId() {
         return id;
     }

@@ -3,12 +3,24 @@ package com.official.lockr.domain.club.club.application;
 import com.official.lockr.domain.club.club.application.command.AddMemberCommand;
 import com.official.lockr.domain.club.club.application.command.AssignCoachCommand;
 import com.official.lockr.domain.club.club.application.command.AssignManagerCommand;
+import com.official.lockr.domain.club.club.application.command.ChangeJoinMethodCommand;
+import com.official.lockr.domain.club.club.application.command.ChangeMemberRoleCommand;
+import com.official.lockr.domain.club.club.application.command.ChangeVisibilityCommand;
+import com.official.lockr.domain.club.club.application.command.DelegatePresidentCommand;
 import com.official.lockr.domain.club.club.application.command.FoundClubCommand;
+import com.official.lockr.domain.club.club.application.command.LeaveClubCommand;
+import com.official.lockr.domain.club.club.application.command.UpdateClubCommand;
 import com.official.lockr.domain.club.club.application.command.UpdateMemberProfileImageCommand;
 import com.official.lockr.domain.club.club.application.usecase.AssignCoachUseCase;
 import com.official.lockr.domain.club.club.application.usecase.AssignMangerUseCase;
+import com.official.lockr.domain.club.club.application.usecase.ChangeJoinMethodUseCase;
+import com.official.lockr.domain.club.club.application.usecase.ChangeMemberRoleUseCase;
+import com.official.lockr.domain.club.club.application.usecase.ChangeVisibilityUseCase;
+import com.official.lockr.domain.club.club.application.usecase.DelegatePresidentUseCase;
 import com.official.lockr.domain.club.club.application.usecase.FoundClubUseCase;
+import com.official.lockr.domain.club.club.application.usecase.LeaveClubUseCase;
 import com.official.lockr.domain.club.club.application.usecase.RegisterClubMemberUseCase;
+import com.official.lockr.domain.club.club.application.usecase.UpdateClubUseCase;
 import com.official.lockr.domain.club.club.application.usecase.UpdateMemberProfileImageUseCase;
 import com.official.lockr.domain.club.club.domain.Club;
 import com.official.lockr.domain.club.club.domain.ClubRepository;
@@ -22,7 +34,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 @Service
-public class ClubService implements FoundClubUseCase, RegisterClubMemberUseCase, AssignMangerUseCase, AssignCoachUseCase, UpdateMemberProfileImageUseCase {
+public class ClubService implements FoundClubUseCase, RegisterClubMemberUseCase, AssignMangerUseCase, AssignCoachUseCase, UpdateMemberProfileImageUseCase, DelegatePresidentUseCase, ChangeMemberRoleUseCase, ChangeVisibilityUseCase, ChangeJoinMethodUseCase, LeaveClubUseCase, UpdateClubUseCase {
 
     private final ClubRepository clubRepository;
     private final UsersRepository usersRepository;
@@ -38,10 +50,12 @@ public class ClubService implements FoundClubUseCase, RegisterClubMemberUseCase,
         if (nonNull(existingClub)) {
             return existingClub;
         }
+        final String founderProfileImage = getFounderProfileImage(command.userId());
         final Club club = Club.init(
                 command.userId(), command.name(), command.sportType(), command.city(),
                 command.district(), command.description(), command.profileImageUrl(), command.backgroundImageUrl()
         );
+        club.addMember(president(command.userId(), club.getId(), null, founderProfileImage));
         return clubRepository.save(club);
     }
 
@@ -94,7 +108,7 @@ public class ClubService implements FoundClubUseCase, RegisterClubMemberUseCase,
     @Override
     public Club assignCoach(final AssignCoachCommand command) {
         final Club club = club(command.clubId(), command.userId());
-        if (club.isPresident(command.targetUserId()) || club.hasNotMember(command.targetUserId())) {
+        if (club.isPresidency(command.targetUserId()) || club.hasNotMember(command.targetUserId())) {
             throw new IllegalArgumentException();
         }
         club.assignCoach(command.targetUserId());
@@ -104,7 +118,7 @@ public class ClubService implements FoundClubUseCase, RegisterClubMemberUseCase,
     @Override
     public Club assignManager(final AssignManagerCommand command) {
         final Club club = club(command.clubId(), command.userId());
-        if (club.isPresident(command.targetUserId()) || club.hasNotMember(command.targetUserId())) {
+        if (club.isPresidency(command.targetUserId()) || club.hasNotMember(command.targetUserId())) {
             throw new IllegalArgumentException();
         }
         club.assignManger(command.targetUserId());
@@ -113,7 +127,7 @@ public class ClubService implements FoundClubUseCase, RegisterClubMemberUseCase,
 
     private Club club(final String clubId, final String userId) {
         final Club club = clubRepository.findById(clubId);
-        if (isNull(club) || !club.isStaff(userId)) {
+        if (isNull(club) || !club.isPresidency(userId)) {
             throw new IllegalArgumentException();
         }
         return club;
@@ -130,5 +144,65 @@ public class ClubService implements FoundClubUseCase, RegisterClubMemberUseCase,
         }
         club.updateMemberProfileImage(command.userId(), command.profileImage());
         return clubRepository.save(club);
+    }
+
+    @Override
+    public Club delegatePresident(final DelegatePresidentCommand command) {
+        final Club club = clubRepository.findById(command.clubId());
+        if (isNull(club)) {
+            throw new IllegalStateException();
+        }
+        club.delegatePresident(command.userId(), command.targetUserId());
+        return clubRepository.save(club);
+    }
+
+    @Override
+    public Club changeMemberRole(final ChangeMemberRoleCommand command) {
+        final Club club = clubRepository.findById(command.clubId());
+        if (isNull(club)) {
+            throw new IllegalStateException();
+        }
+        club.changeMemberRole(command.userId(), command.targetMemberId(), command.role());
+        return clubRepository.save(club);
+    }
+
+    @Override
+    public Club changeVisibility(final ChangeVisibilityCommand command) {
+        final Club club = clubRepository.findById(command.clubId());
+        if (isNull(club)) {
+            throw new IllegalStateException();
+        }
+        club.changeVisibility(command.userId(), command.isPublic());
+        return clubRepository.save(club);
+    }
+
+    @Override
+    public Club changeJoinMethod(final ChangeJoinMethodCommand command) {
+        final Club club = clubRepository.findById(command.clubId());
+        if (isNull(club)) {
+            throw new IllegalStateException();
+        }
+        club.changeJoinMethod(command.userId(), command.joinMethod());
+        return clubRepository.save(club);
+    }
+
+    @Override
+    public Club update(final UpdateClubCommand command) {
+        final Club club = clubRepository.findById(command.clubId());
+        if (isNull(club)) {
+            throw new IllegalStateException();
+        }
+        club.updateInfo(command.userId(), command.name(), command.description(), command.city(), command.district(), command.profileImageUrl(), command.backgroundImageUrl());
+        return clubRepository.save(club);
+    }
+
+    @Override
+    public void leave(final LeaveClubCommand command) {
+        final Club club = clubRepository.findById(command.clubId());
+        if (isNull(club)) {
+            throw new IllegalStateException();
+        }
+        club.removeMember(command.userId());
+        clubRepository.save(club);
     }
 }

@@ -187,6 +187,31 @@ public class ClubQueryApi {
         return ResponseEntity.ok(new MembersResponse(members));
     }
 
+    @GetMapping("/{clubId}/settings")
+    public ResponseEntity<ClubSettingsResponse> getClubSettings(
+            @RequestAttribute("signInSession") final SignInSession signInSession,
+            @PathVariable final String clubId
+    ) {
+        final var record = clubsDao.ctx()
+                .select(
+                        DSL.field("is_public", Boolean.class),
+                        DSL.field("join_method", String.class)
+                )
+                .from(CLUBS)
+                .where(CLUBS.ID.eq(clubId))
+                .and(CLUBS.DELETED_AT.isNull())
+                .fetchOne();
+
+        if (record == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(new ClubSettingsResponse(
+                Boolean.TRUE.equals(record.get(DSL.field("is_public", Boolean.class))),
+                record.get(DSL.field("join_method", String.class))
+        ));
+    }
+
     @GetMapping("/{clubId}/me/profile-image")
     public ResponseEntity<MemberProfileResponse> getMemberProfileImage(
             @RequestAttribute("signInSession") final SignInSession signInSession,
@@ -199,9 +224,6 @@ public class ClubQueryApi {
                 .and(MEMBERS.USER_ID.eq(signInSession.userId()))
                 .and(MEMBERS.DELETED_AT.isNull())
                 .fetchOneInto(String.class);
-        if (profileImage == null) {
-            return ResponseEntity.notFound().build();
-        }
         return ResponseEntity.ok(new MemberProfileResponse(profileImage));
     }
 }

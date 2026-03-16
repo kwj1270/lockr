@@ -12,6 +12,7 @@ import com.official.lockr.global.http.HttpHeaderContext;
 import com.official.lockr.global.http.HttpHeaders;
 import com.official.lockr.global.util.SessionUtils;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -40,8 +41,13 @@ public class SignInAdminApi {
             @RequestBody final SignInAdminHttpRequest request,
             final HttpSession session
     ) {
+        final Admin admin;
+        try {
+            admin = registerAdminUseCase.register(new RegisterAdminCommand(request.id(), request.password()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         final HttpHeaderContext httpHeaderContext = httpHeaders.get();
-        final Admin admin = registerAdminUseCase.register(new RegisterAdminCommand(request.id(), request.password()));
         final SignIn signIn = registerSignInUseCase.register(new RegisterSignInCommand(
                 admin.getUserId(), httpHeaderContext.deviceId(), httpHeaderContext.deviceName(), httpHeaderContext.deviceOS(),
                 httpHeaderContext.ipAddress(), httpHeaderContext.userAgent()

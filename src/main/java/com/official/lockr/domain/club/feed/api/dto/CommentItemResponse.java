@@ -9,6 +9,7 @@ public record CommentItemResponse(
     String userId,
     String userName,
     String content,
+    String parentCommentId,
     List<String> imageUrls,
     List<String> videoUrls,
     int heartsCount,

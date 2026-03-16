@@ -55,7 +55,12 @@ public class FeedService implements CreateFeedUseCase, UpdateFeedUseCase, Delete
 
     @Override
     public Feed update(final UpdateFeedCommand command) {
+        verifyMember(command.userId(), command.clubId());
         final Feed feed = findFeedOrThrow(command.feedId());
+
+        if (feed.isSchedule()) {
+            throw new IllegalStateException("일정 피드는 수동으로 수정할 수 없습니다");
+        }
 
         final FeedImages images = FeedImages.from(command.imageUrls(), command.userId(), feed.getId());
         final FeedVideos videos = FeedVideos.from(command.videoUrls(), command.userId(), feed.getId());
@@ -69,6 +74,10 @@ public class FeedService implements CreateFeedUseCase, UpdateFeedUseCase, Delete
     public void delete(final DeleteFeedCommand command) {
         final Member member = verifyMember(command.userId(), command.clubId());
         final Feed feed = findFeedOrThrow(command.feedId());
+
+        if (feed.isSchedule()) {
+            throw new IllegalStateException("일정 피드는 수동으로 삭제할 수 없습니다");
+        }
 
         feed.delete(command.userId(), member.isStaff());
 

@@ -143,7 +143,6 @@ public class ScheduleQueryApi {
                         SCHEDULES.TYPE,
                         SCHEDULES.SCHEDULE_TIME,
                         SCHEDULES.LOCATION,
-                        SCHEDULES.MAX_PARTICIPANTS,
                         SCHEDULES.STATUS
                 )
                 .from(SCHEDULES)
@@ -166,7 +165,6 @@ public class ScheduleQueryApi {
                             counts.getOrDefault("ATTENDING", 0),
                             counts.getOrDefault("NOT_ATTENDING", 0),
                             counts.getOrDefault("NO_RESPONSE", 0),
-                            record.get(SCHEDULES.MAX_PARTICIPANTS),
                             myAttendanceStatuses.getOrDefault(scheduleId, "NO_RESPONSE"),
                             record.get(SCHEDULES.STATUS)
                     );

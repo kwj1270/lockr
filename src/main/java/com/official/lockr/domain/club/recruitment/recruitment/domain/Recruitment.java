@@ -176,6 +176,23 @@ public class Recruitment extends AggregateRoot {
         return recruitmentType;
     }
 
+    public void delete() {
+        if (this.deletedAt != null) {
+            return;
+        }
+        this.deletedAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void changeStatus(final String newStatus) {
+        this.status = RecruitmentStatus.valueOf(newStatus);
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public boolean isRecruiting() {
+        return status == RECRUITING;
+    }
+
     public boolean isOpen() {
         return isNull(deletedAt);
     }

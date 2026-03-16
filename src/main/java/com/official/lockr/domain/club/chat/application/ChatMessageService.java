@@ -1,12 +1,16 @@
 package com.official.lockr.domain.club.chat.application;
 
 import com.official.lockr.domain.club.chat.application.command.DeleteMessageCommand;
+import com.official.lockr.domain.club.chat.application.command.LeaveChatRoomCommand;
 import com.official.lockr.domain.club.chat.application.command.PinMessageCommand;
 import com.official.lockr.domain.club.chat.application.command.UnpinMessageCommand;
+import com.official.lockr.domain.club.chat.application.command.UpdateMessageCommand;
 import com.official.lockr.domain.club.chat.application.usecase.DeleteMessageUseCase;
 import com.official.lockr.domain.club.chat.application.usecase.GetPinnedMessagesUseCase;
+import com.official.lockr.domain.club.chat.application.usecase.LeaveChatRoomUseCase;
 import com.official.lockr.domain.club.chat.application.usecase.PinMessageUseCase;
 import com.official.lockr.domain.club.chat.application.usecase.UnpinMessageUseCase;
+import com.official.lockr.domain.club.chat.application.usecase.UpdateMessageUseCase;
 import com.official.lockr.domain.club.chat.domain.*;
 import com.official.lockr.domain.club.chat.domain.event.ChatSseEvent;
 import com.official.lockr.domain.club.chat.infrastructure.sse.SseChatEventPublisher;
@@ -24,7 +28,7 @@ import static com.official.lockr.global.util.UlidUtils.generateUlid;
 import static java.util.Objects.isNull;
 
 @Service
-public class ChatMessageService implements DeleteMessageUseCase, PinMessageUseCase, UnpinMessageUseCase, GetPinnedMessagesUseCase {
+public class ChatMessageService implements DeleteMessageUseCase, PinMessageUseCase, UnpinMessageUseCase, GetPinnedMessagesUseCase, UpdateMessageUseCase, LeaveChatRoomUseCase {
 
     private static final Logger log = LoggerFactory.getLogger(ChatMessageService.class);
 
@@ -63,7 +67,7 @@ public class ChatMessageService implements DeleteMessageUseCase, PinMessageUseCa
             if (isNull(club)) {
                 throw new IllegalArgumentException("Club not found: " + command.clubId());
             }
-            boolean isPresidentOrManager = club.isPresident(command.requesterId())
+            boolean isPresidentOrManager = club.isPresidency(command.requesterId())
                     || club.isStaff(command.requesterId());
             if (!isPresidentOrManager) {
                 throw new IllegalArgumentException("No permission to delete this message");
@@ -96,7 +100,7 @@ public class ChatMessageService implements DeleteMessageUseCase, PinMessageUseCa
         if (isNull(club)) {
             throw new IllegalArgumentException("Club not found: " + command.clubId());
         }
-        boolean isPresidentOrManager = club.isPresident(command.requesterId())
+        boolean isPresidentOrManager = club.isPresidency(command.requesterId())
                 || club.isStaff(command.requesterId());
         if (!isPresidentOrManager) {
             throw new IllegalArgumentException("No permission to pin messages. Only president/manager allowed.");
@@ -146,7 +150,7 @@ public class ChatMessageService implements DeleteMessageUseCase, PinMessageUseCa
         if (isNull(club)) {
             throw new IllegalArgumentException("Club not found: " + command.clubId());
         }
-        boolean isPresidentOrManager = club.isPresident(command.requesterId())
+        boolean isPresidentOrManager = club.isPresidency(command.requesterId())
                 || club.isStaff(command.requesterId());
         if (!isPresidentOrManager) {
             throw new IllegalArgumentException("No permission to unpin messages. Only president/manager allowed.");
@@ -170,6 +174,59 @@ public class ChatMessageService implements DeleteMessageUseCase, PinMessageUseCa
             throw new IllegalArgumentException("User is not a member of the chat room: " + userId);
         }
         return pinnedMessageRepository.findAllByChatRoomId(chatRoomId);
+    }
+
+    @Override
+    public Chat update(final UpdateMessageCommand command) {
+        final ChatRoom chatRoom = findChatRoom(command.chatRoomId());
+        if (!chatRoom.hasMember(command.requesterId())) {
+            throw new IllegalArgumentException("User is not a member of the chat room: " + command.requesterId());
+        }
+
+        final Chat chat = chatRepository.findById(command.chatId())
+                .orElseThrow(() -> new IllegalArgumentException("Chat not found: " + command.chatId()));
+
+        if (chat.isDeleted()) {
+            throw new IllegalArgumentException("Cannot update a deleted message");
+        }
+
+        if (!chat.getSenderId().equals(command.requesterId())) {
+            throw new IllegalArgumentException("Only the message author can update the message");
+        }
+
+        chatRepository.updateContent(command.chatId(), command.content());
+
+        final Chat updatedChat = new Chat(
+                chat.getId(), chat.getChatRoomId(), chat.getSenderId(), command.content(),
+                chat.getRepliedToId(), chat.getQuotedSenderName(), chat.getQuotedContent(), chat.getCreatedAt()
+        );
+
+        try {
+            sseChatEventPublisher.publish(
+                    ChatSseEvent.messageUpdated(command.chatRoomId(), chatRoom.getClubId(), updatedChat));
+        } catch (Exception e) {
+            log.error("Failed to publish SSE for message update. chatId={}", command.chatId(), e);
+        }
+
+        return updatedChat;
+    }
+
+    @Override
+    public void leave(final LeaveChatRoomCommand command) {
+        final ChatRoom chatRoom = findChatRoom(command.chatRoomId());
+        if (!chatRoom.hasMember(command.userId())) {
+            throw new IllegalArgumentException("User is not a member of the chat room: " + command.userId());
+        }
+
+        chatRoom.removeChatter(command.userId());
+        chatRoomRepository.save(chatRoom);
+
+        try {
+            sseChatEventPublisher.publish(
+                    ChatSseEvent.chatterLeft(command.chatRoomId(), chatRoom.getClubId(), command.userId()));
+        } catch (Exception e) {
+            log.error("Failed to publish SSE for chatter leave. userId={}", command.userId(), e);
+        }
     }
 
     private ChatRoom findChatRoom(final String chatRoomId) {

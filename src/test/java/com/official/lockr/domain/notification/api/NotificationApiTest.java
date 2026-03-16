@@ -4,7 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.official.lockr.domain.auth.signin.domain.SignInSession;
 import com.official.lockr.domain.notification.application.command.MarkAsReadNotificationCommand;
+import com.official.lockr.domain.notification.application.usecase.DeleteAllNotificationsUseCase;
+import com.official.lockr.domain.notification.application.usecase.DeleteNotificationUseCase;
 import com.official.lockr.domain.notification.application.usecase.MarkAsReadNotificationUseCase;
+import com.official.lockr.domain.notification.application.usecase.ReadAllNotificationsUseCase;
 import com.official.lockr.global.http.HttpHeaders;
 import com.official.lockr.global.http.HttpLoggingRepository;
 import com.official.lockr.domain.notification.domain.Notification;
@@ -34,6 +37,15 @@ class NotificationApiTest {
 
     @MockBean
     private MarkAsReadNotificationUseCase markAsReadNotificationUseCase;
+
+    @MockBean
+    private DeleteNotificationUseCase deleteNotificationUseCase;
+
+    @MockBean
+    private DeleteAllNotificationsUseCase deleteAllNotificationsUseCase;
+
+    @MockBean
+    private ReadAllNotificationsUseCase readAllNotificationsUseCase;
 
     @MockBean
     private HttpHeaders httpHeaders;

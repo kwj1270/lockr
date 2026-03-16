@@ -16,6 +16,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static java.util.Objects.isNull;
@@ -109,6 +110,31 @@ public class JOOQNotificationRepository implements NotificationRepository {
                 .stream()
                 .map(this::toDomain)
                 .toList();
+    }
+
+    @Transactional
+    @Override
+    public void softDeleteAllByUserId(final String userId) {
+        notificationsDao.ctx()
+                .update(NOTIFICATIONS)
+                .set(NOTIFICATIONS.DELETED_AT, LocalDateTime.now())
+                .set(NOTIFICATIONS.UPDATED_AT, LocalDateTime.now())
+                .where(NOTIFICATIONS.USER_ID.eq(userId))
+                .and(NOTIFICATIONS.DELETED_AT.isNull())
+                .execute();
+    }
+
+    @Transactional
+    @Override
+    public void readAllByUserId(final String userId) {
+        notificationsDao.ctx()
+                .update(NOTIFICATIONS)
+                .set(NOTIFICATIONS.IS_READ, true)
+                .set(NOTIFICATIONS.UPDATED_AT, LocalDateTime.now())
+                .where(NOTIFICATIONS.USER_ID.eq(userId))
+                .and(NOTIFICATIONS.IS_READ.eq(false))
+                .and(NOTIFICATIONS.DELETED_AT.isNull())
+                .execute();
     }
 
     private Notification toDomain(final NotificationsEntity entity) {

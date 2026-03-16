@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.official.lockr.domain.auth.signin.domain.SignInSession;
 import com.official.lockr.domain.club.schedule.api.dto.*;
 import com.official.lockr.domain.club.schedule.application.command.CancelScheduleCommand;
+import com.official.lockr.domain.club.schedule.application.usecase.AddScheduleCommentUseCase;
 import com.official.lockr.domain.club.schedule.application.usecase.AdminUpdateAttendanceUseCase;
 import com.official.lockr.domain.club.schedule.application.usecase.CancelScheduleUseCase;
 import com.official.lockr.domain.club.schedule.application.usecase.RegisterScheduleUseCase;
@@ -38,6 +39,7 @@ public class ScheduleApi {
     private final RespondToScheduleUseCase respondToScheduleUseCase;
     private final CancelScheduleUseCase cancelScheduleUseCase;
     private final AdminUpdateAttendanceUseCase adminUpdateAttendanceUseCase;
+    private final AddScheduleCommentUseCase addScheduleCommentUseCase;
     private final ObjectMapper objectMapper;
 
     public ScheduleApi(
@@ -46,6 +48,7 @@ public class ScheduleApi {
             final CancelScheduleUseCase cancelScheduleUseCase,
             final RespondToScheduleUseCase respondToScheduleUseCase,
             final AdminUpdateAttendanceUseCase adminUpdateAttendanceUseCase,
+            final AddScheduleCommentUseCase addScheduleCommentUseCase,
             final ObjectMapper objectMapper
     ) {
         this.registerScheduleUseCase = registerScheduleUseCase;
@@ -53,6 +56,7 @@ public class ScheduleApi {
         this.cancelScheduleUseCase = cancelScheduleUseCase;
         this.respondToScheduleUseCase = respondToScheduleUseCase;
         this.adminUpdateAttendanceUseCase = adminUpdateAttendanceUseCase;
+        this.addScheduleCommentUseCase = addScheduleCommentUseCase;
         this.objectMapper = objectMapper;
     }
 
@@ -69,7 +73,7 @@ public class ScheduleApi {
         return ResponseEntity.ok(ScheduleResponse.from(schedule));
     }
 
-    @PutMapping("/{scheduleId}")
+    @PostMapping("/{scheduleId}/update")
     public ResponseEntity<ScheduleResponse> update(
             final HttpSession httpSession,
             @PathVariable final String clubId,
@@ -83,7 +87,7 @@ public class ScheduleApi {
         return ResponseEntity.ok(ScheduleResponse.from(schedule));
     }
 
-    @DeleteMapping("/{scheduleId}")
+    @PostMapping("/{scheduleId}/delete")
     public ResponseEntity<ScheduleResponse> cancelSchedule(
             final HttpSession httpSession,
             @PathVariable final String clubId,
@@ -96,7 +100,7 @@ public class ScheduleApi {
         return ResponseEntity.ok(ScheduleResponse.from(schedule));
     }
 
-    @PutMapping("/{scheduleId}/respond")
+    @PostMapping("/{scheduleId}/respond")
     public ResponseEntity<Void> respond(
             final HttpSession httpSession,
             @PathVariable final String clubId,
@@ -110,7 +114,7 @@ public class ScheduleApi {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/{scheduleId}/attendances/{targetUserId}")
+    @PostMapping("/{scheduleId}/attendances/{targetUserId}")
     public ResponseEntity<Void> adminUpdateAttendance(
             @RequestAttribute("signInSession") final SignInSession signInSession,
             @PathVariable final String clubId,
@@ -121,6 +125,17 @@ public class ScheduleApi {
         adminUpdateAttendanceUseCase.update(
                 request.toCommand(scheduleId, signInSession.userId(), clubId, targetUserId)
         );
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{scheduleId}/comments")
+    public ResponseEntity<Void> addComment(
+            @RequestAttribute("signInSession") final SignInSession signInSession,
+            @PathVariable final String clubId,
+            @PathVariable final String scheduleId,
+            @RequestBody final AddScheduleCommentRequest request
+    ) {
+        addScheduleCommentUseCase.addComment(request.toCommand(scheduleId, signInSession.userId(), clubId));
         return ResponseEntity.ok().build();
     }
 

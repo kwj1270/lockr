@@ -18,13 +18,9 @@ public class ClubEventConsumer {
     private final RegisterClubMemberUseCase registerClubMemberUseCase;
     private final RetryTemplate retryTemplate;
 
-    public ClubEventConsumer(final RegisterClubMemberUseCase registerClubMemberUseCase) {
+    public ClubEventConsumer(final RegisterClubMemberUseCase registerClubMemberUseCase, final RetryTemplate retryTemplate) {
         this.registerClubMemberUseCase = registerClubMemberUseCase;
-        this.retryTemplate = RetryTemplate.builder()
-                .maxAttempts(3)
-                .exponentialBackoff(1000, 1.5, 5000)
-                .retryOn(Exception.class)
-                .build();
+        this.retryTemplate = retryTemplate;
     }
 
     @TransactionalEventListener

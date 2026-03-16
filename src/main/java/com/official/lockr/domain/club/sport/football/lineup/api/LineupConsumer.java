@@ -17,13 +17,9 @@ public class LineupConsumer {
     private final AddLineupUseCase addLineupUseCase;
     private final RetryTemplate retryTemplate;
 
-    public LineupConsumer(final AddLineupUseCase addLineupUseCase) {
+    public LineupConsumer(final AddLineupUseCase addLineupUseCase, final RetryTemplate retryTemplate) {
         this.addLineupUseCase = addLineupUseCase;
-        this.retryTemplate = RetryTemplate.builder()
-                .maxAttempts(3)
-                .exponentialBackoff(1000, 1.5, 5000)
-                .retryOn(Exception.class)
-                .build();
+        this.retryTemplate = retryTemplate;
     }
 
     @TransactionalEventListener

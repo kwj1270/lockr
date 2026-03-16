@@ -14,13 +14,9 @@ public class SignInTokenConsumer {
     private final RegisterSignInTokenUseCase registerSignInTokenUseCase;
     private final RetryTemplate retryTemplate;
 
-    public SignInTokenConsumer(final RegisterSignInTokenUseCase registerSignInTokenUseCase) {
+    public SignInTokenConsumer(final RegisterSignInTokenUseCase registerSignInTokenUseCase, final RetryTemplate retryTemplate) {
         this.registerSignInTokenUseCase = registerSignInTokenUseCase;
-        this.retryTemplate = RetryTemplate.builder()
-                .maxAttempts(3)
-                .exponentialBackoff(1000, 1.5, 5000)
-                .retryOn(Exception.class)
-                .build();
+        this.retryTemplate = retryTemplate;
     }
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)

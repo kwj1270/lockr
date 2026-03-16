@@ -11,7 +11,6 @@ import org.jooq.generated.tables.daos.ClubsDao;
 import org.jooq.generated.tables.daos.MembersDao;
 import org.jooq.generated.tables.pojos.ClubsEntity;
 import org.jooq.generated.tables.pojos.MembersEntity;
-import org.jooq.generated.tables.records.ClubsRecord;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,9 +22,13 @@ import java.util.stream.Collectors;
 import static org.jooq.generated.tables.ClubsJOOQEntity.CLUBS;
 import static org.jooq.generated.tables.MembersJOOQEntity.MEMBERS;
 import static org.jooq.impl.DSL.excluded;
+import static org.jooq.impl.DSL.field;
 
 @Repository
 public class JOOQClubRepository implements ClubRepository {
+
+    private static final org.jooq.Field<Boolean> IS_PUBLIC = field("is_public", Boolean.class);
+    private static final org.jooq.Field<String> JOIN_METHOD = field("join_method", String.class);
 
     private final ClubsDao clubsDao;
     private final MembersDao memberDao;
@@ -42,13 +45,19 @@ public class JOOQClubRepository implements ClubRepository {
     @Nullable
     @Override
     public Club findByName(final String name) {
-        final ClubsRecord clubsRecord = clubsDao.ctx().selectFrom(CLUBS)
+        final var record = clubsDao.ctx().select(CLUBS.asterisk(), IS_PUBLIC, JOIN_METHOD)
+                .from(CLUBS)
                 .where(CLUBS.NAME.eq(name))
                 .fetchOne();
-        if (Objects.isNull(clubsRecord)) {
+        if (Objects.isNull(record)) {
             return null;
         }
-        return domain(clubsRecord, findAllMember(clubsRecord.getId()));
+        return domain(
+                record.into(ClubsEntity.class),
+                record.get(IS_PUBLIC, Boolean.class),
+                record.get(JOIN_METHOD, String.class),
+                findAllMember(record.get(CLUBS.ID))
+        );
     }
 
     @Transactional
@@ -72,6 +81,8 @@ public class JOOQClubRepository implements ClubRepository {
                 .set(CLUBS.DESCRIPTION, club.getDescription())
                 .set(CLUBS.PROFILE_IMAGE_URL, club.getProfileImageUrl())
                 .set(CLUBS.BACKGROUND_IMAGE_URL, club.getBackgroundImageUrl())
+                .set(IS_PUBLIC, club.isPublic())
+                .set(JOIN_METHOD, club.getJoinMethod())
                 .set(CLUBS.CREATED_AT, club.getCreatedAt())
                 .set(CLUBS.UPDATED_AT, club.getUpdatedAt())
                 .set(CLUBS.DELETED_AT, club.getDeletedAt())
@@ -84,6 +95,8 @@ public class JOOQClubRepository implements ClubRepository {
                 .set(CLUBS.DESCRIPTION, club.getDescription())
                 .set(CLUBS.PROFILE_IMAGE_URL, club.getProfileImageUrl())
                 .set(CLUBS.BACKGROUND_IMAGE_URL, club.getBackgroundImageUrl())
+                .set(IS_PUBLIC, club.isPublic())
+                .set(JOIN_METHOD, club.getJoinMethod())
                 .set(CLUBS.UPDATED_AT, club.getUpdatedAt())
                 .set(CLUBS.DELETED_AT, club.getDeletedAt())
                 .execute();
@@ -164,11 +177,19 @@ public class JOOQClubRepository implements ClubRepository {
     @Nullable
     @Override
     public Club findById(final String id) {
-        final ClubsEntity teamsEntity = clubsDao.findById(id);
-        if (Objects.isNull(teamsEntity)) {
+        final var record = clubsDao.ctx().select(CLUBS.asterisk(), IS_PUBLIC, JOIN_METHOD)
+                .from(CLUBS)
+                .where(CLUBS.ID.eq(id))
+                .fetchOne();
+        if (Objects.isNull(record)) {
             return null;
         }
-        return domain(teamsEntity, findAllMember(id));
+        return domain(
+                record.into(ClubsEntity.class),
+                record.get(IS_PUBLIC, Boolean.class),
+                record.get(JOIN_METHOD, String.class),
+                findAllMember(id)
+        );
     }
 
     private List<Member> findAllMember(final String teamId) {
@@ -181,7 +202,7 @@ public class JOOQClubRepository implements ClubRepository {
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
-    private static Club domain(final ClubsEntity teamsEntity, final List<Member> members) {
+    private static Club domain(final ClubsEntity teamsEntity, final Boolean isPublic, final String joinMethod, final List<Member> members) {
         return new Club(
                 teamsEntity.getId(),
                 teamsEntity.getFoundUserId(),
@@ -192,6 +213,8 @@ public class JOOQClubRepository implements ClubRepository {
                 teamsEntity.getDescription(),
                 teamsEntity.getProfileImageUrl(),
                 teamsEntity.getBackgroundImageUrl(),
+                isPublic != null ? isPublic : true,
+                joinMethod != null ? joinMethod : "APPROVAL_REQUIRED",
                 members,
                 teamsEntity.getCreatedAt(),
                 teamsEntity.getUpdatedAt(),
@@ -210,24 +233,6 @@ public class JOOQClubRepository implements ClubRepository {
                 entity.getCreatedAt(),
                 entity.getUpdatedAt(),
                 entity.getDeletedAt()
-        );
-    }
-
-    private Club domain(final ClubsRecord teamsRecord, final List<Member> members) {
-        return new Club(
-                teamsRecord.getId(),
-                teamsRecord.getFoundUserId(),
-                teamsRecord.getName(),
-                teamsRecord.getSportType(),
-                teamsRecord.getCity(),
-                teamsRecord.getDistrict(),
-                teamsRecord.getDescription(),
-                teamsRecord.getProfileImageUrl(),
-                teamsRecord.getBackgroundImageUrl(),
-                members,
-                teamsRecord.getCreatedAt(),
-                teamsRecord.getUpdatedAt(),
-                teamsRecord.getDeletedAt()
         );
     }
 }

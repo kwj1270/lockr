@@ -48,7 +48,6 @@ public class InMemoryScheduleRepository implements ScheduleRepository {
                         .toList(),
                 schedule.getStatus(),
                 schedule.getMinParticipants(),
-                schedule.getMaxParticipants(),
                 schedule.getDeadlineDays(),
                 schedule.getCreatedAt(),
                 schedule.getUpdatedAt(),

@@ -26,6 +26,9 @@ spring:
       port: ${LOCKR_REDIS_PORT:6379}
       repositories:
         enabled: false
+  flyway:
+    clean-disabled: false
+    clean-on-validation-error: true
   docker:
     compose:
       enabled: false

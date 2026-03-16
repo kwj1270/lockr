@@ -26,7 +26,6 @@ public class Schedule extends AggregateRoot {
     private final List<Attendance> attendances;
     private ScheduleStatus status;
     private Integer minParticipants;
-    private Integer maxParticipants;
     private int deadlineDays;
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -35,6 +34,7 @@ public class Schedule extends AggregateRoot {
     public static Schedule create(
             final String id,
             final String clubId,
+            final String creatorUserId,
             final String title,
             final String content,
             final String scheduleLocation,
@@ -43,16 +43,16 @@ public class Schedule extends AggregateRoot {
             final ScheduleDetailData detail,
             final List<String> userIds,
             final Integer minParticipants,
-            final Integer maxParticipants,
             final int deadlineDays
     ) {
-        return create(id, clubId, title, content, scheduleLocation, scheduleTime,
-                scheduleType, detail, userIds, minParticipants, maxParticipants, deadlineDays, LocalDateTime.now());
+        return create(id, clubId, creatorUserId, title, content, scheduleLocation, scheduleTime,
+                scheduleType, detail, userIds, minParticipants, deadlineDays, LocalDateTime.now());
     }
 
     public static Schedule create(
             final String id,
             final String clubId,
+            final String creatorUserId,
             final String title,
             final String content,
             final String scheduleLocation,
@@ -61,35 +61,34 @@ public class Schedule extends AggregateRoot {
             final ScheduleDetailData detail,
             final List<String> userIds,
             final Integer minParticipants,
-            final Integer maxParticipants,
             final int deadlineDays,
             final LocalDateTime now
     ) {
         validateScheduleTime(scheduleTime, now);
-        validateParticipants(minParticipants, maxParticipants);
+        validateMinParticipants(minParticipants);
         validateDeadlineDays(deadlineDays);
         final Schedule schedule = new Schedule(
                 id, clubId, title, content, scheduleLocation, scheduleTime, scheduleType,
-                detail, createInitialAttendances(userIds), SCHEDULED, minParticipants, maxParticipants, deadlineDays, now, now, null
+                detail, createInitialAttendances(userIds), SCHEDULED, minParticipants, deadlineDays, now, now, null
         );
-        schedule.addEvent(new CreatedScheduleEvent(id, clubId, title, scheduleType, detail, scheduleTime));
+        schedule.addEvent(new CreatedScheduleEvent(id, clubId, title, scheduleType, detail, scheduleTime, creatorUserId, scheduleLocation));
         return schedule;
     }
 
     public static Schedule reconstruct(
             final String id, final String clubId, final String title, final String content, final String location,
             final LocalDateTime scheduleTime, final ScheduleType scheduleType, final ScheduleDetailData scheduleDetailData,
-            final List<Attendance> attendances, final ScheduleStatus status, final Integer minParticipants, final Integer maxParticipants, final int deadlineDays,
+            final List<Attendance> attendances, final ScheduleStatus status, final Integer minParticipants, final int deadlineDays,
             final LocalDateTime createdAt, final LocalDateTime updatedAt, final LocalDateTime deletedAt
     ) {
         return new Schedule(id, clubId, title, content, location, scheduleTime, scheduleType, scheduleDetailData,
-                attendances, status, minParticipants, maxParticipants, deadlineDays, createdAt, updatedAt, deletedAt);
+                attendances, status, minParticipants, deadlineDays, createdAt, updatedAt, deletedAt);
     }
 
     Schedule(
             final String id, final String clubId, final String title, final String content, final String location,
             final LocalDateTime scheduleTime, final ScheduleType scheduleType, final ScheduleDetailData scheduleDetailData,
-            final List<Attendance> attendances, final ScheduleStatus status, final Integer minParticipants, final Integer maxParticipants, final int deadlineDays,
+            final List<Attendance> attendances, final ScheduleStatus status, final Integer minParticipants, final int deadlineDays,
             final LocalDateTime createdAt, final LocalDateTime updatedAt, final LocalDateTime deletedAt
     ) {
         this.id = id;
@@ -103,7 +102,6 @@ public class Schedule extends AggregateRoot {
         this.attendances = new ArrayList<>(attendances);  // 방어적 복사
         this.status = status;
         this.minParticipants = minParticipants;
-        this.maxParticipants = maxParticipants;
         this.deadlineDays = deadlineDays;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -167,11 +165,10 @@ public class Schedule extends AggregateRoot {
             final LocalDateTime scheduleTime,
             final ScheduleDetailData scheduleDetailData,
             final Integer minParticipants,
-            final Integer maxParticipants,
             final int deadlineDays
     ) {
         update(title, content, scheduleLocation, scheduleTime, scheduleDetailData,
-                minParticipants, maxParticipants, deadlineDays, LocalDateTime.now());
+                minParticipants, deadlineDays, LocalDateTime.now());
     }
 
     public void update(
@@ -181,13 +178,12 @@ public class Schedule extends AggregateRoot {
             final LocalDateTime scheduleTime,
             final ScheduleDetailData scheduleDetailData,
             final Integer minParticipants,
-            final Integer maxParticipants,
             final int deadlineDays,
             final LocalDateTime now
     ) {
         validateNotCancelled();
         validateScheduleTime(scheduleTime, now);
-        validateParticipants(minParticipants, maxParticipants);
+        validateMinParticipants(minParticipants);
         validateDeadlineDays(deadlineDays);
 
         this.title = title;
@@ -196,10 +192,9 @@ public class Schedule extends AggregateRoot {
         this.scheduleTime = scheduleTime;
         this.scheduleDetailData = scheduleDetailData;
         this.minParticipants = minParticipants;
-        this.maxParticipants = maxParticipants;
         this.deadlineDays = deadlineDays;
         this.updatedAt = now;
-        addEvent(new UpdatedScheduleEvent(id, clubId, scheduleTime));
+        addEvent(new UpdatedScheduleEvent(id, clubId, scheduleTime, title, scheduleLocation));
     }
 
     public void cancel() {
@@ -273,15 +268,9 @@ public class Schedule extends AggregateRoot {
     }
 
     // 유효성 검증
-    private static void validateParticipants(final Integer minParticipants, final Integer maxParticipants) {
+    private static void validateMinParticipants(final Integer minParticipants) {
         if (minParticipants != null && minParticipants < 0) {
             throw new IllegalArgumentException("minParticipants must not be negative");
-        }
-        if (maxParticipants != null && maxParticipants < 0) {
-            throw new IllegalArgumentException("maxParticipants must not be negative");
-        }
-        if (minParticipants != null && maxParticipants != null && minParticipants > maxParticipants) {
-            throw new IllegalArgumentException("minParticipants must not be greater than maxParticipants");
         }
     }
 
@@ -361,10 +350,6 @@ public class Schedule extends AggregateRoot {
 
     public Integer getMinParticipants() {
         return minParticipants;
-    }
-
-    public Integer getMaxParticipants() {
-        return maxParticipants;
     }
 
     public int getDeadlineDays() {

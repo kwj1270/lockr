@@ -21,6 +21,7 @@ public class FeedApi {
     private final RemoveCommentHeartUseCase removeCommentHeartUseCase;
     private final AddHeartUseCase addHeartUseCase;
     private final RemoveHeartUseCase removeHeartUseCase;
+    private final ReportFeedUseCase reportFeedUseCase;
 
     public FeedApi(
             final CreateFeedUseCase createFeedUseCase,
@@ -31,7 +32,8 @@ public class FeedApi {
             final AddCommentHeartUseCase addCommentHeartUseCase,
             final RemoveCommentHeartUseCase removeCommentHeartUseCase,
             final AddHeartUseCase addHeartUseCase,
-            final RemoveHeartUseCase removeHeartUseCase
+            final RemoveHeartUseCase removeHeartUseCase,
+            final ReportFeedUseCase reportFeedUseCase
     ) {
         this.createFeedUseCase = createFeedUseCase;
         this.updateFeedUseCase = updateFeedUseCase;
@@ -42,6 +44,7 @@ public class FeedApi {
         this.removeCommentHeartUseCase = removeCommentHeartUseCase;
         this.addHeartUseCase = addHeartUseCase;
         this.removeHeartUseCase = removeHeartUseCase;
+        this.reportFeedUseCase = reportFeedUseCase;
     }
 
     @PostMapping
@@ -138,5 +141,16 @@ public class FeedApi {
     ) {
         final Feed feed = removeHeartUseCase.removeHeart(new RemoveHeartCommand(feedId, signInSession.userId(), clubId));
         return ResponseEntity.ok(FeedResponse.from(feed));
+    }
+
+    @PostMapping("/{feedId}/report")
+    public ResponseEntity<Void> reportFeed(
+            @RequestAttribute("signInSession") final SignInSession signInSession,
+            @PathVariable final String clubId,
+            @PathVariable final String feedId,
+            @RequestBody final ReportFeedRequest request
+    ) {
+        reportFeedUseCase.report(request.toCommand(feedId, signInSession.userId(), clubId));
+        return ResponseEntity.ok().build();
     }
 }

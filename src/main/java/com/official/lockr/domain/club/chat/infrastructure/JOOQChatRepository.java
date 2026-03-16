@@ -141,6 +141,17 @@ public class JOOQChatRepository implements ChatRepository {
                 .execute();
     }
 
+    @Transactional
+    @Override
+    public void updateContent(final String chatId, final String content) {
+        chatsDao.ctx()
+                .update(CHATS)
+                .set(CHATS.MESSAGE, content)
+                .where(CHATS.ID.eq(chatId))
+                .and(DSL.field("deleted_at").isNull())
+                .execute();
+    }
+
     private Chat toDomain(final ChatsEntity entity) {
         return new Chat(
                 entity.getId(),

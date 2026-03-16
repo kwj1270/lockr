@@ -7,9 +7,10 @@ import java.util.List;
 public record AddCommentRequest(
         String content,
         List<String> imageUrls,
-        List<String> videoUrls
+        List<String> videoUrls,
+        String parentCommentId
 ) {
     public AddCommentCommand toCommand(final String feedId, final String userId, final String clubId) {
-        return new AddCommentCommand(feedId, userId, clubId, content, imageUrls, videoUrls);
+        return new AddCommentCommand(feedId, userId, clubId, content, imageUrls, videoUrls, parentCommentId);
     }
 }

@@ -1,7 +1,5 @@
 package com.official.lockr.domain.club.stats.application;
 
-import com.official.lockr.domain.club.club.domain.Club;
-import com.official.lockr.domain.club.club.domain.ClubRepository;
 import com.official.lockr.domain.club.stats.application.command.PlayerPerformanceCommand;
 import com.official.lockr.domain.club.stats.application.command.RecordMatchCommand;
 import com.official.lockr.domain.club.stats.application.command.UpdateMatchCommand;
@@ -12,6 +10,7 @@ import com.official.lockr.domain.club.stats.domain.MatchRecord;
 import com.official.lockr.domain.club.stats.domain.MatchRecordRepository;
 import com.official.lockr.domain.club.stats.domain.MatchScore;
 import com.official.lockr.domain.club.stats.domain.PlayerPerformance;
+import com.official.lockr.domain.club.stats.domain.StatsClub;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,17 +22,24 @@ import static java.util.Objects.isNull;
 public class StatsService implements RecordMatchUseCase, UpdateMatchUseCase, DeleteMatchUseCase {
 
     private final MatchRecordRepository matchRecordRepository;
-    private final ClubRepository clubRepository;
+    private final StatsClub statsClub;
 
     public StatsService(final MatchRecordRepository matchRecordRepository,
-                        final ClubRepository clubRepository) {
+                        final StatsClub statsClub) {
         this.matchRecordRepository = matchRecordRepository;
-        this.clubRepository = clubRepository;
+        this.statsClub = statsClub;
     }
 
     @Override
     public MatchRecord record(final RecordMatchCommand command) {
-        club(command.clubId(), command.recordedBy());
+        statsClub.verifyStaffMembership(command.recordedBy(), command.clubId());
+
+        if (command.scheduleId() != null) {
+            final MatchRecord existingRecord = matchRecordRepository.findByScheduleId(command.scheduleId());
+            if (existingRecord != null) {
+                throw new IllegalArgumentException("Match record already exists for this schedule");
+            }
+        }
 
         final MatchRecord matchRecord = MatchRecord.create(
                 generateUlid(),
@@ -65,7 +71,7 @@ public class StatsService implements RecordMatchUseCase, UpdateMatchUseCase, Del
 
     @Override
     public MatchRecord update(final UpdateMatchCommand command) {
-        final Club club = club(command.clubId(), command.userId());
+        statsClub.verifyStaffMembership(command.userId(), command.clubId());
 
         final MatchRecord existingRecord = matchRecordRepository.findById(command.recordId());
         if (isNull(existingRecord)) {
@@ -100,7 +106,7 @@ public class StatsService implements RecordMatchUseCase, UpdateMatchUseCase, Del
 
     @Override
     public void delete(final String clubId, final String recordId, final String userId) {
-        final Club club = club(clubId, userId);
+        statsClub.verifyStaffMembership(userId, clubId);
 
         final MatchRecord existingRecord = matchRecordRepository.findById(recordId);
         if (isNull(existingRecord)) {
@@ -111,13 +117,5 @@ public class StatsService implements RecordMatchUseCase, UpdateMatchUseCase, Del
         }
 
         matchRecordRepository.delete(existingRecord);
-    }
-
-    private Club club(final String clubId, final String userId) {
-        final Club club = clubRepository.findById(clubId);
-        if (isNull(club) || !club.isStaff(userId)) {
-            throw new IllegalArgumentException("Unauthorized access");
-        }
-        return club;
     }
 }

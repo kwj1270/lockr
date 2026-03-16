@@ -10,6 +10,10 @@ public enum MemberRole {
     ;
 
     public boolean isPresident() {
+        return this == PRESIDENT;
+    }
+
+    public boolean isPresidency() {
         return this == VICE_PRESIDENT || this == PRESIDENT;
     }
 

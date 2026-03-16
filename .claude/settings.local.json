@@ -46,7 +46,22 @@
       "Bash(git stash:*)",
       "Bash(git checkout:*)",
       "Bash(git add:*)",
-      "mcp__plugin_oh-my-claudecode_t__lsp_diagnostics"
+      "mcp__plugin_oh-my-claudecode_t__lsp_diagnostics",
+      "Bash(mysql:*)",
+      "mcp__plugin_oh-my-claudecode_t__ast_grep_search",
+      "WebSearch",
+      "WebFetch(domain:engineering.fb.com)",
+      "WebFetch(domain:transparency.meta.com)",
+      "WebFetch(domain:medium.com)",
+      "WebFetch(domain:blog.bytebytego.com)",
+      "WebFetch(domain:grokkingthesystemdesign.com)",
+      "WebFetch(domain:www.techaheadcorp.com)",
+      "Bash(git commit:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(gh pr view:*)",
+      "Bash(wc:*)",
+      "WebFetch(domain:www.spond.com)",
+      "WebFetch(domain:bcoach.app)"
     ],
     "deny": [],
     "ask": []

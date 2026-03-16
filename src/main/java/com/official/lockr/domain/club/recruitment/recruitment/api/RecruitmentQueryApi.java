@@ -5,17 +5,18 @@ import com.official.lockr.domain.club.recruitment.recruitment.api.dto.Recruitmen
 import com.official.lockr.domain.club.recruitment.recruitment.domain.Recruitment;
 import com.official.lockr.domain.club.recruitment.recruitment.domain.vo.RecruitmentStatus;
 import org.jooq.Configuration;
-import org.jooq.generated.tables.RecruitmentsJOOQEntity;
+import org.jooq.generated.tables.daos.ApplicationsDao;
 import org.jooq.generated.tables.daos.RecruitmentsDao;
 import org.jooq.generated.tables.pojos.RecruitmentsEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import static java.util.Objects.isNull;
+import static org.jooq.generated.tables.ApplicationsJOOQEntity.APPLICATIONS;
 import static org.jooq.generated.tables.RecruitmentsJOOQEntity.RECRUITMENTS;
 
 @RestController
@@ -23,9 +24,11 @@ import static org.jooq.generated.tables.RecruitmentsJOOQEntity.RECRUITMENTS;
 public class RecruitmentQueryApi {
 
     private final RecruitmentsDao recruitmentsDao;
+    private final ApplicationsDao applicationsDao;
 
     public RecruitmentQueryApi(final Configuration configuration) {
         this.recruitmentsDao = new RecruitmentsDao(configuration);
+        this.applicationsDao = new ApplicationsDao(configuration);
     }
 
     @GetMapping
@@ -91,5 +94,18 @@ public class RecruitmentQueryApi {
                 recruitments.getCreatedAt(),
                 recruitments.getUpdatedAt()
         ));
+    }
+
+    @GetMapping("/{recruitmentId}/applicants/count")
+    public ResponseEntity<Map<String, Integer>> getApplicantCount(
+            @PathVariable final String recruitmentId
+    ) {
+        final int count = applicationsDao.ctx()
+                .selectCount()
+                .from(APPLICATIONS)
+                .where(APPLICATIONS.RECRUITMENT_ID.eq(recruitmentId))
+                .and(APPLICATIONS.DELETED_AT.isNull())
+                .fetchOne(0, int.class);
+        return ResponseEntity.ok(Map.of("count", count));
     }
 }

@@ -35,13 +35,12 @@ class ScheduleTest {
         final TrainingDetailData detail = new TrainingDetailData();
         final List<String> userIds = List.of("user-001", "user-002");
         final int minParticipants = 5;
-        final int maxParticipants = 20;
         final int deadlineDays = 3;
 
         // when
         final Schedule schedule = Schedule.create(
-                id, clubId, title, content, location, scheduleTime,
-                scheduleType, detail, userIds, minParticipants, maxParticipants, deadlineDays,
+                id, clubId, "user-001", title, content, location, scheduleTime,
+                scheduleType, detail, userIds, minParticipants, deadlineDays,
                 LocalDateTime.now()
         );
 
@@ -56,7 +55,6 @@ class ScheduleTest {
         assertThat(schedule.getDetail()).isEqualTo(detail);
         assertThat(schedule.getStatus()).isEqualTo(ScheduleStatus.SCHEDULED);
         assertThat(schedule.getMinParticipants()).isEqualTo(minParticipants);
-        assertThat(schedule.getMaxParticipants()).isEqualTo(maxParticipants);
         assertThat(schedule.getDeadlineDays()).isEqualTo(deadlineDays);
         assertThat(schedule.getAttendances()).hasSize(2);
         assertThat(schedule.getCreatedAt()).isNotNull();
@@ -71,9 +69,9 @@ class ScheduleTest {
 
         // when & then
         assertThatThrownBy(() -> Schedule.create(
-                "schedule-001", "club-001", "과거 일정", "내용", "장소", pastTime,
+                "schedule-001", "club-001", "user-001", "과거 일정", "내용", "장소", pastTime,
                 ScheduleType.TRAINING, new TrainingDetailData(), List.of("user-001"),
-                5, 20, 3, LocalDateTime.now()
+                5, 3, LocalDateTime.now()
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("future");
@@ -89,9 +87,9 @@ class ScheduleTest {
         final ScheduleType scheduleType = ScheduleType.TRAINING;
 
         final Schedule schedule = Schedule.create(
-                id, clubId, "훈련", "내용", "장소", scheduleTime,
+                id, clubId, "user-001", "훈련", "내용", "장소", scheduleTime,
                 scheduleType, new TrainingDetailData(), List.of("user-001"),
-                5, 20, 3, LocalDateTime.now()
+                5, 3, LocalDateTime.now()
         );
 
         final List<DomainEvent> capturedEvents = new ArrayList<>();
@@ -122,10 +120,10 @@ class ScheduleTest {
 
         // when
         final Schedule schedule = Schedule.create(
-                "schedule-001", "club-001", "정기전", "내용", "경기장",
+                "schedule-001", "club-001", "user-001", "정기전", "내용", "경기장",
                 LocalDateTime.now().plusDays(7),
                 ScheduleType.MATCH, matchDetail, List.of("user-001"),
-                11, 22, 3, LocalDateTime.now()
+                11, 3, LocalDateTime.now()
         );
 
         // then
@@ -146,10 +144,10 @@ class ScheduleTest {
 
         // when
         final Schedule schedule = Schedule.create(
-                "schedule-001", "club-001", "정기 훈련", "체력 훈련", "훈련장",
+                "schedule-001", "club-001", "user-001", "정기 훈련", "체력 훈련", "훈련장",
                 LocalDateTime.now().plusDays(3),
                 ScheduleType.TRAINING, trainingDetail, List.of("user-001"),
-                5, 15, 2, LocalDateTime.now()
+                5, 2, LocalDateTime.now()
         );
 
         // then
@@ -165,10 +163,10 @@ class ScheduleTest {
 
         // when
         final Schedule schedule = Schedule.create(
-                "schedule-001", "club-001", "회식", "시즌 종료 회식", "레스토랑",
+                "schedule-001", "club-001", "user-001", "회식", "시즌 종료 회식", "레스토랑",
                 LocalDateTime.now().plusDays(14),
                 ScheduleType.SOCIAL_EVENT, socialDetail, List.of("user-001", "user-002"),
-                10, 30, 5, LocalDateTime.now()
+                10, 5, LocalDateTime.now()
         );
 
         // then
@@ -182,10 +180,10 @@ class ScheduleTest {
         // given
         final String userId = "user-001";
         final Schedule schedule = Schedule.create(
-                "schedule-001", "club-001", "훈련", "내용", "장소",
+                "schedule-001", "club-001", "user-001", "훈련", "내용", "장소",
                 LocalDateTime.now().plusDays(7),
                 ScheduleType.TRAINING, new TrainingDetailData(), List.of(userId),
-                5, 20, 3, LocalDateTime.now()
+                5, 3, LocalDateTime.now()
         );
 
         // 초기 상태 확인
@@ -206,10 +204,10 @@ class ScheduleTest {
         // given
         final String userId = "user-001";
         final Schedule schedule = Schedule.create(
-                "schedule-001", "club-001", "훈련", "내용", "장소",
+                "schedule-001", "club-001", "user-001", "훈련", "내용", "장소",
                 LocalDateTime.now().plusDays(7),
                 ScheduleType.TRAINING, new TrainingDetailData(), List.of(userId),
-                5, 20, 3, LocalDateTime.now()
+                5, 3, LocalDateTime.now()
         );
 
         // 첫 번째 응답
@@ -233,10 +231,10 @@ class ScheduleTest {
         final String clubId = "club-001";
         final String userId = "user-001";
         final Schedule schedule = Schedule.create(
-                scheduleId, clubId, "훈련", "내용", "장소",
+                scheduleId, clubId, "user-001", "훈련", "내용", "장소",
                 LocalDateTime.now().plusDays(7),
                 ScheduleType.TRAINING, new TrainingDetailData(), List.of(userId),
-                5, 20, 3, LocalDateTime.now()
+                5, 3, LocalDateTime.now()
         );
 
         // CreatedScheduleEvent 소비
@@ -267,10 +265,10 @@ class ScheduleTest {
         // given
         final String userId = "user-001";
         final Schedule schedule = Schedule.create(
-                "schedule-001", "club-001", "훈련", "내용", "장소",
+                "schedule-001", "club-001", "user-001", "훈련", "내용", "장소",
                 LocalDateTime.now().plusDays(7),
                 ScheduleType.TRAINING, new TrainingDetailData(), List.of(userId),
-                5, 20, 3, LocalDateTime.now()
+                5, 3, LocalDateTime.now()
         );
 
         schedule.cancel();
@@ -286,10 +284,10 @@ class ScheduleTest {
     void shouldUpdateFieldsWhenUpdatingSchedule() {
         // given
         final Schedule schedule = Schedule.create(
-                "schedule-001", "club-001", "원래 제목", "원래 내용", "원래 장소",
+                "schedule-001", "club-001", "user-001", "원래 제목", "원래 내용", "원래 장소",
                 LocalDateTime.now().plusDays(7),
                 ScheduleType.TRAINING, new TrainingDetailData(), List.of("user-001"),
-                5, 20, 3, LocalDateTime.now()
+                5, 3, LocalDateTime.now()
         );
 
         final String newTitle = "변경된 제목";
@@ -299,7 +297,7 @@ class ScheduleTest {
         final TrainingDetailData newDetail = new TrainingDetailData();
 
         // when
-        schedule.update(newTitle, newContent, newLocation, newTime, newDetail, 10, 25, 5);
+        schedule.update(newTitle, newContent, newLocation, newTime, newDetail, 10, 5);
 
         // then
         assertThat(schedule.getTitle()).isEqualTo(newTitle);
@@ -307,7 +305,6 @@ class ScheduleTest {
         assertThat(schedule.getLocation()).isEqualTo(newLocation);
         assertThat(schedule.getScheduleTime()).isEqualTo(newTime);
         assertThat(schedule.getMinParticipants()).isEqualTo(10);
-        assertThat(schedule.getMaxParticipants()).isEqualTo(25);
         assertThat(schedule.getDeadlineDays()).isEqualTo(5);
     }
 
@@ -318,10 +315,10 @@ class ScheduleTest {
         final String scheduleId = "schedule-001";
         final String clubId = "club-001";
         final Schedule schedule = Schedule.create(
-                scheduleId, clubId, "제목", "내용", "장소",
+                scheduleId, clubId, "user-001", "제목", "내용", "장소",
                 LocalDateTime.now().plusDays(7),
                 ScheduleType.TRAINING, new TrainingDetailData(), List.of("user-001"),
-                5, 20, 3, LocalDateTime.now()
+                5, 3, LocalDateTime.now()
         );
 
         final List<DomainEvent> capturedEvents = new ArrayList<>();
@@ -331,7 +328,7 @@ class ScheduleTest {
         final LocalDateTime newTime = LocalDateTime.now().plusDays(14);
 
         // when
-        schedule.update("새 제목", "새 내용", "새 장소", newTime, new TrainingDetailData(), 10, 25, 5);
+        schedule.update("새 제목", "새 내용", "새 장소", newTime, new TrainingDetailData(), 10, 5);
         schedule.publish(capturedEvents::add);
 
         // then
@@ -349,10 +346,10 @@ class ScheduleTest {
     void shouldThrowExceptionWhenUpdatingCancelledSchedule() {
         // given
         final Schedule schedule = Schedule.create(
-                "schedule-001", "club-001", "제목", "내용", "장소",
+                "schedule-001", "club-001", "user-001", "제목", "내용", "장소",
                 LocalDateTime.now().plusDays(7),
                 ScheduleType.TRAINING, new TrainingDetailData(), List.of("user-001"),
-                5, 20, 3, LocalDateTime.now()
+                5, 3, LocalDateTime.now()
         );
 
         schedule.cancel();
@@ -361,7 +358,7 @@ class ScheduleTest {
         assertThatThrownBy(() -> schedule.update(
                 "새 제목", "새 내용", "새 장소",
                 LocalDateTime.now().plusDays(14),
-                new TrainingDetailData(), 10, 25, 5
+                new TrainingDetailData(), 10, 5
         ))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("cancelled");
@@ -372,10 +369,10 @@ class ScheduleTest {
     void shouldChangeStatusToCancelledWhenCancelling() {
         // given
         final Schedule schedule = Schedule.create(
-                "schedule-001", "club-001", "제목", "내용", "장소",
+                "schedule-001", "club-001", "user-001", "제목", "내용", "장소",
                 LocalDateTime.now().plusDays(7),
                 ScheduleType.TRAINING, new TrainingDetailData(), List.of("user-001"),
-                5, 20, 3, LocalDateTime.now()
+                5, 3, LocalDateTime.now()
         );
 
         assertThat(schedule.getStatus()).isEqualTo(ScheduleStatus.SCHEDULED);
@@ -397,10 +394,10 @@ class ScheduleTest {
         final String clubId = "club-001";
         final ScheduleType scheduleType = ScheduleType.TRAINING;
         final Schedule schedule = Schedule.create(
-                scheduleId, clubId, "제목", "내용", "장소",
+                scheduleId, clubId, "user-001", "제목", "내용", "장소",
                 LocalDateTime.now().plusDays(7),
                 scheduleType, new TrainingDetailData(), List.of("user-001"),
-                5, 20, 3, LocalDateTime.now()
+                5, 3, LocalDateTime.now()
         );
 
         final List<DomainEvent> capturedEvents = new ArrayList<>();
@@ -426,10 +423,10 @@ class ScheduleTest {
     void shouldThrowExceptionWhenCancellingAlreadyCancelledSchedule() {
         // given
         final Schedule schedule = Schedule.create(
-                "schedule-001", "club-001", "제목", "내용", "장소",
+                "schedule-001", "club-001", "user-001", "제목", "내용", "장소",
                 LocalDateTime.now().plusDays(7),
                 ScheduleType.TRAINING, new TrainingDetailData(), List.of("user-001"),
-                5, 20, 3, LocalDateTime.now()
+                5, 3, LocalDateTime.now()
         );
 
         schedule.cancel();
@@ -445,10 +442,10 @@ class ScheduleTest {
     void shouldCreateNoResponseAttendanceWhenAddingMember() {
         // given
         final Schedule schedule = Schedule.create(
-                "schedule-001", "club-001", "제목", "내용", "장소",
+                "schedule-001", "club-001", "user-001", "제목", "내용", "장소",
                 LocalDateTime.now().plusDays(7),
                 ScheduleType.TRAINING, new TrainingDetailData(), List.of("user-001"),
-                5, 20, 3, LocalDateTime.now()
+                5, 3, LocalDateTime.now()
         );
 
         assertThat(schedule.getAttendances()).hasSize(1);
@@ -472,11 +469,11 @@ class ScheduleTest {
     void shouldCountAttendingMembersCorrectly() {
         // given
         final Schedule schedule = Schedule.create(
-                "schedule-001", "club-001", "제목", "내용", "장소",
+                "schedule-001", "club-001", "user-001", "제목", "내용", "장소",
                 LocalDateTime.now().plusDays(7),
                 ScheduleType.TRAINING, new TrainingDetailData(),
                 List.of("user-001", "user-002", "user-003"),
-                5, 20, 3, LocalDateTime.now()
+                5, 3, LocalDateTime.now()
         );
 
         schedule.respond("user-001", AttendanceStatus.ATTENDING, null);
@@ -492,11 +489,11 @@ class ScheduleTest {
     void shouldCountNotAttendingMembersCorrectly() {
         // given
         final Schedule schedule = Schedule.create(
-                "schedule-001", "club-001", "제목", "내용", "장소",
+                "schedule-001", "club-001", "user-001", "제목", "내용", "장소",
                 LocalDateTime.now().plusDays(7),
                 ScheduleType.TRAINING, new TrainingDetailData(),
                 List.of("user-001", "user-002", "user-003", "user-004"),
-                5, 20, 3, LocalDateTime.now()
+                5, 3, LocalDateTime.now()
         );
 
         schedule.respond("user-001", AttendanceStatus.ATTENDING, null);
@@ -512,11 +509,11 @@ class ScheduleTest {
     void shouldCountNoResponseMembersCorrectly() {
         // given
         final Schedule schedule = Schedule.create(
-                "schedule-001", "club-001", "제목", "내용", "장소",
+                "schedule-001", "club-001", "user-001", "제목", "내용", "장소",
                 LocalDateTime.now().plusDays(7),
                 ScheduleType.TRAINING, new TrainingDetailData(),
                 List.of("user-001", "user-002", "user-003", "user-004", "user-005"),
-                5, 20, 3, LocalDateTime.now()
+                5, 3, LocalDateTime.now()
         );
 
         schedule.respond("user-001", AttendanceStatus.ATTENDING, null);
@@ -527,62 +524,34 @@ class ScheduleTest {
         assertThat(schedule.getNoResponseCount()).isEqualTo(3);
     }
 
-    @DisplayName("최소 참가자가 최대 참가자보다 크면 예외가 발생해야 한다")
-    @Test
-    void shouldThrowExceptionWhenMinParticipantsGreaterThanMaxParticipants() {
-        // when & then
-        assertThatThrownBy(() -> Schedule.create(
-                "schedule-001", "club-001", "제목", "내용", "장소",
-                LocalDateTime.now().plusDays(7),
-                ScheduleType.TRAINING, new TrainingDetailData(), List.of("user-001"),
-                20, 5, 3, LocalDateTime.now()
-        ))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("minParticipants");
-    }
 
     @DisplayName("마감일이 음수이면 예외가 발생해야 한다")
     @Test
     void shouldThrowExceptionWhenDeadlineDaysIsNegative() {
         // when & then
         assertThatThrownBy(() -> Schedule.create(
-                "schedule-001", "club-001", "제목", "내용", "장소",
+                "schedule-001", "club-001", "user-001", "제목", "내용", "장소",
                 LocalDateTime.now().plusDays(7),
                 ScheduleType.TRAINING, new TrainingDetailData(), List.of("user-001"),
-                5, 20, -1, LocalDateTime.now()
+                5, -1, LocalDateTime.now()
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("deadlineDays");
     }
 
-    @DisplayName("최대 참가자가 음수이면 예외가 발생해야 한다")
+    @DisplayName("최소 참가자가 0이면 제한 없음으로 허용되어야 한다")
     @Test
-    void shouldThrowExceptionWhenMaxParticipantsIsNegative() {
-        // when & then
-        assertThatThrownBy(() -> Schedule.create(
-                "schedule-001", "club-001", "제목", "내용", "장소",
-                LocalDateTime.now().plusDays(7),
-                ScheduleType.TRAINING, new TrainingDetailData(), List.of("user-001"),
-                0, -1, 3, LocalDateTime.now()
-        ))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("maxParticipants");
-    }
-
-    @DisplayName("최소 및 최대 참가자가 0이면 제한 없음으로 허용되어야 한다")
-    @Test
-    void shouldAllowZeroMinAndMaxParticipants() {
+    void shouldAllowZeroMinParticipants() {
         // when (0 means no restriction)
         final Schedule schedule = Schedule.create(
-                "schedule-001", "club-001", "제목", "내용", "장소",
+                "schedule-001", "club-001", "user-001", "제목", "내용", "장소",
                 LocalDateTime.now().plusDays(7),
                 ScheduleType.TRAINING, new TrainingDetailData(), List.of("user-001"),
-                0, 0, 3, LocalDateTime.now()
+                0, 3, LocalDateTime.now()
         );
 
         // then
         assertThat(schedule.getMinParticipants()).isEqualTo(0);
-        assertThat(schedule.getMaxParticipants()).isEqualTo(0);
     }
 
     @DisplayName("최소 참가자가 음수이면 예외가 발생해야 한다")
@@ -590,10 +559,10 @@ class ScheduleTest {
     void shouldThrowExceptionWhenMinParticipantsIsNegative() {
         // when & then
         assertThatThrownBy(() -> Schedule.create(
-                "schedule-001", "club-001", "제목", "내용", "장소",
+                "schedule-001", "club-001", "user-001", "제목", "내용", "장소",
                 LocalDateTime.now().plusDays(7),
                 ScheduleType.TRAINING, new TrainingDetailData(), List.of("user-001"),
-                -1, 20, 3, LocalDateTime.now()
+                -1, 3, LocalDateTime.now()
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("minParticipants");
@@ -612,10 +581,10 @@ class ScheduleTest {
         final String adminRole = "MANAGER";
 
         final Schedule schedule = Schedule.create(
-                scheduleId, clubId, "훈련", "내용", "장소",
+                scheduleId, clubId, "user-001", "훈련", "내용", "장소",
                 LocalDateTime.now().plusDays(7),
                 ScheduleType.TRAINING, new TrainingDetailData(), List.of(targetUserId),
-                5, 20, 3, LocalDateTime.now()
+                5, 3, LocalDateTime.now()
         );
 
         // CreatedScheduleEvent 소비
@@ -646,10 +615,10 @@ class ScheduleTest {
     void shouldThrowExceptionWhenAdminRespondsForUninvitedUser() {
         // given
         final Schedule schedule = Schedule.create(
-                "schedule-001", "club-001", "훈련", "내용", "장소",
+                "schedule-001", "club-001", "user-001", "훈련", "내용", "장소",
                 LocalDateTime.now().plusDays(7),
                 ScheduleType.TRAINING, new TrainingDetailData(), List.of("user-001"),
-                5, 20, 3, LocalDateTime.now()
+                5, 3, LocalDateTime.now()
         );
 
         // when & then
@@ -665,10 +634,10 @@ class ScheduleTest {
     void shouldThrowExceptionWhenAdminRespondsOnCancelledSchedule() {
         // given
         final Schedule schedule = Schedule.create(
-                "schedule-001", "club-001", "훈련", "내용", "장소",
+                "schedule-001", "club-001", "user-001", "훈련", "내용", "장소",
                 LocalDateTime.now().plusDays(7),
                 ScheduleType.TRAINING, new TrainingDetailData(), List.of("user-001"),
-                5, 20, 3, LocalDateTime.now()
+                5, 3, LocalDateTime.now()
         );
         schedule.cancel();
 
@@ -688,10 +657,10 @@ class ScheduleTest {
         // given
         final LocalDateTime now = LocalDateTime.of(2025, 6, 1, 10, 0);
         final Schedule schedule = Schedule.create(
-                "schedule-001", "club-001", "제목", "내용", "장소",
+                "schedule-001", "club-001", "user-001", "제목", "내용", "장소",
                 LocalDateTime.of(2025, 7, 1, 10, 0),
                 ScheduleType.TRAINING, new TrainingDetailData(), List.of("user-001"),
-                5, 20, 3, LocalDateTime.of(2025, 5, 1, 10, 0)
+                5, 3, LocalDateTime.of(2025, 5, 1, 10, 0)
         );
 
         // when
@@ -710,10 +679,10 @@ class ScheduleTest {
         final LocalDateTime now = LocalDateTime.of(2025, 6, 1, 10, 0);
         final String userId = "user-001";
         final Schedule schedule = Schedule.create(
-                "schedule-001", "club-001", "훈련", "내용", "장소",
+                "schedule-001", "club-001", "user-001", "훈련", "내용", "장소",
                 LocalDateTime.of(2025, 7, 1, 10, 0),
                 ScheduleType.TRAINING, new TrainingDetailData(), List.of(userId),
-                5, 20, 3, LocalDateTime.of(2025, 5, 1, 10, 0)
+                5, 3, LocalDateTime.of(2025, 5, 1, 10, 0)
         );
 
         // CreatedScheduleEvent 소비
@@ -737,16 +706,16 @@ class ScheduleTest {
         // given
         final LocalDateTime now = LocalDateTime.of(2025, 6, 1, 10, 0);
         final Schedule schedule = Schedule.create(
-                "schedule-001", "club-001", "원래 제목", "원래 내용", "원래 장소",
+                "schedule-001", "club-001", "user-001", "원래 제목", "원래 내용", "원래 장소",
                 LocalDateTime.of(2025, 7, 1, 10, 0),
                 ScheduleType.TRAINING, new TrainingDetailData(), List.of("user-001"),
-                5, 20, 3, LocalDateTime.of(2025, 5, 1, 10, 0)
+                5, 3, LocalDateTime.of(2025, 5, 1, 10, 0)
         );
 
         final LocalDateTime newTime = LocalDateTime.of(2025, 8, 1, 10, 0);
 
         // when
-        schedule.update("새 제목", "새 내용", "새 장소", newTime, new TrainingDetailData(), 10, 25, 5, now);
+        schedule.update("새 제목", "새 내용", "새 장소", newTime, new TrainingDetailData(), 10, 5, now);
 
         // then
         assertThat(schedule.getUpdatedAt()).isEqualTo(now);
@@ -760,9 +729,9 @@ class ScheduleTest {
         // given - 일정: 2월 5일, deadlineDays: 1 → 마감일: 2월 4일
         final LocalDateTime scheduleTime = LocalDateTime.of(2025, 2, 5, 10, 0);
         final Schedule schedule = Schedule.create(
-                "schedule-001", "club-001", "훈련", "내용", "장소",
+                "schedule-001", "club-001", "user-001", "훈련", "내용", "장소",
                 scheduleTime, ScheduleType.TRAINING, new TrainingDetailData(),
-                List.of("user-001"), 5, 20, 1,
+                List.of("user-001"), 5, 1,
                 LocalDateTime.of(2025, 1, 1, 10, 0)
         );
 
@@ -779,9 +748,9 @@ class ScheduleTest {
         // given - 일정: 2월 5일, deadlineDays: 1 → 마감일: 2월 4일
         final LocalDateTime scheduleTime = LocalDateTime.of(2025, 2, 5, 10, 0);
         final Schedule schedule = Schedule.create(
-                "schedule-001", "club-001", "훈련", "내용", "장소",
+                "schedule-001", "club-001", "user-001", "훈련", "내용", "장소",
                 scheduleTime, ScheduleType.TRAINING, new TrainingDetailData(),
-                List.of("user-001"), 5, 20, 1,
+                List.of("user-001"), 5, 1,
                 LocalDateTime.of(2025, 1, 1, 10, 0)
         );
 
@@ -798,9 +767,9 @@ class ScheduleTest {
         // given - 일정: 2월 5일 10시, deadlineDays: 0 → 마감일: 2월 5일 10시
         final LocalDateTime scheduleTime = LocalDateTime.of(2025, 2, 5, 10, 0);
         final Schedule schedule = Schedule.create(
-                "schedule-001", "club-001", "훈련", "내용", "장소",
+                "schedule-001", "club-001", "user-001", "훈련", "내용", "장소",
                 scheduleTime, ScheduleType.TRAINING, new TrainingDetailData(),
-                List.of("user-001"), 5, 20, 0,
+                List.of("user-001"), 5, 0,
                 LocalDateTime.of(2025, 1, 1, 10, 0)
         );
 
@@ -816,10 +785,10 @@ class ScheduleTest {
         // given
         final String userId = "user-001";
         final Schedule schedule = Schedule.create(
-                "schedule-001", "club-001", "훈련", "내용", "장소",
+                "schedule-001", "club-001", "user-001", "훈련", "내용", "장소",
                 LocalDateTime.now().plusDays(7),
                 ScheduleType.TRAINING, new TrainingDetailData(), List.of(userId),
-                5, 20, 3, LocalDateTime.now()
+                5, 3, LocalDateTime.now()
         );
 
         // 먼저 ATTENDING으로 변경

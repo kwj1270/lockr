@@ -38,4 +38,8 @@ public record ChatSseEvent(
         final Chat unpinnedChat = new Chat(chatId, chatRoomId, null, null, null, null, null, null);
         return new ChatSseEvent(chatRoomId, clubId, ChatSseEventType.MESSAGE_UNPINNED, unpinnedChat, null);
     }
+
+    public static ChatSseEvent messageUpdated(final String chatRoomId, final String clubId, final Chat chat) {
+        return new ChatSseEvent(chatRoomId, clubId, ChatSseEventType.MESSAGE_UPDATED, chat, null);
+    }
 }

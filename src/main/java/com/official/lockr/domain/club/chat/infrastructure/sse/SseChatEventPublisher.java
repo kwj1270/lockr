@@ -116,14 +116,10 @@ public class SseChatEventPublisher {
             log.debug("SSE club 연결 완료(onCompletion): clubId={}", clubId);
         });
         emitter.onTimeout(() -> {
-            removeClubEmitter(clubId, emitter);
-            clubConnectionCount.decrementAndGet();
             clubConnectionClosedTimeout.increment();
             log.debug("SSE club 연결 타임아웃(onTimeout): clubId={}", clubId);
         });
         emitter.onError(e -> {
-            removeClubEmitter(clubId, emitter);
-            clubConnectionCount.decrementAndGet();
             clubConnectionClosedError.increment();
             log.warn("SSE club 연결 에러(onError): clubId={}, error={}", clubId, e.getMessage());
         });
@@ -157,14 +153,10 @@ public class SseChatEventPublisher {
             log.debug("SSE chatRoom 연결 완료(onCompletion): chatRoomId={}", chatRoomId);
         });
         emitter.onTimeout(() -> {
-            removeChatRoomEmitter(chatRoomId, emitter);
-            chatRoomConnectionCount.decrementAndGet();
             chatRoomConnectionClosedTimeout.increment();
             log.debug("SSE chatRoom 연결 타임아웃(onTimeout): chatRoomId={}", chatRoomId);
         });
         emitter.onError(e -> {
-            removeChatRoomEmitter(chatRoomId, emitter);
-            chatRoomConnectionCount.decrementAndGet();
             chatRoomConnectionClosedError.increment();
             log.warn("SSE chatRoom 연결 에러(onError): chatRoomId={}, error={}", chatRoomId, e.getMessage());
         });
@@ -222,23 +214,17 @@ public class SseChatEventPublisher {
     }
 
     private void removeClubEmitter(final String clubId, final SseEmitter emitter) {
-        final CopyOnWriteArrayList<SseEmitter> emitters = clubEmitters.get(clubId);
-        if (emitters != null) {
+        clubEmitters.computeIfPresent(clubId, (key, emitters) -> {
             emitters.remove(emitter);
-            if (emitters.isEmpty()) {
-                clubEmitters.remove(clubId);
-            }
-        }
+            return emitters.isEmpty() ? null : emitters;
+        });
     }
 
     private void removeChatRoomEmitter(final String chatRoomId, final SseEmitter emitter) {
-        final CopyOnWriteArrayList<SseEmitter> emitters = chatRoomEmitters.get(chatRoomId);
-        if (emitters != null) {
+        chatRoomEmitters.computeIfPresent(chatRoomId, (key, emitters) -> {
             emitters.remove(emitter);
-            if (emitters.isEmpty()) {
-                chatRoomEmitters.remove(chatRoomId);
-            }
-        }
+            return emitters.isEmpty() ? null : emitters;
+        });
     }
 
     @Scheduled(fixedRate = 30000)
@@ -250,6 +236,10 @@ public class SseChatEventPublisher {
         chatRoomEmitters.forEach((chatRoomId, emitters) ->
                 emitters.forEach(this::sendHeartbeatToEmitter)
         );
+
+        // 빈 리스트 키 정리 (stale entry 방지)
+        clubEmitters.entrySet().removeIf(entry -> entry.getValue().isEmpty());
+        chatRoomEmitters.entrySet().removeIf(entry -> entry.getValue().isEmpty());
     }
 
     private void sendHeartbeatToEmitter(final SseEmitter emitter) {

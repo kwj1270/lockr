@@ -56,9 +56,16 @@ public class ApplicationService implements SubmitApplicationUseCase, CancelAppli
         if (isNull(recruitment)) {
             throw new IllegalArgumentException();
         }
+        if (!recruitment.isRecruiting()) {
+            throw new IllegalArgumentException("모집이 중단된 상태입니다");
+        }
         final Application existedApplication = applicationRepository.findByRecruitmentAndUser(command.recruitmentId(), command.userId());
         if (nonNull(existedApplication) && existedApplication.isActive()) {
-            return existedApplication;
+            if (existedApplication.isRejected()) {
+                // REJECTED 상태는 재지원 가능하도록 새 지원서 생성
+            } else {
+                return existedApplication;
+            }
         }
         final SportType sportType = SportType.valueOf(command.sportType());
         final SportSpecificData sportSpecificData = factory(sportType, command.sportSpecificData());
@@ -121,6 +128,9 @@ public class ApplicationService implements SubmitApplicationUseCase, CancelAppli
         final Application application = applicationRepository.find(command.tryoutId());
         if (isNull(application) || !application.isSameClub(command.clubId()) || !application.isActive()) {
             throw new IllegalArgumentException("Tryout not found: " + command.tryoutId());
+        }
+        if (application.isApproved()) {
+            throw new IllegalArgumentException("이미 승인된 지원서는 거절할 수 없습니다");
         }
         application.reject(command.processedByUserId(), command.rejectReason());
         return applicationRepository.save(application);

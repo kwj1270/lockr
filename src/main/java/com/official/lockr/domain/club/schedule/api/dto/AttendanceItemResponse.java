@@ -7,6 +7,7 @@ public record AttendanceItemResponse(
     String userId,
     String userName,
     AttendanceStatus status,
-    String reason
+    String reason,
+    String profileImage
 ) {
 }

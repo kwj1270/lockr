@@ -2,15 +2,19 @@ package com.official.lockr.domain.notification.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.official.lockr.domain.club.club.domain.Club;
-import com.official.lockr.domain.club.club.domain.ClubRepository;
-import com.official.lockr.domain.club.club.domain.Member;
 import com.official.lockr.domain.notification.application.command.CreateScheduleLinkNotificationCommand;
+import com.official.lockr.domain.notification.application.command.DeleteAllNotificationsCommand;
+import com.official.lockr.domain.notification.application.command.DeleteNotificationCommand;
 import com.official.lockr.domain.notification.application.command.MarkAsReadNotificationCommand;
+import com.official.lockr.domain.notification.application.command.ReadAllNotificationsCommand;
 import com.official.lockr.domain.notification.application.usecase.CreateScheduleLinkNotificationUseCase;
+import com.official.lockr.domain.notification.application.usecase.DeleteAllNotificationsUseCase;
+import com.official.lockr.domain.notification.application.usecase.DeleteNotificationUseCase;
 import com.official.lockr.domain.notification.application.usecase.MarkAsReadNotificationUseCase;
+import com.official.lockr.domain.notification.application.usecase.ReadAllNotificationsUseCase;
 import com.official.lockr.domain.notification.domain.Notification;
 import com.official.lockr.domain.notification.domain.NotificationRepository;
+import com.official.lockr.domain.notification.domain.NotificationTargetQuery;
 import com.official.lockr.domain.notification.domain.NotificationType;
 import org.springframework.stereotype.Service;
 
@@ -19,34 +23,29 @@ import java.util.List;
 import static java.util.Objects.isNull;
 
 @Service
-public class NotificationService implements CreateScheduleLinkNotificationUseCase, MarkAsReadNotificationUseCase {
+public class NotificationService implements CreateScheduleLinkNotificationUseCase, MarkAsReadNotificationUseCase,
+        DeleteNotificationUseCase, DeleteAllNotificationsUseCase, ReadAllNotificationsUseCase {
 
     private final NotificationRepository notificationRepository;
-    private final ClubRepository clubRepository;
+    private final NotificationTargetQuery notificationTargetQuery;
     private final ObjectMapper objectMapper;
 
     public NotificationService(
             final NotificationRepository notificationRepository,
-            final ClubRepository clubRepository,
+            final NotificationTargetQuery notificationTargetQuery,
             final ObjectMapper objectMapper
     ) {
         this.notificationRepository = notificationRepository;
-        this.clubRepository = clubRepository;
+        this.notificationTargetQuery = notificationTargetQuery;
         this.objectMapper = objectMapper;
     }
 
     @Override
     public void create(final CreateScheduleLinkNotificationCommand command) {
-        final Club targetClub = clubRepository.findById(command.targetClubId());
-        if (isNull(targetClub)) {
+        final List<String> staffUserIds = notificationTargetQuery.findStaffUserIdsByClubId(command.targetClubId());
+        if (staffUserIds.isEmpty()) {
             return;
         }
-
-        final List<String> staffUserIds = targetClub.getMembers()
-                .stream()
-                .filter(Member::isStaff)
-                .map(Member::getUserId)
-                .toList();
 
         final ObjectNode data = objectMapper.createObjectNode();
         data.put("sourceScheduleId", command.sourceScheduleId());
@@ -78,6 +77,26 @@ public class NotificationService implements CreateScheduleLinkNotificationUseCas
         }
         notification.markAsRead();
         return notificationRepository.save(notification);
+    }
+
+    @Override
+    public void delete(final DeleteNotificationCommand command) {
+        final Notification notification = notificationRepository.findById(command.notificationId());
+        if (isNull(notification)) {
+            throw new IllegalArgumentException("Notification not found: " + command.notificationId());
+        }
+        notification.softDelete();
+        notificationRepository.save(notification);
+    }
+
+    @Override
+    public void deleteAll(final DeleteAllNotificationsCommand command) {
+        notificationRepository.softDeleteAllByUserId(command.userId());
+    }
+
+    @Override
+    public void readAll(final ReadAllNotificationsCommand command) {
+        notificationRepository.readAllByUserId(command.userId());
     }
 
     public void createScheduleLinkNotification(

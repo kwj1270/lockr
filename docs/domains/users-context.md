@@ -25,17 +25,18 @@ UserAdditionalInfo
 ├── name: String
 ├── birthDate: BirthDate
 ├── phone: String
-└── gender: Gender
+├── gender: Gender
+└── profileImage: String (프로필 이미지 URL)
 ```
 
 ## 주요 기능
 
 ### 회원 정보 수정
-- `updateAdditionalInfo(name, birthDate, phone, gender)`
-- 이름, 생년월일, 전화번호, 성별 수정
+- `updateAdditionalInfo(name, birthDate, phone, gender, profileImage)`
+- 이름, 생년월일, 전화번호, 성별, 프로필 이미지 수정
 
 ### 회원 탈퇴
-- `withdraw()`: deletedAt 설정 (soft delete)
+- `withdraw()`: deletedAt 설정 (soft delete), `WithdrawnUserEvent` 발행
 - `isWithdrawn()`: 탈퇴 여부 확인
 - **제약조건**: 모든 클럽에서 탈퇴 후에만 회원 탈퇴 가능
 
@@ -45,7 +46,7 @@ UserAdditionalInfo
 3. 탈퇴한 회원은 로그인 불가
 
 ## 도메인 이벤트
-- (현재 정의된 이벤트 없음)
+- `WithdrawnUserEvent(userId, withdrawnAt)`: 회원 탈퇴 시 발행
 
 ## 의존 관계
 - `Auth.SignUp` ← `Users`: SignUp 시 Users 생성

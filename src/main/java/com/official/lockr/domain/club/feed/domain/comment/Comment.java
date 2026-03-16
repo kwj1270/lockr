@@ -14,6 +14,7 @@ public class Comment {
     private final String id;
     private final String feedId;
     private final String userId;
+    private final String parentCommentId;
     private String content;
     private CommentImages images;
     private CommentVideos videos;
@@ -25,9 +26,17 @@ public class Comment {
     public Comment(final String id, final String feedId, final String userId, final String content,
                    final CommentImages images, final CommentVideos videos, final CommentHearts hearts,
                    final LocalDateTime createdAt, final LocalDateTime updatedAt, final LocalDateTime deletedAt) {
+        this(id, feedId, userId, null, content, images, videos, hearts, createdAt, updatedAt, deletedAt);
+    }
+
+    public Comment(final String id, final String feedId, final String userId, final String parentCommentId,
+                   final String content, final CommentImages images, final CommentVideos videos,
+                   final CommentHearts hearts, final LocalDateTime createdAt, final LocalDateTime updatedAt,
+                   final LocalDateTime deletedAt) {
         this.id = id;
         this.feedId = feedId;
         this.userId = userId;
+        this.parentCommentId = parentCommentId;
         this.content = content;
         this.images = images;
         this.videos = videos;
@@ -39,7 +48,12 @@ public class Comment {
 
     public static Comment create(final String id, final String feedId, final String userId, final String content,
                                  final CommentImages images, final CommentVideos videos) {
-        return new Comment(id, feedId, userId, content, images, videos, new CommentHearts(), LocalDateTime.now(), LocalDateTime.now(), null);
+        return new Comment(id, feedId, userId, null, content, images, videos, new CommentHearts(), LocalDateTime.now(), LocalDateTime.now(), null);
+    }
+
+    public static Comment create(final String id, final String feedId, final String userId, final String parentCommentId,
+                                 final String content, final CommentImages images, final CommentVideos videos) {
+        return new Comment(id, feedId, userId, parentCommentId, content, images, videos, new CommentHearts(), LocalDateTime.now(), LocalDateTime.now(), null);
     }
 
     public void update(final String userId, final String content, final CommentImages newImages, final CommentVideos newVideos) {
@@ -124,6 +138,10 @@ public class Comment {
 
     public String getFeedId() {
         return feedId;
+    }
+
+    public String getParentCommentId() {
+        return parentCommentId;
     }
 
     public String getUserId() {

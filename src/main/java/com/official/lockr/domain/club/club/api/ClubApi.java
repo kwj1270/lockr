@@ -1,11 +1,9 @@
 package com.official.lockr.domain.club.club.api;
 
 import com.official.lockr.domain.auth.signin.domain.SignInSession;
-import com.official.lockr.domain.club.club.api.dto.AssignCoachRequest;
-import com.official.lockr.domain.club.club.api.dto.AssignManagerRequest;
-import com.official.lockr.domain.club.club.api.dto.FoundClubRequest;
-import com.official.lockr.domain.club.club.api.dto.UpdateMemberProfileImageRequest;
+import com.official.lockr.domain.club.club.api.dto.*;
 import com.official.lockr.domain.club.club.application.command.AddMemberCommand;
+import com.official.lockr.domain.club.club.application.command.LeaveClubCommand;
 import com.official.lockr.domain.club.club.application.usecase.*;
 import com.official.lockr.domain.club.club.domain.Club;
 import com.official.lockr.domain.club.club.domain.MemberRole;
@@ -23,18 +21,36 @@ public class ClubApi {
     private final AssignMangerUseCase assignMangerUseCase;
     private final AssignCoachUseCase assignCoachUseCase;
     private final UpdateMemberProfileImageUseCase updateMemberProfileImageUseCase;
+    private final DelegatePresidentUseCase delegatePresidentUseCase;
+    private final ChangeMemberRoleUseCase changeMemberRoleUseCase;
+    private final ChangeVisibilityUseCase changeVisibilityUseCase;
+    private final ChangeJoinMethodUseCase changeJoinMethodUseCase;
+    private final LeaveClubUseCase leaveClubUseCase;
+    private final UpdateClubUseCase updateClubUseCase;
 
     public ClubApi(final FoundClubUseCase foundClubUseCase,
                    final RegisterClubMemberUseCase registerClubMemberUseCase,
                    final AssignMangerUseCase assignMangerUseCase,
                    final AssignCoachUseCase assignCoachUseCase,
-                   final UpdateMemberProfileImageUseCase updateMemberProfileImageUseCase
+                   final UpdateMemberProfileImageUseCase updateMemberProfileImageUseCase,
+                   final DelegatePresidentUseCase delegatePresidentUseCase,
+                   final ChangeMemberRoleUseCase changeMemberRoleUseCase,
+                   final ChangeVisibilityUseCase changeVisibilityUseCase,
+                   final ChangeJoinMethodUseCase changeJoinMethodUseCase,
+                   final LeaveClubUseCase leaveClubUseCase,
+                   final UpdateClubUseCase updateClubUseCase
     ) {
         this.foundClubUseCase = foundClubUseCase;
         this.registerClubMemberUseCase = registerClubMemberUseCase;
         this.assignMangerUseCase = assignMangerUseCase;
         this.assignCoachUseCase = assignCoachUseCase;
         this.updateMemberProfileImageUseCase = updateMemberProfileImageUseCase;
+        this.delegatePresidentUseCase = delegatePresidentUseCase;
+        this.changeMemberRoleUseCase = changeMemberRoleUseCase;
+        this.changeVisibilityUseCase = changeVisibilityUseCase;
+        this.changeJoinMethodUseCase = changeJoinMethodUseCase;
+        this.leaveClubUseCase = leaveClubUseCase;
+        this.updateClubUseCase = updateClubUseCase;
     }
 
     @PostMapping
@@ -72,5 +88,60 @@ public class ClubApi {
             @RequestBody final UpdateMemberProfileImageRequest request
     ) {
         return ResponseEntity.ok(updateMemberProfileImageUseCase.updateMemberProfileImage(request.toCommand(clubId, signInSession.userId())));
+    }
+
+    @PostMapping("/{clubId}/delegate-president")
+    public ResponseEntity<Club> delegatePresident(
+            @RequestAttribute("signInSession") final SignInSession signInSession,
+            @PathVariable final String clubId,
+            @RequestBody final DelegatePresidentRequest request
+    ) {
+        return ResponseEntity.ok(delegatePresidentUseCase.delegatePresident(request.toCommand(clubId, signInSession.userId())));
+    }
+
+    @PostMapping("/{clubId}/members/{memberId}/role")
+    public ResponseEntity<Club> changeMemberRole(
+            @RequestAttribute("signInSession") final SignInSession signInSession,
+            @PathVariable final String clubId,
+            @PathVariable final String memberId,
+            @RequestBody final ChangeMemberRoleRequest request
+    ) {
+        return ResponseEntity.ok(changeMemberRoleUseCase.changeMemberRole(request.toCommand(clubId, signInSession.userId(), memberId)));
+    }
+
+    @PostMapping("/{clubId}/visibility")
+    public ResponseEntity<Club> changeVisibility(
+            @RequestAttribute("signInSession") final SignInSession signInSession,
+            @PathVariable final String clubId,
+            @RequestBody final ChangeVisibilityRequest request
+    ) {
+        return ResponseEntity.ok(changeVisibilityUseCase.changeVisibility(request.toCommand(clubId, signInSession.userId())));
+    }
+
+    @PostMapping("/{clubId}/join-method")
+    public ResponseEntity<Club> changeJoinMethod(
+            @RequestAttribute("signInSession") final SignInSession signInSession,
+            @PathVariable final String clubId,
+            @RequestBody final ChangeJoinMethodRequest request
+    ) {
+        return ResponseEntity.ok(changeJoinMethodUseCase.changeJoinMethod(request.toCommand(clubId, signInSession.userId())));
+    }
+
+    @PostMapping("/{clubId}")
+    public ResponseEntity<Club> update(
+            @RequestAttribute("signInSession") final SignInSession signInSession,
+            @PathVariable final String clubId,
+            @RequestBody final UpdateClubRequest request
+    ) {
+        return ResponseEntity.ok(updateClubUseCase.update(request.toCommand(clubId, signInSession.userId())));
+    }
+
+    @PostMapping("/{clubId}/leave")
+    public ResponseEntity<Void> leave(
+            @RequestAttribute("signInSession") final SignInSession signInSession,
+            @PathVariable final String clubId
+    ) {
+        leaveClubUseCase.leave(new LeaveClubCommand(clubId, signInSession.userId()));
+        return ResponseEntity.noContent().build();
     }
 }

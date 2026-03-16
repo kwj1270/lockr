@@ -94,6 +94,17 @@ class JOOQLineupRepository implements LineupRepository {
         return lineups;
     }
 
+    @Transactional
+    @Override
+    public void delete(final Lineup lineup) {
+        lineupSlotsDao.ctx()
+                .deleteFrom(LINEUP_SLOTS)
+                .where(LINEUP_SLOTS.LINEUP_ID.eq(lineup.getId()))
+                .execute();
+        upsertLineup(lineup);
+        lineup.publish(domainEventPublisher);
+    }
+
     private void upsertLineup(final Lineup lineup) {
         lineupsDao.ctx()
                 .insertInto(LINEUPS)

@@ -15,7 +15,6 @@ public record CreateScheduleCommand(
         ScheduleType scheduleType,
         ScheduleDetailData detail,
         Integer minParticipants,
-        Integer maxParticipants,
         int deadlineDays
 ) {
     public CreateScheduleCommand {

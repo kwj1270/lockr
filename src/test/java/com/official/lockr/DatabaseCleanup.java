@@ -52,6 +52,7 @@ public class DatabaseCleanup {
                 .from("INFORMATION_SCHEMA.TABLES")
                 .where(DSL.field("TABLE_SCHEMA").eq(databaseName))
                 .and(DSL.field("TABLE_TYPE").eq("BASE TABLE")) // 뷰 제외
+                .and(DSL.field("TABLE_NAME").notEqual("flyway_schema_history"))
                 .fetch();
 
         return result.getValues(0, String.class);

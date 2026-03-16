@@ -38,12 +38,11 @@ class ScheduleRepositoryTest {
         TrainingDetailData detail = new TrainingDetailData();
         List<String> userIds = List.of("user-001", "user-002", "user-003");
         int minParticipants = 5;
-        int maxParticipants = 20;
         int deadlineDays = 3;
 
         Schedule schedule = Schedule.create(
-                scheduleId, clubId, title, content, location, scheduleTime,
-                scheduleType, detail, userIds, minParticipants, maxParticipants, deadlineDays,
+                scheduleId, clubId, "user-001", title, content, location, scheduleTime,
+                scheduleType, detail, userIds, minParticipants, deadlineDays,
                 LocalDateTime.now()
         );
 
@@ -62,7 +61,6 @@ class ScheduleRepositoryTest {
         assertThat(found.getScheduleType()).isEqualTo(scheduleType);
         assertThat(found.getStatus()).isEqualTo(ScheduleStatus.SCHEDULED);
         assertThat(found.getMinParticipants()).isEqualTo(minParticipants);
-        assertThat(found.getMaxParticipants()).isEqualTo(maxParticipants);
         assertThat(found.getDeadlineDays()).isEqualTo(deadlineDays);
         assertThat(found.getAttendances()).hasSize(3);
     }
@@ -73,11 +71,11 @@ class ScheduleRepositoryTest {
         // given
         String scheduleId = "schedule-test-002";
         Schedule schedule = Schedule.create(
-                scheduleId, "club-001", "훈련", "내용", "장소",
+                scheduleId, "club-001", "user-001", "훈련", "내용", "장소",
                 LocalDateTime.now().plusDays(7),
                 ScheduleType.TRAINING, new TrainingDetailData(),
                 List.of("user-001", "user-002"),
-                5, 20, 3, LocalDateTime.now()
+                5, 3, LocalDateTime.now()
         );
         scheduleRepository.save(schedule);
 

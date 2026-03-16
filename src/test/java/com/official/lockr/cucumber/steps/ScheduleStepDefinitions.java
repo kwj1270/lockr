@@ -70,6 +70,7 @@ public class ScheduleStepDefinitions {
         schedule = Schedule.create(
                 "schedule-001",
                 clubId,
+                userId,
                 title,
                 "일정 내용입니다",
                 "훈련장",
@@ -77,7 +78,7 @@ public class ScheduleStepDefinitions {
                 ScheduleType.TRAINING,
                 new TrainingDetailData(),
                 userIds,
-                5, 20, 3, LocalDateTime.now()
+                5, 3, LocalDateTime.now()
         );
     }
 
@@ -101,6 +102,7 @@ public class ScheduleStepDefinitions {
             schedule = Schedule.create(
                     "schedule-001",
                     clubId,
+                    "user-001",
                     title,
                     "일정 내용입니다",
                     "훈련장",
@@ -108,7 +110,7 @@ public class ScheduleStepDefinitions {
                     ScheduleType.TRAINING,
                     new TrainingDetailData(),
                     userIds,
-                    5, 20, 3, LocalDateTime.now()
+                    5, 3, LocalDateTime.now()
             );
         }
     }

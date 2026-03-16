@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 public record UpdatedScheduleEvent(
         String scheduleId,
         String clubId,
-        LocalDateTime newScheduleTime
+        LocalDateTime newScheduleTime,
+        String title,
+        String location
 ) implements DomainEvent {
 }

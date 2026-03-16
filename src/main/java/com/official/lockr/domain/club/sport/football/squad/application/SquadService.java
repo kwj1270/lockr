@@ -7,9 +7,11 @@ import com.official.lockr.domain.club.sport.football.squad.application.command.A
 import com.official.lockr.domain.club.sport.football.squad.application.command.CreateSquadCommand;
 import com.official.lockr.domain.club.sport.football.squad.application.command.RegisterMySquadProfileCommand;
 import com.official.lockr.domain.club.sport.football.squad.application.command.UpdateSquadPlayerCommand;
+import com.official.lockr.domain.club.sport.football.squad.application.command.RemoveSquadPlayerCommand;
 import com.official.lockr.domain.club.sport.football.squad.application.usecase.AddSquadPlayerUseCase;
 import com.official.lockr.domain.club.sport.football.squad.application.usecase.CreateSquadUseCase;
 import com.official.lockr.domain.club.sport.football.squad.application.usecase.RegisterMySquadProfileUseCase;
+import com.official.lockr.domain.club.sport.football.squad.application.usecase.RemoveSquadPlayerUseCase;
 import com.official.lockr.domain.club.sport.football.squad.application.usecase.UpdateSquadPlayerUseCase;
 import com.official.lockr.domain.club.sport.football.squad.domain.Squad;
 import com.official.lockr.domain.club.sport.football.squad.domain.SquadPlayer;
@@ -28,7 +30,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 @Service
-public class SquadService implements CreateSquadUseCase, AddSquadPlayerUseCase, UpdateSquadPlayerUseCase, RegisterMySquadProfileUseCase {
+public class SquadService implements CreateSquadUseCase, AddSquadPlayerUseCase, UpdateSquadPlayerUseCase, RegisterMySquadProfileUseCase, RemoveSquadPlayerUseCase {
 
     private final UsersRepository usersRepository;
     private final ApplicationRepository applicationRepository;
@@ -109,6 +111,16 @@ public class SquadService implements CreateSquadUseCase, AddSquadPlayerUseCase, 
                 footballSportSpecificData,
                 backNumber
         );
+    }
+
+    @Override
+    public void removePlayer(final RemoveSquadPlayerCommand command) {
+        final Squad squad = squadRepository.findByClubId(command.clubId());
+        if (squad == null || !squad.hasPlayer(command.userId())) {
+            return;
+        }
+        squad.removePlayer(command.userId());
+        squadRepository.save(squad);
     }
 
     private static int randomNumber() {

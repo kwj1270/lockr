@@ -2,6 +2,7 @@ package com.official.lockr.domain.club.chat.api;
 
 import com.official.lockr.domain.auth.signin.domain.SignInSession;
 import com.official.lockr.domain.club.chat.api.dto.ChatterProfileResponse;
+import com.official.lockr.domain.club.chat.api.dto.UnreadCountResponse;
 import com.official.lockr.domain.club.chat.application.usecase.GetChatRoomsUseCase;
 import com.official.lockr.domain.club.chat.application.usecase.GetMessagesUseCase;
 import com.official.lockr.domain.club.chat.application.usecase.GetPinnedMessagesUseCase;
@@ -17,10 +18,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import org.jooq.impl.DSL;
+
 import java.io.IOException;
 import java.util.List;
 
 import static java.util.Objects.isNull;
+import static org.jooq.generated.tables.ChatsJOOQEntity.CHATS;
 import static org.jooq.generated.tables.ChattersJOOQEntity.CHATTERS;
 import static org.jooq.generated.tables.MembersJOOQEntity.MEMBERS;
 import static org.jooq.generated.tables.UserAdditionalInfoJOOQEntity.USER_ADDITIONAL_INFO;
@@ -162,5 +166,41 @@ public class ChatQueryApi {
                 ));
 
         return ResponseEntity.ok(chatters);
+    }
+
+    @GetMapping("/rooms/{chatRoomId}/unread-count")
+    public ResponseEntity<UnreadCountResponse> getUnreadCount(
+            @RequestAttribute("signInSession") final SignInSession signInSession,
+            @PathVariable final String clubId,
+            @PathVariable final String chatRoomId
+    ) {
+        final String userId = signInSession.userId();
+
+        final String lastReadChatId = chattersDao.ctx()
+                .select(DSL.field("last_read_chat_id", String.class))
+                .from(CHATTERS)
+                .where(CHATTERS.CHAT_ROOM_ID.eq(chatRoomId))
+                .and(CHATTERS.USER_ID.eq(userId))
+                .fetchOneInto(String.class);
+
+        final long count;
+        if (lastReadChatId == null) {
+            count = chattersDao.ctx()
+                    .selectCount()
+                    .from(CHATS)
+                    .where(CHATS.CHAT_ROOM_ID.eq(chatRoomId))
+                    .and(DSL.field("deleted_at").isNull())
+                    .fetchOneInto(Long.class);
+        } else {
+            count = chattersDao.ctx()
+                    .selectCount()
+                    .from(CHATS)
+                    .where(CHATS.CHAT_ROOM_ID.eq(chatRoomId))
+                    .and(CHATS.ID.greaterThan(lastReadChatId))
+                    .and(DSL.field("deleted_at").isNull())
+                    .fetchOneInto(Long.class);
+        }
+
+        return ResponseEntity.ok(new UnreadCountResponse(count));
     }
 }

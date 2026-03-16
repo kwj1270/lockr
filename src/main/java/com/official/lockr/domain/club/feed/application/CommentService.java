@@ -38,7 +38,7 @@ public class CommentService implements AddCommentUseCase, UpdateCommentUseCase {
         final CommentImages images = CommentImages.from(command.imageUrls(), command.userId(), commentId);
         final CommentVideos videos = CommentVideos.from(command.videoUrls(), command.userId(), commentId);
 
-        feed.addComment(commentId, command.userId(), command.content(), images, videos);
+        feed.addComment(commentId, command.userId(), command.parentCommentId(), command.content(), images, videos);
 
         return feedRepository.save(feed);
     }

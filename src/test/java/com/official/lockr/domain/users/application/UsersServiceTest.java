@@ -54,7 +54,7 @@ class UsersServiceTest {
 
         // when & then
         assertThatThrownBy(() -> usersService.withdraw(command))
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("클럽에서 먼저 탈퇴해주세요.");
     }
 

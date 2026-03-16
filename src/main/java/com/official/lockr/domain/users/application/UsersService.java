@@ -40,7 +40,7 @@ public class UsersService implements RegisterUsersUseCase, UpdateUserAdditionalI
             throw new IllegalArgumentException("존재하지 않는 회원입니다.");
         }
         if (clubMembershipQuery.hasActiveClubMembership(command.userId())) {
-            throw new IllegalStateException("클럽에서 먼저 탈퇴해주세요.");
+            throw new IllegalArgumentException("클럽에서 먼저 탈퇴해주세요.");
         }
         users.withdraw();
         usersRepository.save(users);

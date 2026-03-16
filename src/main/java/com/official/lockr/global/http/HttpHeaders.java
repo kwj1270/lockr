@@ -5,13 +5,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class HttpHeaders {
 
-    private final InheritableThreadLocal<HttpHeaderContext> inheritableThreadLocal = new InheritableThreadLocal<>();
+    private final ThreadLocal<HttpHeaderContext> threadLocal = new ThreadLocal<>();
 
     public HttpHeaderContext get() {
-        return inheritableThreadLocal.get();
+        return threadLocal.get();
     }
 
     public void set(final HttpHeaderContext httpHeaderContext) {
-        inheritableThreadLocal.set(httpHeaderContext);
+        threadLocal.set(httpHeaderContext);
+    }
+
+    public void remove() {
+        threadLocal.remove();
     }
 }

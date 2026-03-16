@@ -4,4 +4,6 @@ public interface OidcRepository {
     Oidc save(final Oidc oidc);
 
     Oidc find(final String providerId, final String provider);
+
+    void deleteByUserId(final String userId);
 }

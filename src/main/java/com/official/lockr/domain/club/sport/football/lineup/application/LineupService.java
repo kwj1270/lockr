@@ -7,6 +7,7 @@ import com.official.lockr.domain.club.sport.football.lineup.application.command.
 import com.official.lockr.domain.club.sport.football.lineup.application.usecase.AddLineupUseCase;
 import com.official.lockr.domain.club.sport.football.lineup.application.usecase.AssignSlotUseCase;
 import com.official.lockr.domain.club.sport.football.lineup.application.usecase.ChangeFormationUseCase;
+import com.official.lockr.domain.club.sport.football.lineup.application.usecase.DeleteLineupUseCase;
 import com.official.lockr.domain.club.sport.football.lineup.application.usecase.RemoveSlotUseCase;
 import com.official.lockr.domain.club.sport.football.lineup.domain.Lineup;
 import com.official.lockr.domain.club.sport.football.lineup.domain.LineupRepository;
@@ -17,7 +18,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 @Service
-public class LineupService implements AddLineupUseCase, AssignSlotUseCase, ChangeFormationUseCase, RemoveSlotUseCase {
+public class LineupService implements AddLineupUseCase, AssignSlotUseCase, ChangeFormationUseCase, RemoveSlotUseCase, DeleteLineupUseCase {
 
     private final ClubRepository clubRepository;
     private final LineupRepository lineUpRepository;
@@ -60,6 +61,13 @@ public class LineupService implements AddLineupUseCase, AssignSlotUseCase, Chang
         final Lineup lineup = lineup(command.lineupId(), command.clubId());
         lineup.removeSlot(command.slotType(), command.slotIndex());
         return lineUpRepository.save(lineup);
+    }
+
+    @Override
+    public void delete(final String clubId, final String lineupId) {
+        final Lineup lineup = lineup(lineupId, clubId);
+        lineup.delete();
+        lineUpRepository.delete(lineup);
     }
 
     @NonNull

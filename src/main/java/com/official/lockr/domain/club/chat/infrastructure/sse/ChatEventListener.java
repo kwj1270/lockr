@@ -72,7 +72,7 @@ public class ChatEventListener {
                     event.repliedToId(),
                     event.quotedSenderName(),
                     event.quotedContent(),
-                    java.time.LocalDateTime.now()
+                    event.createdAt()
             );
 
             sseChatEventPublisher.publish(ChatSseEvent.newMessage(chat, chatRoom.getClubId()));

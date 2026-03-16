@@ -1,6 +1,8 @@
 package com.official.lockr.global.http;
 
 import org.apache.logging.log4j.util.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
@@ -11,6 +13,8 @@ import java.io.IOException;
 
 @Component
 public class HttpHeaderPropagationInterceptor implements ClientHttpRequestInterceptor {
+
+    private static final Logger log = LoggerFactory.getLogger(HttpHeaderPropagationInterceptor.class);
 
     private final HttpHeaders httpHeaders;
 
@@ -30,6 +34,9 @@ public class HttpHeaderPropagationInterceptor implements ClientHttpRequestInterc
 
     private void propagateHeaders(final HttpRequest request) {
         final HttpHeaderContext headerContext = httpHeaders.get();
+        if (headerContext == null) {
+            return;
+        }
         try {
             addHeaderIfNotBlank(request, "X-ROOT-GUID", headerContext.rootGuid());
             addHeaderIfNotBlank(request, "X-CHILD-GUID", headerContext.childGuid());
@@ -42,9 +49,9 @@ public class HttpHeaderPropagationInterceptor implements ClientHttpRequestInterc
             addHeaderIfNotBlank(request, "X-DEVICE-NAME", headerContext.deviceName());
             addHeaderIfNotBlank(request, "X-DEVICE-OS", headerContext.deviceOS());
             addHeaderIfNotBlank(request, "X-IP-ADDRESS", headerContext.ipAddress());
-            addHeaderIfNotBlank(request, "X-APP-VERSION", headerContext.ipAddress());
+            addHeaderIfNotBlank(request, "X-APP-VERSION", headerContext.appVersion());
         } catch (Exception e) {
-            System.err.println("Failed to propagate headers: " + e.getMessage());
+            log.error("Failed to propagate headers: {}", e.getMessage(), e);
         } finally {
             httpHeaders.set(headerContext.increaseChildGuid());
         }

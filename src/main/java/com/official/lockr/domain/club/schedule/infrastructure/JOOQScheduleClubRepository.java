@@ -1,7 +1,5 @@
 package com.official.lockr.domain.club.schedule.infrastructure;
 
-import com.official.lockr.domain.club.club.domain.Member;
-import com.official.lockr.domain.club.club.domain.MemberRole;
 import com.official.lockr.domain.club.schedule.domain.ScheduleClub;
 import org.jooq.Configuration;
 import org.jooq.generated.tables.daos.ClubsDao;
@@ -10,7 +8,7 @@ import org.jooq.generated.tables.pojos.MembersEntity;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
 
 import static org.jooq.generated.tables.ClubsJOOQEntity.CLUBS;
 import static org.jooq.generated.tables.MembersJOOQEntity.MEMBERS;
@@ -18,40 +16,16 @@ import static org.jooq.generated.tables.MembersJOOQEntity.MEMBERS;
 @Repository
 public class JOOQScheduleClubRepository implements ScheduleClub {
 
+    private static final Set<String> STAFF_ROLES = Set.of(
+            "PRESIDENT", "VICE_PRESIDENT", "MANAGER", "COACH", "TREASURER"
+    );
+
     private final MembersDao membersDao;
     private final ClubsDao clubsDao;
 
     public JOOQScheduleClubRepository(final Configuration configuration) {
         this.membersDao = new MembersDao(configuration);
         this.clubsDao = new ClubsDao(configuration);
-    }
-
-    @Override
-    public Member findMemberByUserIdAndClubId(final String userId, final String clubId) {
-        final MembersEntity memberEntity = membersDao.ctx()
-                .selectFrom(MEMBERS)
-                .where(MEMBERS.USER_ID.eq(userId)
-                        .and(MEMBERS.CLUB_ID.eq(clubId))
-                        .and(MEMBERS.DELETED_AT.isNull()))
-                .fetchOneInto(MembersEntity.class);
-
-        return Optional.ofNullable(memberEntity)
-                .map(this::toDomain)
-                .orElse(null);
-    }
-
-    @Override
-    public List<Member> findAllMemberIdsByClubId(final String clubId) {
-        return membersDao.ctx()
-                .selectFrom(MEMBERS)
-                .where(
-                        MEMBERS.CLUB_ID.eq(clubId),
-                        MEMBERS.DELETED_AT.isNull()
-                )
-                .fetchInto(MembersEntity.class)
-                .stream()
-                .map(this::toDomain)
-                .toList();
     }
 
     @Override
@@ -66,7 +40,7 @@ public class JOOQScheduleClubRepository implements ScheduleClub {
         if (member == null) {
             return false;
         }
-        return MemberRole.valueOf(member.getMemberRole()).isStaff();
+        return STAFF_ROLES.contains(member.getMemberRole());
     }
 
     @Override
@@ -91,8 +65,7 @@ public class JOOQScheduleClubRepository implements ScheduleClub {
         if (member == null) {
             return null;
         }
-        final MemberRole role = MemberRole.valueOf(member.getMemberRole());
-        return role.isStaff() ? role.name() : null;
+        return STAFF_ROLES.contains(member.getMemberRole()) ? member.getMemberRole() : null;
     }
 
     @Override
@@ -122,19 +95,5 @@ public class JOOQScheduleClubRepository implements ScheduleClub {
                 .where(MEMBERS.CLUB_ID.eq(clubId)
                         .and(MEMBERS.DELETED_AT.isNull()))
                 .fetchInto(String.class);
-    }
-
-    private Member toDomain(final MembersEntity entity) {
-        return new Member(
-                entity.getId(),
-                entity.getUserId(),
-                MemberRole.valueOf(entity.getMemberRole()),
-                entity.getClubId(),
-                entity.getName(),
-                entity.getProfileImage(),
-                entity.getCreatedAt(),
-                entity.getUpdatedAt(),
-                entity.getDeletedAt()
-        );
     }
 }

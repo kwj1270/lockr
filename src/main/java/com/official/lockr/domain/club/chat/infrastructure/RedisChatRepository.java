@@ -123,6 +123,11 @@ public class RedisChatRepository implements ChatRepository {
         // 명시적 삭제가 필요하면 구현 가능하나, 현재는 no-op
     }
 
+    @Override
+    public void updateContent(final String chatId, final String content) {
+        // Redis는 캐시 용도이므로 TTL에 의해 자연 만료
+    }
+
     private List<Chat> findAllChatRoomId(final int limit, final String key) {
         final Set<String> messages = redisTemplate.opsForZSet().reverseRange(key, 0, limit - 1);
         if (messages == null) {

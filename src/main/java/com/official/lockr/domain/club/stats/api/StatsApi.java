@@ -9,6 +9,7 @@ import com.official.lockr.domain.club.stats.application.usecase.RecordMatchUseCa
 import com.official.lockr.domain.club.stats.application.usecase.UpdateMatchUseCase;
 import com.official.lockr.domain.club.stats.domain.MatchRecord;
 import org.springframework.http.ResponseEntity;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,7 +39,7 @@ public class StatsApi {
     public ResponseEntity<MatchRecordResponse> recordMatch(
             @RequestAttribute("signInSession") final SignInSession signInSession,
             @PathVariable final String clubId,
-            @RequestBody final RecordMatchRequest request
+            @Valid @RequestBody final RecordMatchRequest request
     ) {
         final MatchRecord matchRecord = recordMatchUseCase.record(
                 request.toCommand(clubId, signInSession.userId())
@@ -53,7 +54,7 @@ public class StatsApi {
             @RequestAttribute("signInSession") final SignInSession signInSession,
             @PathVariable final String clubId,
             @PathVariable final String recordId,
-            @RequestBody final UpdateMatchRequest request
+            @Valid @RequestBody final UpdateMatchRequest request
     ) {
         final MatchRecord matchRecord = updateMatchUseCase.update(
                 request.toCommand(recordId, clubId, signInSession.userId())

@@ -14,7 +14,6 @@ public record MyScheduleItemResponse(
     int attendingCount,
     int notAttendingCount,
     int noResponseCount,
-    Integer maxParticipants,
     String myAttendanceStatus,
     String status
 ) {

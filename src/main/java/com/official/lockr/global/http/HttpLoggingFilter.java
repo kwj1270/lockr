@@ -67,6 +67,7 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
             saveHttpRequest(session, headerContext, contentCachingRequestWrapper);
             saveHttpResponse(session, headerContext, contentCachingRequestWrapper, contentCachingResponseWrapper);
             contentCachingResponseWrapper.copyBodyToResponse();
+            httpHeaders.remove();
         }
     }
 

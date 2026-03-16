@@ -5,6 +5,7 @@ import com.official.lockr.domain.club.sport.football.lineup.api.dto.ChangeFormat
 import com.official.lockr.domain.club.sport.football.lineup.api.dto.RemoveSlotRequest;
 import com.official.lockr.domain.club.sport.football.lineup.application.usecase.AssignSlotUseCase;
 import com.official.lockr.domain.club.sport.football.lineup.application.usecase.ChangeFormationUseCase;
+import com.official.lockr.domain.club.sport.football.lineup.application.usecase.DeleteLineupUseCase;
 import com.official.lockr.domain.club.sport.football.lineup.application.usecase.RemoveSlotUseCase;
 import com.official.lockr.domain.club.sport.football.lineup.domain.Lineup;
 import org.springframework.http.ResponseEntity;
@@ -17,13 +18,16 @@ public class LineupApi {
     private final AssignSlotUseCase assignSlotUseCase;
     private final ChangeFormationUseCase changeFormation;
     private final RemoveSlotUseCase removeSlotUseCase;
+    private final DeleteLineupUseCase deleteLineupUseCase;
 
     public LineupApi(final AssignSlotUseCase assignSlotUseCase,
                      final ChangeFormationUseCase changeFormation,
-                     final RemoveSlotUseCase removeSlotUseCase) {
+                     final RemoveSlotUseCase removeSlotUseCase,
+                     final DeleteLineupUseCase deleteLineupUseCase) {
         this.assignSlotUseCase = assignSlotUseCase;
         this.changeFormation = changeFormation;
         this.removeSlotUseCase = removeSlotUseCase;
+        this.deleteLineupUseCase = deleteLineupUseCase;
     }
 
     @PostMapping("/{lineupId}/slots")
@@ -54,5 +58,14 @@ public class LineupApi {
     ) {
         final Lineup lineup = removeSlotUseCase.removeSlot(clubId, lineupId, request.slotType(), request.slotIndex());
         return ResponseEntity.ok(lineup);
+    }
+
+    @PostMapping("/{lineupId}/delete")
+    public ResponseEntity<Void> delete(
+            @PathVariable String clubId,
+            @PathVariable String lineupId
+    ) {
+        deleteLineupUseCase.delete(clubId, lineupId);
+        return ResponseEntity.ok().build();
     }
 }

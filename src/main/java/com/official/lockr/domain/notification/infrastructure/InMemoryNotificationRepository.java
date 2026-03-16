@@ -28,4 +28,12 @@ public class InMemoryNotificationRepository implements NotificationRepository {
     public List<Notification> findByUserIdAndClubId(final String userId, final String clubId) {
         return List.of();
     }
+
+    @Override
+    public void softDeleteAllByUserId(final String userId) {
+    }
+
+    @Override
+    public void readAllByUserId(final String userId) {
+    }
 }

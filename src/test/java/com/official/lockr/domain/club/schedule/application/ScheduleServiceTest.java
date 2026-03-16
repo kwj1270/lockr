@@ -59,7 +59,6 @@ class ScheduleServiceTest {
                 ScheduleType.TRAINING,
                 new TrainingDetailData(),
                 5,
-                20,
                 3
         );
 
@@ -107,11 +106,11 @@ class ScheduleServiceTest {
         String memberUserId = "user-002";
 
         Schedule schedule = Schedule.create(
-                scheduleId, clubId, "훈련", "내용", "장소",
+                scheduleId, clubId, "user-001", "훈련", "내용", "장소",
                 LocalDateTime.now().plusDays(7),
                 ScheduleType.TRAINING, new TrainingDetailData(),
                 List.of("user-001", memberUserId),
-                5, 20, 3, LocalDateTime.now()
+                5, 3, LocalDateTime.now()
         );
 
         when(scheduleClub.isMember(memberUserId, clubId)).thenReturn(true);
@@ -154,7 +153,7 @@ class ScheduleServiceTest {
                 "변경된 장소",
                 LocalDateTime.now().plusDays(14),
                 new TrainingDetailData(),
-                10, 25, 5
+                10, 5
         );
 
         // when & then
@@ -171,11 +170,11 @@ class ScheduleServiceTest {
         String staffUserId = "user-001";
 
         Schedule schedule = Schedule.create(
-                scheduleId, clubId, "원래 제목", "원래 내용", "원래 장소",
+                scheduleId, clubId, "user-001", "원래 제목", "원래 내용", "원래 장소",
                 LocalDateTime.now().plusDays(7),
                 ScheduleType.TRAINING, new TrainingDetailData(),
                 List.of(staffUserId, "user-002"),
-                5, 20, 3, LocalDateTime.now()
+                5, 3, LocalDateTime.now()
         );
 
         when(scheduleClub.findStaffRoleName(staffUserId, clubId)).thenReturn("PRESIDENT");
@@ -194,7 +193,7 @@ class ScheduleServiceTest {
                 "변경된 장소",
                 newTime,
                 new TrainingDetailData(),
-                10, 25, 5
+                10, 5
         );
 
         // when
@@ -229,11 +228,11 @@ class ScheduleServiceTest {
         String staffUserId = "user-001";
 
         Schedule schedule = Schedule.create(
-                scheduleId, clubId, "훈련", "내용", "장소",
+                scheduleId, clubId, "user-001", "훈련", "내용", "장소",
                 LocalDateTime.now().plusDays(7),
                 ScheduleType.TRAINING, new TrainingDetailData(),
                 List.of(staffUserId, "user-002"),
-                5, 20, 3, LocalDateTime.now()
+                5, 3, LocalDateTime.now()
         );
 
         when(scheduleClub.findStaffRoleName(staffUserId, clubId)).thenReturn("PRESIDENT");
@@ -260,11 +259,11 @@ class ScheduleServiceTest {
         String scheduleId = "schedule-001";
 
         Schedule schedule = Schedule.create(
-                scheduleId, victimClubId, "훈련", "내용", "장소",
+                scheduleId, victimClubId, "user-001", "훈련", "내용", "장소",
                 LocalDateTime.now().plusDays(7),
                 ScheduleType.TRAINING, new TrainingDetailData(),
                 List.of("user-002"),
-                5, 20, 3, LocalDateTime.now()
+                5, 3, LocalDateTime.now()
         );
 
         when(scheduleClub.findStaffRoleName(staffUserId, attackerClubId)).thenReturn("PRESIDENT");
@@ -286,11 +285,11 @@ class ScheduleServiceTest {
         String scheduleId = "schedule-001";
 
         Schedule schedule = Schedule.create(
-                scheduleId, victimClubId, "훈련", "내용", "장소",
+                scheduleId, victimClubId, "user-001", "훈련", "내용", "장소",
                 LocalDateTime.now().plusDays(7),
                 ScheduleType.TRAINING, new TrainingDetailData(),
                 List.of("user-002"),
-                5, 20, 3, LocalDateTime.now()
+                5, 3, LocalDateTime.now()
         );
 
         when(scheduleClub.findStaffRoleName(staffUserId, attackerClubId)).thenReturn("PRESIDENT");
@@ -300,7 +299,7 @@ class ScheduleServiceTest {
                 scheduleId, staffUserId, attackerClubId,
                 "변경", "변경", "변경",
                 LocalDateTime.now().plusDays(14),
-                new TrainingDetailData(), 10, 25, 5
+                new TrainingDetailData(), 10, 5
         );
 
         // when & then
@@ -321,11 +320,11 @@ class ScheduleServiceTest {
         String targetUserId = "user-002";
 
         Schedule schedule = Schedule.create(
-                scheduleId, clubId, "훈련", "내용", "장소",
+                scheduleId, clubId, "user-001", "훈련", "내용", "장소",
                 LocalDateTime.now().plusDays(7),
                 ScheduleType.TRAINING, new TrainingDetailData(),
                 List.of(adminUserId, targetUserId),
-                5, 20, 3, LocalDateTime.now()
+                5, 3, LocalDateTime.now()
         );
 
         when(scheduleClub.findStaffRoleName(adminUserId, clubId)).thenReturn("MANAGER");
@@ -406,7 +405,7 @@ class ScheduleServiceTest {
                 nonExistentScheduleId, staffUserId, clubId,
                 "제목", "내용", "장소",
                 LocalDateTime.now().plusDays(7),
-                new TrainingDetailData(), 5, 20, 3
+                new TrainingDetailData(), 5, 3
         );
 
         // when & then

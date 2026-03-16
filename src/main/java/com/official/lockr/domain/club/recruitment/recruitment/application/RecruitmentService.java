@@ -4,6 +4,8 @@ import com.official.lockr.domain.club.club.domain.Club;
 import com.official.lockr.domain.club.club.domain.ClubRepository;
 import com.official.lockr.domain.club.recruitment.recruitment.application.command.PostRecruitmentCommand;
 import com.official.lockr.domain.club.recruitment.recruitment.application.command.UpdateRecruitmentCommand;
+import com.official.lockr.domain.club.recruitment.recruitment.application.usecase.ChangeRecruitmentStatusUseCase;
+import com.official.lockr.domain.club.recruitment.recruitment.application.usecase.DeleteRecruitmentUseCase;
 import com.official.lockr.domain.club.recruitment.recruitment.application.usecase.PostRecruitmentUseCase;
 import com.official.lockr.domain.club.recruitment.recruitment.application.usecase.UpdateRecruitmentUseCase;
 import com.official.lockr.domain.club.recruitment.recruitment.domain.Recruitment;
@@ -16,7 +18,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 @Service
-public class RecruitmentService implements PostRecruitmentUseCase, UpdateRecruitmentUseCase {
+public class RecruitmentService implements PostRecruitmentUseCase, UpdateRecruitmentUseCase, DeleteRecruitmentUseCase, ChangeRecruitmentStatusUseCase {
 
     private final ClubRepository clubRepository;
     private final RecruitmentRepository recruitmentRepository;
@@ -60,6 +62,28 @@ public class RecruitmentService implements PostRecruitmentUseCase, UpdateRecruit
                 command.activityDays(), command.activityTime(),
                 command.monthlyFee(), command.contactMethod()
         );
+        return recruitmentRepository.save(recruitment);
+    }
+
+    @Override
+    public void delete(final String clubId, final String recruitmentId, final String userId) {
+        final Club club = club(clubId, userId);
+        final Recruitment recruitment = recruitment(recruitmentId);
+        if (!club.isEqual(recruitment.getClubId())) {
+            throw new IllegalArgumentException();
+        }
+        recruitment.delete();
+        recruitmentRepository.save(recruitment);
+    }
+
+    @Override
+    public Recruitment changeStatus(final String clubId, final String recruitmentId, final String status, final String userId) {
+        final Club club = club(clubId, userId);
+        final Recruitment recruitment = recruitment(recruitmentId);
+        if (!club.isEqual(recruitment.getClubId())) {
+            throw new IllegalArgumentException();
+        }
+        recruitment.changeStatus(status);
         return recruitmentRepository.save(recruitment);
     }
 

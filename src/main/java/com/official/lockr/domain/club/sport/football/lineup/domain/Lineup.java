@@ -20,7 +20,7 @@ public class Lineup extends AggregateRoot {
     private LineupSlots lineupSlots;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
-    private final LocalDateTime deletedAt;
+    private LocalDateTime deletedAt;
 
     public Lineup(final String clubId, final String name) {
         this(generateUlid(), clubId, name, Formation.FORMATION_4_3_3, new LineupSlots(), LocalDateTime.now(), LocalDateTime.now(), null);
@@ -105,6 +105,13 @@ public class Lineup extends AggregateRoot {
         final List<LineupSlot> currentPlayers = new ArrayList<>(this.lineupSlots.getLineupPlayers());
         currentPlayers.removeIf(slot -> slot.isSameSlot(slotType, slotIndex));
         this.lineupSlots = new LineupSlots(currentPlayers);
+    }
+
+    public void delete() {
+        if (this.deletedAt != null) {
+            return;
+        }
+        this.deletedAt = LocalDateTime.now();
     }
 
     public void changeFormation(final String formation) {

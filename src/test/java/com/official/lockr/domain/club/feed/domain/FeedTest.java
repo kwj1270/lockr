@@ -468,6 +468,113 @@ class FeedTest {
     }
 
     @Nested
+    @DisplayName("일정 피드")
+    class ScheduleFeed {
+
+        @DisplayName("SCHEDULE 타입 피드를 생성할 수 있다")
+        @Test
+        void shouldCreateScheduleFeed() {
+            // when
+            final Feed feed = Feed.createFromSchedule(
+                    FEED_ID, CLUB_ID, USER_ID,
+                    "{\"scheduleId\":\"schedule-001\"}",
+                    "주간 훈련", "일시: 2026-02-20 19:00\n장소: 강남 풋살장"
+            );
+
+            // then
+            assertThat(feed.getId()).isEqualTo(FEED_ID);
+            assertThat(feed.getClubId()).isEqualTo(CLUB_ID);
+            assertThat(feed.getUserId()).isEqualTo(USER_ID);
+            assertThat(feed.getFeedType()).isEqualTo(FeedType.SCHEDULE);
+            assertThat(feed.getMetadata()).isEqualTo("{\"scheduleId\":\"schedule-001\"}");
+            assertThat(feed.getTitle()).isEqualTo("주간 훈련");
+            assertThat(feed.getContent()).contains("강남 풋살장");
+            assertThat(feed.isSchedule()).isTrue();
+            assertThat(feed.isDeleted()).isFalse();
+        }
+
+        @DisplayName("SCHEDULE 타입은 시스템 관리 타입이다")
+        @Test
+        void shouldBeSystemManaged() {
+            assertThat(FeedType.SCHEDULE.isSystemManaged()).isTrue();
+            assertThat(FeedType.GENERAL.isSystemManaged()).isFalse();
+            assertThat(FeedType.NOTICE.isSystemManaged()).isFalse();
+        }
+
+        @DisplayName("일정 피드의 내용을 시스템이 갱신할 수 있다")
+        @Test
+        void shouldUpdateScheduleFeedFromSystem() {
+            // given
+            final Feed feed = Feed.createFromSchedule(
+                    FEED_ID, CLUB_ID, USER_ID,
+                    "{\"scheduleId\":\"schedule-001\"}",
+                    "주간 훈련", "일시: 2026-02-20 19:00\n장소: 강남 풋살장"
+            );
+
+            // when
+            feed.updateFromSchedule("수정된 훈련", "일시: 2026-02-21 20:00\n장소: 마포 풋살장");
+
+            // then
+            assertThat(feed.getTitle()).isEqualTo("수정된 훈련");
+            assertThat(feed.getContent()).contains("마포 풋살장");
+        }
+
+        @DisplayName("삭제된 일정 피드는 시스템 갱신할 수 없다")
+        @Test
+        void shouldThrowExceptionWhenUpdatingDeletedScheduleFeed() {
+            // given
+            final Feed feed = Feed.createFromSchedule(
+                    FEED_ID, CLUB_ID, USER_ID,
+                    "{\"scheduleId\":\"schedule-001\"}",
+                    "주간 훈련", "일시: 2026-02-20 19:00\n장소: 강남 풋살장"
+            );
+            feed.deleteFromSchedule();
+
+            // when & then
+            assertThatThrownBy(() -> feed.updateFromSchedule("새 제목", "새 내용"))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("삭제된 피드");
+        }
+
+        @DisplayName("일정 피드를 시스템이 삭제할 수 있다")
+        @Test
+        void shouldDeleteScheduleFeedFromSystem() {
+            // given
+            final Feed feed = Feed.createFromSchedule(
+                    FEED_ID, CLUB_ID, USER_ID,
+                    "{\"scheduleId\":\"schedule-001\"}",
+                    "주간 훈련", "일시: 2026-02-20 19:00\n장소: 강남 풋살장"
+            );
+
+            // when
+            feed.deleteFromSchedule();
+
+            // then
+            assertThat(feed.isDeleted()).isTrue();
+            assertThat(feed.getDeletedAt()).isNotNull();
+        }
+
+        @DisplayName("GENERAL 피드는 isSchedule이 false여야 한다")
+        @Test
+        void shouldNotBeScheduleForGeneralFeed() {
+            final Feed feed = createFeed();
+            assertThat(feed.isSchedule()).isFalse();
+        }
+
+        @DisplayName("일정 피드 생성 시 내용이 비어있으면 예외가 발생한다")
+        @Test
+        void shouldThrowExceptionWhenScheduleFeedContentIsBlank() {
+            assertThatThrownBy(() -> Feed.createFromSchedule(
+                    FEED_ID, CLUB_ID, USER_ID,
+                    "{\"scheduleId\":\"schedule-001\"}",
+                    "제목", ""
+            ))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("필수");
+        }
+    }
+
+    @Nested
     @DisplayName("집계")
     class Counts {
 

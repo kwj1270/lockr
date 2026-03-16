@@ -6,7 +6,8 @@ import com.official.lockr.domain.club.schedule.domain.event.CancelledScheduleEve
 import com.official.lockr.domain.club.schedule.domain.event.CreatedScheduleEvent;
 import com.official.lockr.domain.club.schedule.domain.event.UpdatedScheduleEvent;
 import com.official.lockr.domain.club.schedule.domain.vo.MatchDetailData;
-import com.official.lockr.domain.notification.application.NotificationService;
+import com.official.lockr.domain.notification.application.command.CreateScheduleLinkNotificationCommand;
+import com.official.lockr.domain.notification.application.usecase.CreateScheduleLinkNotificationUseCase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -23,14 +24,14 @@ public class ScheduleNotificationEventConsumer {
     private static final Logger log = LoggerFactory.getLogger(ScheduleNotificationEventConsumer.class);
 
     private final ScheduleClub scheduleClub;
-    private final NotificationService notificationService;
+    private final CreateScheduleLinkNotificationUseCase createScheduleLinkNotificationUseCase;
 
     public ScheduleNotificationEventConsumer(
             final ScheduleClub scheduleClub,
-            final NotificationService notificationService
+            final CreateScheduleLinkNotificationUseCase createScheduleLinkNotificationUseCase
     ) {
         this.scheduleClub = scheduleClub;
-        this.notificationService = notificationService;
+        this.createScheduleLinkNotificationUseCase = createScheduleLinkNotificationUseCase;
     }
 
     @Async
@@ -73,14 +74,14 @@ public class ScheduleNotificationEventConsumer {
             return;
         }
 
-        notificationService.createScheduleLinkNotification(
+        createScheduleLinkNotificationUseCase.create(new CreateScheduleLinkNotificationCommand(
                 opponentClubId,
                 event.scheduleId(),
                 myClubId,
                 myClubName,
                 event.title(),
                 event.scheduleTime().toString()
-        );
+        ));
     }
 
     @Async

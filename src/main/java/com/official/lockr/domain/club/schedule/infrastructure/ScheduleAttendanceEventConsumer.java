@@ -20,13 +20,9 @@ public class ScheduleAttendanceEventConsumer {
     private final ScheduleAttendanceHistoryRepository scheduleAttendanceHistoryRepository;
     private final RetryTemplate retryTemplate;
 
-    public ScheduleAttendanceEventConsumer(final ScheduleAttendanceHistoryRepository scheduleAttendanceHistoryRepository) {
+    public ScheduleAttendanceEventConsumer(final ScheduleAttendanceHistoryRepository scheduleAttendanceHistoryRepository, final RetryTemplate retryTemplate) {
         this.scheduleAttendanceHistoryRepository = scheduleAttendanceHistoryRepository;
-        this.retryTemplate = RetryTemplate.builder()
-                .maxAttempts(3)
-                .exponentialBackoff(1000, 1.5, 5000)
-                .retryOn(Exception.class)
-                .build();
+        this.retryTemplate = retryTemplate;
     }
 
     @Async

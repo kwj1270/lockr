@@ -9,6 +9,9 @@ public interface FeedRepository {
     @Nullable
     Feed findById(String id);
 
+    @Nullable
+    Feed findByScheduleId(String scheduleId);
+
     List<Feed> findAllByClubId(String clubId);
 
     Feed save(Feed feed);

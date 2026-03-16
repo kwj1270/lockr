@@ -8,13 +8,16 @@ import com.official.lockr.domain.club.feed.domain.entity.Video;
 import com.official.lockr.global.ddd.DomainEventPublisher;
 import jakarta.annotation.Nullable;
 import org.jooq.Configuration;
+import org.jooq.Field;
+import org.jooq.JSON;
 import org.jooq.generated.tables.daos.*;
 import org.jooq.generated.tables.pojos.*;
+import org.jooq.impl.DSL;
+import org.jooq.impl.SQLDataType;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.jooq.generated.Tables.FEED_HEARTS;
@@ -29,6 +32,9 @@ import static org.jooq.impl.DSL.excluded;
 
 @Repository
 public class JOOQFeedRepository implements FeedRepository {
+
+    private static final Field<JSON> METADATA = DSL.field(DSL.name("metadata"), SQLDataType.JSON);
+    private static final Field<String> PARENT_COMMENT_ID = DSL.field(DSL.name("parent_comment_id"), SQLDataType.VARCHAR);
 
     private final FeedsDao feedsDao;
     private final FeedImagesDao feedImagesDao;
@@ -71,6 +77,28 @@ public class JOOQFeedRepository implements FeedRepository {
         return toDomain(entity);
     }
 
+    @Nullable
+    @Override
+    public Feed findByScheduleId(final String scheduleId) {
+        final var record = feedsDao.ctx()
+                .select(FEEDS.fields())
+                .select(METADATA)
+                .from(FEEDS)
+                .where(DSL.condition("JSON_UNQUOTE(metadata->'$.scheduleId') = ?", scheduleId))
+                .and(FEEDS.DELETED_AT.isNull())
+                .fetchOne();
+
+        if (record == null) {
+            return null;
+        }
+
+        final FeedsEntity entity = record.into(FeedsEntity.class);
+        final JSON metadataJson = record.get(METADATA);
+        final String metadata = metadataJson != null ? metadataJson.data() : null;
+
+        return toDomain(entity, metadata);
+    }
+
     @Override
     public List<Feed> findAllByClubId(final String clubId) {
         final List<FeedsEntity> entities = feedsDao.ctx()
@@ -80,8 +108,42 @@ public class JOOQFeedRepository implements FeedRepository {
                 .orderBy(FEEDS.CREATED_AT.desc())
                 .fetchInto(FeedsEntity.class);
 
+        if (entities.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        final List<String> feedIds = entities.stream()
+                .map(FeedsEntity::getId)
+                .toList();
+
+        // Batch fetch all related data
+        final Map<String, List<FeedImagesEntity>> feedImagesMap = fetchFeedImagesMap(feedIds);
+        final Map<String, List<FeedVideosEntity>> feedVideosMap = fetchFeedVideosMap(feedIds);
+        final Map<String, List<FeedHeartsEntity>> feedHeartsMap = fetchFeedHeartsMap(feedIds);
+        final Map<String, List<CommentRecord>> feedCommentsMap = fetchFeedCommentsMap(feedIds);
+
+        // Batch fetch comment-related data
+        final List<String> commentIds = feedCommentsMap.values().stream()
+                .flatMap(List::stream)
+                .map(record -> record.entity.getId())
+                .toList();
+
+        final Map<String, List<CommentImagesEntity>> commentImagesMap = fetchCommentImagesMap(commentIds);
+        final Map<String, List<CommentVideosEntity>> commentVideosMap = fetchCommentVideosMap(commentIds);
+        final Map<String, List<CommentHeartsEntity>> commentHeartsMap = fetchCommentHeartsMap(commentIds);
+
         return entities.stream()
-                .map(this::toDomain)
+                .map(entity -> toDomainWithBatchedData(
+                        entity,
+                        null,
+                        feedImagesMap,
+                        feedVideosMap,
+                        feedHeartsMap,
+                        feedCommentsMap,
+                        commentImagesMap,
+                        commentVideosMap,
+                        commentHeartsMap
+                ))
                 .toList();
     }
 
@@ -106,10 +168,12 @@ public class JOOQFeedRepository implements FeedRepository {
                 .set(FEEDS.TITLE, feed.getTitle())
                 .set(FEEDS.CONTENT, feed.getContent())
                 .set(FEEDS.FEED_TYPE, feed.getFeedType().name())
+                .set(METADATA, feed.getMetadata() != null ? JSON.json(feed.getMetadata()) : null)
                 .set(FEEDS.CREATED_AT, feed.getCreatedAt())
                 .set(FEEDS.UPDATED_AT, feed.getUpdatedAt())
                 .set(FEEDS.DELETED_AT, feed.getDeletedAt())
                 .onDuplicateKeyUpdate()
+                .set(FEEDS.TITLE, excluded(FEEDS.TITLE))
                 .set(FEEDS.CONTENT, excluded(FEEDS.CONTENT))
                 .set(FEEDS.FEED_TYPE, excluded(FEEDS.FEED_TYPE))
                 .set(FEEDS.UPDATED_AT, excluded(FEEDS.UPDATED_AT))
@@ -167,6 +231,7 @@ public class JOOQFeedRepository implements FeedRepository {
                     .set(COMMENTS.ID, comment.getId())
                     .set(COMMENTS.FEED_ID, feedId)
                     .set(COMMENTS.USER_ID, comment.getUserId())
+                    .set(PARENT_COMMENT_ID, comment.getParentCommentId())
                     .set(COMMENTS.CONTENT, comment.getContent())
                     .set(COMMENTS.CREATED_AT, comment.getCreatedAt())
                     .set(COMMENTS.UPDATED_AT, comment.getUpdatedAt())
@@ -262,6 +327,10 @@ public class JOOQFeedRepository implements FeedRepository {
     }
 
     private Feed toDomain(final FeedsEntity entity) {
+        return toDomain(entity, null);
+    }
+
+    private Feed toDomain(final FeedsEntity entity, final String metadata) {
         final String feedId = entity.getId();
 
         // Feed Images 조회
@@ -288,13 +357,19 @@ public class JOOQFeedRepository implements FeedRepository {
         final FeedVideos feedVideos = new FeedVideos(feedId, videos);
 
         // Comments 조회
-        final List<CommentsEntity> commentEntities = commentsDao.ctx()
-                .selectFrom(COMMENTS)
+        final var commentRecords = commentsDao.ctx()
+                .select(COMMENTS.fields())
+                .select(PARENT_COMMENT_ID)
+                .from(COMMENTS)
                 .where(COMMENTS.FEED_ID.eq(feedId))
-                .fetchInto(CommentsEntity.class);
+                .fetch();
 
-        final List<Comment> comments = commentEntities.stream()
-                .map(this::commentToDomain)
+        final List<Comment> comments = commentRecords.stream()
+                .map(record -> {
+                    final CommentsEntity ce = record.into(CommentsEntity.class);
+                    final String parentId = record.get(PARENT_COMMENT_ID);
+                    return commentToDomain(ce, parentId);
+                })
                 .collect(Collectors.toCollection(ArrayList::new));
 
         // Hearts 조회
@@ -313,6 +388,7 @@ public class JOOQFeedRepository implements FeedRepository {
                 entity.getTitle(),
                 entity.getContent(),
                 FeedType.valueOf(entity.getFeedType()),
+                metadata,
                 feedImages,
                 feedVideos,
                 comments,
@@ -324,7 +400,7 @@ public class JOOQFeedRepository implements FeedRepository {
         );
     }
 
-    private Comment commentToDomain(final CommentsEntity entity) {
+    private Comment commentToDomain(final CommentsEntity entity, final String parentCommentId) {
         final String commentId = entity.getId();
 
         // Comment Images
@@ -363,6 +439,7 @@ public class JOOQFeedRepository implements FeedRepository {
                 entity.getId(),
                 entity.getFeedId(),
                 entity.getUserId(),
+                parentCommentId,
                 entity.getContent(),
                 commentImages,
                 commentVideos,
@@ -372,4 +449,206 @@ public class JOOQFeedRepository implements FeedRepository {
                 entity.getDeletedAt()
         );
     }
+
+    // Batch fetch methods
+    private Map<String, List<FeedImagesEntity>> fetchFeedImagesMap(final List<String> feedIds) {
+        if (feedIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return feedImagesDao.ctx()
+                .selectFrom(FEED_IMAGES)
+                .where(FEED_IMAGES.FEED_ID.in(feedIds))
+                .fetchInto(FeedImagesEntity.class)
+                .stream()
+                .collect(Collectors.groupingBy(FeedImagesEntity::getFeedId));
+    }
+
+    private Map<String, List<FeedVideosEntity>> fetchFeedVideosMap(final List<String> feedIds) {
+        if (feedIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return feedVideosDao.ctx()
+                .selectFrom(FEED_VIDEOS)
+                .where(FEED_VIDEOS.FEED_ID.in(feedIds))
+                .fetchInto(FeedVideosEntity.class)
+                .stream()
+                .collect(Collectors.groupingBy(FeedVideosEntity::getFeedId));
+    }
+
+    private Map<String, List<FeedHeartsEntity>> fetchFeedHeartsMap(final List<String> feedIds) {
+        if (feedIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return feedHeartsDao.ctx()
+                .selectFrom(FEED_HEARTS)
+                .where(FEED_HEARTS.FEED_ID.in(feedIds))
+                .fetchInto(FeedHeartsEntity.class)
+                .stream()
+                .collect(Collectors.groupingBy(FeedHeartsEntity::getFeedId));
+    }
+
+    private Map<String, List<CommentRecord>> fetchFeedCommentsMap(final List<String> feedIds) {
+        if (feedIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return commentsDao.ctx()
+                .select(COMMENTS.fields())
+                .select(PARENT_COMMENT_ID)
+                .from(COMMENTS)
+                .where(COMMENTS.FEED_ID.in(feedIds))
+                .fetch()
+                .stream()
+                .map(record -> new CommentRecord(
+                        record.into(CommentsEntity.class),
+                        record.get(PARENT_COMMENT_ID)
+                ))
+                .collect(Collectors.groupingBy(record -> record.entity.getFeedId()));
+    }
+
+    private Map<String, List<CommentImagesEntity>> fetchCommentImagesMap(final List<String> commentIds) {
+        if (commentIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return commentImagesDao.ctx()
+                .selectFrom(COMMENT_IMAGES)
+                .where(COMMENT_IMAGES.COMMENT_ID.in(commentIds))
+                .fetchInto(CommentImagesEntity.class)
+                .stream()
+                .collect(Collectors.groupingBy(CommentImagesEntity::getCommentId));
+    }
+
+    private Map<String, List<CommentVideosEntity>> fetchCommentVideosMap(final List<String> commentIds) {
+        if (commentIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return commentVideosDao.ctx()
+                .selectFrom(COMMENT_VIDEOS)
+                .where(COMMENT_VIDEOS.COMMENT_ID.in(commentIds))
+                .fetchInto(CommentVideosEntity.class)
+                .stream()
+                .collect(Collectors.groupingBy(CommentVideosEntity::getCommentId));
+    }
+
+    private Map<String, List<CommentHeartsEntity>> fetchCommentHeartsMap(final List<String> commentIds) {
+        if (commentIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return commentHeartsDao.ctx()
+                .selectFrom(COMMENT_HEARTS)
+                .where(COMMENT_HEARTS.COMMENT_ID.in(commentIds))
+                .fetchInto(CommentHeartsEntity.class)
+                .stream()
+                .collect(Collectors.groupingBy(CommentHeartsEntity::getCommentId));
+    }
+
+    // Batched toDomain method
+    private Feed toDomainWithBatchedData(
+            final FeedsEntity entity,
+            final String metadata,
+            final Map<String, List<FeedImagesEntity>> feedImagesMap,
+            final Map<String, List<FeedVideosEntity>> feedVideosMap,
+            final Map<String, List<FeedHeartsEntity>> feedHeartsMap,
+            final Map<String, List<CommentRecord>> feedCommentsMap,
+            final Map<String, List<CommentImagesEntity>> commentImagesMap,
+            final Map<String, List<CommentVideosEntity>> commentVideosMap,
+            final Map<String, List<CommentHeartsEntity>> commentHeartsMap
+    ) {
+        final String feedId = entity.getId();
+
+        // Feed Images
+        final List<Image> images = feedImagesMap.getOrDefault(feedId, Collections.emptyList())
+                .stream()
+                .map(img -> new Image(img.getId(), img.getUrl(), img.getUserId(), img.getCreatedAt(), img.getDeletedAt()))
+                .collect(Collectors.toCollection(ArrayList::new));
+        final FeedImages feedImages = new FeedImages(feedId, images);
+
+        // Feed Videos
+        final List<Video> videos = feedVideosMap.getOrDefault(feedId, Collections.emptyList())
+                .stream()
+                .map(vid -> new Video(vid.getId(), vid.getUrl(), vid.getUserId(), vid.getCreatedAt(), vid.getDeletedAt()))
+                .collect(Collectors.toCollection(ArrayList::new));
+        final FeedVideos feedVideos = new FeedVideos(feedId, videos);
+
+        // Comments with batched data
+        final List<Comment> comments = feedCommentsMap.getOrDefault(feedId, Collections.emptyList())
+                .stream()
+                .map(record -> commentToDomainWithBatchedData(
+                        record.entity,
+                        record.parentCommentId,
+                        commentImagesMap,
+                        commentVideosMap,
+                        commentHeartsMap
+                ))
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        // Hearts
+        final List<Heart> hearts = feedHeartsMap.getOrDefault(feedId, Collections.emptyList())
+                .stream()
+                .map(h -> new Heart(h.getId(), h.getFeedId(), h.getUserId(), h.getCreatedAt(), h.getDeletedAt()))
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        return new Feed(
+                entity.getId(),
+                entity.getClubId(),
+                entity.getTitle(),
+                entity.getContent(),
+                FeedType.valueOf(entity.getFeedType()),
+                metadata,
+                feedImages,
+                feedVideos,
+                comments,
+                hearts,
+                entity.getUserId(),
+                entity.getCreatedAt(),
+                entity.getUpdatedAt(),
+                entity.getDeletedAt()
+        );
+    }
+
+    private Comment commentToDomainWithBatchedData(
+            final CommentsEntity entity,
+            final String parentCommentId,
+            final Map<String, List<CommentImagesEntity>> commentImagesMap,
+            final Map<String, List<CommentVideosEntity>> commentVideosMap,
+            final Map<String, List<CommentHeartsEntity>> commentHeartsMap
+    ) {
+        final String commentId = entity.getId();
+
+        // Comment Images
+        final List<Image> images = commentImagesMap.getOrDefault(commentId, Collections.emptyList())
+                .stream()
+                .map(img -> new Image(img.getId(), img.getUrl(), img.getUserId(), img.getCreatedAt(), img.getDeletedAt()))
+                .collect(Collectors.toCollection(ArrayList::new));
+        final CommentImages commentImages = new CommentImages(commentId, images);
+
+        // Comment Videos
+        final List<Video> videos = commentVideosMap.getOrDefault(commentId, Collections.emptyList())
+                .stream()
+                .map(vid -> new Video(vid.getId(), vid.getUrl(), vid.getUserId(), vid.getCreatedAt(), vid.getDeletedAt()))
+                .collect(Collectors.toCollection(ArrayList::new));
+        final CommentVideos commentVideos = new CommentVideos(commentId, videos);
+
+        // Comment Hearts
+        final List<CommentHeart> hearts = commentHeartsMap.getOrDefault(commentId, Collections.emptyList())
+                .stream()
+                .map(h -> new CommentHeart(h.getId(), h.getCommentId(), h.getUserId(), h.getCreatedAt(), h.getDeletedAt()))
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        return new Comment(
+                entity.getId(),
+                entity.getFeedId(),
+                entity.getUserId(),
+                parentCommentId,
+                entity.getContent(),
+                commentImages,
+                commentVideos,
+                new CommentHearts(hearts),
+                entity.getCreatedAt(),
+                entity.getUpdatedAt(),
+                entity.getDeletedAt()
+        );
+    }
+
+    // Helper record to carry comment entity with parent_comment_id
+    private record CommentRecord(CommentsEntity entity, String parentCommentId) {}
 }

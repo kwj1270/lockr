@@ -16,23 +16,29 @@ public class Club extends AggregateRoot {
 
     private final String id;
     private final String foundUserId;
-    private final String name;
+    private String name;
     private final String sportType;
-    private final String city;
-    private final String district;
-    private final String description;
-    private final String profileImageUrl;
-    private final String backgroundImageUrl;
+    private String city;
+    private String district;
+    private String description;
+    private String profileImageUrl;
+    private String backgroundImageUrl;
+    private boolean isPublic;
+    private String joinMethod;
     private List<Member> members;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
     private final LocalDateTime deletedAt;
 
     public Club(final String id, final String foundUserId, final String name, final String sportType, final String city, final String district, final String description, final String profileImageUrl, final String backgroundImageUrl) {
-        this(id, foundUserId, name, sportType, city, district, description, profileImageUrl, backgroundImageUrl, new ArrayList<>(), LocalDateTime.now(), LocalDateTime.now(), null);
+        this(id, foundUserId, name, sportType, city, district, description, profileImageUrl, backgroundImageUrl, true, "APPROVAL_REQUIRED", new ArrayList<>(), LocalDateTime.now(), LocalDateTime.now(), null);
     }
 
     public Club(final String id, final String foundUserId, final String name, final String sportType, final String city, final String district, final String description, final String profileImageUrl, final String backgroundImageUrl, final List<Member> members, final LocalDateTime createdAt, final LocalDateTime updatedAt, final LocalDateTime deletedAt) {
+        this(id, foundUserId, name, sportType, city, district, description, profileImageUrl, backgroundImageUrl, true, "APPROVAL_REQUIRED", members, createdAt, updatedAt, deletedAt);
+    }
+
+    public Club(final String id, final String foundUserId, final String name, final String sportType, final String city, final String district, final String description, final String profileImageUrl, final String backgroundImageUrl, final boolean isPublic, final String joinMethod, final List<Member> members, final LocalDateTime createdAt, final LocalDateTime updatedAt, final LocalDateTime deletedAt) {
         this.id = id;
         this.foundUserId = foundUserId;
         this.name = name;
@@ -42,6 +48,8 @@ public class Club extends AggregateRoot {
         this.description = description;
         this.profileImageUrl = profileImageUrl;
         this.backgroundImageUrl = backgroundImageUrl;
+        this.isPublic = isPublic;
+        this.joinMethod = joinMethod;
         this.members = members;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -54,6 +62,9 @@ public class Club extends AggregateRoot {
     }
 
     public void removeMember(final String userId) {
+        if (isStaff(userId)) {
+            throw new IllegalStateException("운영진은 탈퇴할 수 없습니다. 먼저 역할을 해제해주세요.");
+        }
         members.removeIf(member -> member.isSame(userId));
         this.addEvent(new RemovedClubMemberEvent(this.id, userId));
     }
@@ -98,6 +109,14 @@ public class Club extends AggregateRoot {
         return backgroundImageUrl;
     }
 
+    public boolean isPublic() {
+        return isPublic;
+    }
+
+    public String getJoinMethod() {
+        return joinMethod;
+    }
+
     public List<Member> getMembers() {
         return members;
     }
@@ -122,6 +141,12 @@ public class Club extends AggregateRoot {
         return members.stream()
                 .filter(it -> it.isSame(userId))
                 .anyMatch(Member::isPresident);
+    }
+
+    public boolean isPresidency(final String userId) {
+        return members.stream()
+                .filter(it -> it.isSame(userId))
+                .anyMatch(Member::isPresidency);
     }
 
     public boolean hasNotMember(final String userId) {
@@ -167,9 +192,68 @@ public class Club extends AggregateRoot {
     }
 
     public static Club init(final String foundUserId, final String name, final String sportType, final String city, final String district, final String description, final String profileImageUrl, final String backgroundImageUrl) {
-        final Club club = new Club(generateUlid(), foundUserId, name, sportType, city, district, district, profileImageUrl, backgroundImageUrl);
+        final Club club = new Club(generateUlid(), foundUserId, name, sportType, city, district, description, profileImageUrl, backgroundImageUrl);
         club.addEvent(new FoundClubEvent(club.id, club.foundUserId, club.name, club.sportType, club.city, club.district, club.description, club.createdAt));
         return club;
+    }
+
+    public void delegatePresident(final String currentPresidentUserId, final String targetUserId) {
+        if (!isPresident(currentPresidentUserId)) {
+            throw new IllegalArgumentException("회장만 회장을 위임할 수 있습니다.");
+        }
+        if (hasNotMember(targetUserId)) {
+            throw new IllegalArgumentException("대상이 클럽 멤버가 아닙니다.");
+        }
+        final Member currentPresident = members.stream()
+                .filter(it -> it.isSame(currentPresidentUserId))
+                .findFirst()
+                .orElseThrow(IllegalArgumentException::new);
+        final Member target = members.stream()
+                .filter(it -> it.isSame(targetUserId))
+                .findFirst()
+                .orElseThrow(IllegalArgumentException::new);
+        currentPresident.assignBasic();
+        target.assignPresident();
+    }
+
+    public void changeMemberRole(final String requesterId, final String targetMemberId, final MemberRole role) {
+        if (!isPresidency(requesterId)) {
+            throw new IllegalArgumentException("회장 또는 부회장만 역할을 변경할 수 있습니다.");
+        }
+        final Member target = members.stream()
+                .filter(it -> it.isEqual(targetMemberId))
+                .findFirst()
+                .orElseThrow(IllegalArgumentException::new);
+        if (target.isPresident()) {
+            throw new IllegalArgumentException("회장의 역할은 변경할 수 없습니다.");
+        }
+        target.changeRole(role);
+    }
+
+    public void changeVisibility(final String requesterId, final boolean isPublic) {
+        if (!isPresidency(requesterId)) {
+            throw new IllegalArgumentException("회장 또는 부회장만 공개 설정을 변경할 수 있습니다.");
+        }
+        this.isPublic = isPublic;
+    }
+
+    public void changeJoinMethod(final String requesterId, final String joinMethod) {
+        if (!isPresidency(requesterId)) {
+            throw new IllegalArgumentException("회장 또는 부회장만 가입 방식을 변경할 수 있습니다.");
+        }
+        this.joinMethod = joinMethod;
+    }
+
+    public void updateInfo(final String requesterId, final String name, final String description, final String city, final String district, final String profileImageUrl, final String backgroundImageUrl) {
+        if (!isPresidency(requesterId)) {
+            throw new IllegalArgumentException("회장 또는 부회장만 클럽 정보를 수정할 수 있습니다.");
+        }
+        this.name = name;
+        this.description = description;
+        this.city = city;
+        this.district = district;
+        this.profileImageUrl = profileImageUrl;
+        this.backgroundImageUrl = backgroundImageUrl;
     }
 
     public void updateMemberProfileImage(final String userId, final String profileImage) {

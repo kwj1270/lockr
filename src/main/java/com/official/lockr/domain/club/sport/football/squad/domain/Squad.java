@@ -75,6 +75,10 @@ public class Squad extends AggregateRoot {
                 .orElse(null);
     }
 
+    public void removePlayer(final String userId) {
+        squadPlayers.removeIf(it -> it.isSame(userId));
+    }
+
     public void updatePlayer(final String userId, final String birthDate, final String height, final String weight, final Foot foot, final List<Position> positions, final Integer backNumber) {
         final SquadPlayer squadPlayer = findByUserId(userId);
         if(isNull(squadPlayer)) {

@@ -154,4 +154,10 @@ public class ChatRepositoryAdapter implements ChatRepository {
         jooqChatRepository.softDelete(chatId);
         // Redis 캐시는 TTL에 의해 자연 만료됨
     }
+
+    @Override
+    public void updateContent(final String chatId, final String content) {
+        jooqChatRepository.updateContent(chatId, content);
+        // Redis 캐시는 TTL에 의해 자연 만료됨
+    }
 }

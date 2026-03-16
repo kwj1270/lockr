@@ -20,8 +20,10 @@ import com.official.lockr.domain.club.feed.api.dto.FeedsResponse;
 import com.official.lockr.domain.club.feed.api.dto.HeartItemResponse;
 import com.official.lockr.domain.club.feed.api.dto.HeartsResponse;
 import org.jooq.Configuration;
+import org.jooq.Field;
 import org.jooq.generated.tables.daos.FeedsDao;
 import org.jooq.impl.DSL;
+import org.jooq.impl.SQLDataType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,6 +39,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v1/clubs/{clubId}/feeds")
 @RestController
 public class FeedQueryApi {
+
+    private static final Field<String> PARENT_COMMENT_ID = DSL.field(DSL.name("comments", "parent_comment_id"), SQLDataType.VARCHAR);
 
     private final FeedsDao feedsDao;
 
@@ -249,6 +253,7 @@ public class FeedQueryApi {
                         COMMENTS.USER_ID,
                         USER_ADDITIONAL_INFO.NAME.as("user_name"),
                         COMMENTS.CONTENT,
+                        PARENT_COMMENT_ID,
                         COMMENTS.CREATED_AT,
                         COMMENTS.UPDATED_AT,
                         DSL.countDistinct(COMMENT_HEARTS.ID).filterWhere(COMMENT_HEARTS.DELETED_AT.isNull()).as("hearts_count")
@@ -260,6 +265,7 @@ public class FeedQueryApi {
                 .groupBy(
                         COMMENTS.ID, COMMENTS.FEED_ID, COMMENTS.USER_ID,
                         USER_ADDITIONAL_INFO.NAME, COMMENTS.CONTENT,
+                        PARENT_COMMENT_ID,
                         COMMENTS.CREATED_AT, COMMENTS.UPDATED_AT
                 )
                 .orderBy(COMMENTS.CREATED_AT.desc())
@@ -270,6 +276,7 @@ public class FeedQueryApi {
                         record.get(COMMENTS.USER_ID),
                         record.get("user_name", String.class),
                         record.get(COMMENTS.CONTENT),
+                        record.get(PARENT_COMMENT_ID),
                         commentImages.getOrDefault(record.get(COMMENTS.ID), List.of()),
                         commentVideos.getOrDefault(record.get(COMMENTS.ID), List.of()),
                         record.get("hearts_count", Integer.class),
@@ -322,6 +329,61 @@ public class FeedQueryApi {
                         record -> record.get(COMMENT_HEARTS.COMMENT_ID),
                         record -> true
                 ));
+    }
+
+    @GetMapping("/{feedId}/comments/{commentId}/hearts")
+    public ResponseEntity<HeartsResponse> getCommentHearts(
+            @PathVariable String clubId,
+            @PathVariable String feedId,
+            @PathVariable String commentId,
+            @RequestAttribute("signInSession") final SignInSession signInSession,
+            @RequestParam(value = "cursor", required = false, defaultValue = "") String cursor,
+            @RequestParam(value = "limit", defaultValue = "20") int limit
+    ) {
+        final boolean isMember = feedsDao.ctx()
+                .fetchExists(
+                        feedsDao.ctx()
+                                .selectOne()
+                                .from(MEMBERS)
+                                .where(MEMBERS.CLUB_ID.eq(clubId))
+                                .and(MEMBERS.USER_ID.eq(signInSession.userId()))
+                                .and(MEMBERS.DELETED_AT.isNull())
+                );
+
+        if (!isMember) {
+            return ResponseEntity.status(403).build();
+        }
+
+        var heartsQuery = feedsDao.ctx()
+                .select(
+                        COMMENT_HEARTS.ID,
+                        COMMENT_HEARTS.COMMENT_ID,
+                        COMMENT_HEARTS.USER_ID,
+                        USER_ADDITIONAL_INFO.NAME.as("user_name"),
+                        COMMENT_HEARTS.CREATED_AT
+                )
+                .from(COMMENT_HEARTS)
+                .leftJoin(USER_ADDITIONAL_INFO).on(USER_ADDITIONAL_INFO.USER_ID.eq(COMMENT_HEARTS.USER_ID))
+                .where(COMMENT_HEARTS.COMMENT_ID.eq(commentId))
+                .and(COMMENT_HEARTS.DELETED_AT.isNull());
+
+        if (!cursor.isEmpty()) {
+            heartsQuery = heartsQuery.and(COMMENT_HEARTS.ID.lt(cursor));
+        }
+
+        final List<HeartItemResponse> hearts = heartsQuery
+                .orderBy(COMMENT_HEARTS.CREATED_AT.desc())
+                .limit(limit)
+                .fetch()
+                .map(record -> new HeartItemResponse(
+                        record.get(COMMENT_HEARTS.ID),
+                        record.get(COMMENT_HEARTS.COMMENT_ID),
+                        record.get(COMMENT_HEARTS.USER_ID),
+                        record.get("user_name", String.class),
+                        record.get(COMMENT_HEARTS.CREATED_AT)
+                ));
+
+        return ResponseEntity.ok(new HeartsResponse(hearts));
     }
 
     @GetMapping("/{feedId}/hearts")

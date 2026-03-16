@@ -20,13 +20,15 @@ domain/
 │   ├── recruitment/# 모집
 │   │   ├── recruitment/   # 모집 공고
 │   │   └── applications/  # 지원서
+│   ├── stats/      # 경기 통계 & 기록
 │   └── sport/      # 종목별 기능
 │       └── football/
 │           ├── lineup/    # 라인업
 │           └── squad/     # 스쿼드
 ├── home/           # 홈 화면 Bounded Context
 │   └── card/       # 홈 카드
-└── notification/   # 알림 Bounded Context
+├── notification/   # 알림 Bounded Context
+└── shorts/         # 숏츠 Bounded Context
 ```
 
 ## 각 도메인 상세

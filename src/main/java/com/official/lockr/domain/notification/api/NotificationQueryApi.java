@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.official.lockr.domain.auth.signin.domain.SignInSession;
 import com.official.lockr.domain.notification.api.dto.NotificationResponse;
 import com.official.lockr.domain.notification.api.dto.NotificationsResponse;
+import com.official.lockr.domain.notification.api.dto.UnreadCountResponse;
 import org.jooq.Configuration;
 import org.jooq.JSON;
 import org.jooq.generated.tables.daos.NotificationsDao;
@@ -64,6 +65,18 @@ public class NotificationQueryApi {
                 .map(this::toResponse)
                 .toList();
         return ResponseEntity.ok(new NotificationsResponse(notifications));
+    }
+
+    @GetMapping("/notifications/unread-count")
+    public ResponseEntity<UnreadCountResponse> getUnreadCount(@RequestAttribute("signInSession") final SignInSession signInSession) {
+        final int count = notificationsDao.ctx()
+                .selectCount()
+                .from(NOTIFICATIONS)
+                .where(NOTIFICATIONS.USER_ID.eq(signInSession.userId()))
+                .and(NOTIFICATIONS.IS_READ.eq(false))
+                .and(NOTIFICATIONS.DELETED_AT.isNull())
+                .fetchOne(0, int.class);
+        return ResponseEntity.ok(new UnreadCountResponse(count));
     }
 
     private NotificationResponse toResponse(final NotificationsEntity entity) {

@@ -15,15 +15,19 @@ public class JooqPerformanceListener implements ExecuteListener {
     private static final Duration SLOW_QUERY_LIMIT = Duration.ofSeconds(3);
     private static final Logger log = getLogger(JooqPerformanceListener.class);
 
-    private StopWatch watch;
+    private static final String STOP_WATCH_KEY = "stopWatch";
 
     @Override
     public void executeStart(final ExecuteContext ctx) {
-        watch = new StopWatch();
+        ctx.data(STOP_WATCH_KEY, new StopWatch());
     }
 
     @Override
     public void executeEnd(final ExecuteContext ctx) {
+        final StopWatch watch = (StopWatch) ctx.data(STOP_WATCH_KEY);
+        if (watch == null) {
+            return;
+        }
         final long queryTimeNano = watch.split();
 
         if (queryTimeNano > SLOW_QUERY_LIMIT.toNanos()) {
