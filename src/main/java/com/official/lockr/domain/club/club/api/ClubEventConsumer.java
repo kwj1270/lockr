@@ -1,10 +1,10 @@
 package com.official.lockr.domain.club.club.api;
 
-import com.official.lockr.domain.club.contract.domain.event.ConcludedContractEvent;
-import com.official.lockr.domain.club.club.application.RegisterClubMemberUseCase;
 import com.official.lockr.domain.club.club.application.command.AddMemberCommand;
-import org.springframework.context.event.EventListener;
+import com.official.lockr.domain.club.club.application.usecase.RegisterClubMemberUseCase;
+import com.official.lockr.domain.club.recruitment.applications.domain.event.ApprovedApplicationEvent;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
 public class ClubEventConsumer {
@@ -15,8 +15,8 @@ public class ClubEventConsumer {
         this.registerClubMemberUseCase = registerClubMemberUseCase;
     }
 
-    @EventListener
-    public void addMember(final ConcludedContractEvent event) {
-        registerClubMemberUseCase.addMember(new AddMemberCommand(event.clubId(), event.individualUserId()));
+    @TransactionalEventListener
+    public void addMember(final ApprovedApplicationEvent event) {
+        registerClubMemberUseCase.addMember(new AddMemberCommand(event.clubId(), event.userId()));
     }
 }

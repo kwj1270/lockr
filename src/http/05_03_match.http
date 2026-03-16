@@ -1,0 +1,29 @@
+###
+POST http://127.0.0.1:8080/api/clubs/{{CLUB_ID}}/matches/invite
+Cookie: {{SESSION_COOKIE_2}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+{
+  "awayClubId": "{{OTHER_CLUB_ID}}",
+  "location": "sad",
+  "matchDateTime": "2019-12-14T06:34:20"
+}
+> {%
+    client.global.set("MATCH_ID", response.body.id);
+%}
+
+###
+POST http://127.0.0.1:8080/api/clubs/{{OTHER_CLUB_ID}}/matches/{{MATCH_ID}}
+Cookie: {{OTHER_SESSION_COOKIE_2}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+{
+  "clubId": "{{OTHER_CLUB_ID}}",
+  "accept": true
+}

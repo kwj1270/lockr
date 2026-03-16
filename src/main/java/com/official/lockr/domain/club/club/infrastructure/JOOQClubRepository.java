@@ -60,20 +60,30 @@ public class JOOQClubRepository implements ClubRepository {
         return club;
     }
 
-    // ✅ INSERT or UPDATE Club
     private void upsertClub(final Club club) {
         clubsDao.ctx()
                 .insertInto(CLUBS)
                 .set(CLUBS.ID, club.getId())
                 .set(CLUBS.FOUND_USER_ID, club.getFoundUserId())
                 .set(CLUBS.NAME, club.getName())
+                .set(CLUBS.SPORT_TYPE, club.getSportType())
+                .set(CLUBS.CITY, club.getCity())
+                .set(CLUBS.DISTRICT, club.getDistrict())
                 .set(CLUBS.DESCRIPTION, club.getDescription())
+                .set(CLUBS.PROFILE_IMAGE_URL, club.getProfileImageUrl())
+                .set(CLUBS.BACKGROUND_IMAGE_URL, club.getBackgroundImageUrl())
                 .set(CLUBS.CREATED_AT, club.getCreatedAt())
                 .set(CLUBS.UPDATED_AT, club.getUpdatedAt())
                 .set(CLUBS.DELETED_AT, club.getDeletedAt())
                 .onDuplicateKeyUpdate()
+                .set(CLUBS.FOUND_USER_ID, club.getFoundUserId())
                 .set(CLUBS.NAME, club.getName())
+                .set(CLUBS.SPORT_TYPE, club.getSportType())
+                .set(CLUBS.CITY, club.getCity())
+                .set(CLUBS.DISTRICT, club.getDistrict())
                 .set(CLUBS.DESCRIPTION, club.getDescription())
+                .set(CLUBS.PROFILE_IMAGE_URL, club.getProfileImageUrl())
+                .set(CLUBS.BACKGROUND_IMAGE_URL, club.getBackgroundImageUrl())
                 .set(CLUBS.UPDATED_AT, club.getUpdatedAt())
                 .set(CLUBS.DELETED_AT, club.getDeletedAt())
                 .execute();
@@ -170,7 +180,12 @@ public class JOOQClubRepository implements ClubRepository {
                 teamsEntity.getId(),
                 teamsEntity.getFoundUserId(),
                 teamsEntity.getName(),
+                teamsEntity.getSportType(),
+                teamsEntity.getCity(),
+                teamsEntity.getDistrict(),
                 teamsEntity.getDescription(),
+                teamsEntity.getProfileImageUrl(),
+                teamsEntity.getBackgroundImageUrl(),
                 members,
                 teamsEntity.getCreatedAt(),
                 teamsEntity.getUpdatedAt(),
@@ -195,7 +210,12 @@ public class JOOQClubRepository implements ClubRepository {
                 teamsRecord.getId(),
                 teamsRecord.getFoundUserId(),
                 teamsRecord.getName(),
+                teamsRecord.getSportType(),
+                teamsRecord.getCity(),
+                teamsRecord.getDistrict(),
                 teamsRecord.getDescription(),
+                teamsRecord.getProfileImageUrl(),
+                teamsRecord.getBackgroundImageUrl(),
                 members,
                 teamsRecord.getCreatedAt(),
                 teamsRecord.getUpdatedAt(),

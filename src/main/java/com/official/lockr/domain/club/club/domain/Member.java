@@ -3,6 +3,8 @@ package com.official.lockr.domain.club.club.domain;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+import static com.official.lockr.global.util.UlidUtils.generateUlid;
+
 public class Member {
 
     private final String id;
@@ -21,6 +23,10 @@ public class Member {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.deletedAt = deletedAt;
+    }
+
+    public boolean isEqual(final String id) {
+        return this.id.equals(id);
     }
 
     public String getId() {
@@ -63,12 +69,16 @@ public class Member {
         return role.isManager();
     }
 
-    public void assignPlayerRole() {
-        role = MemberRole.PLAYER;
+    public boolean isStaff() {
+        return role.isStaff();
     }
 
-    public void assignManagerRole() {
+    public void assignManager() {
         role = MemberRole.MANAGER;
+    }
+
+    public void assignCoach() {
+        role = MemberRole.COACH;
     }
 
     @Override
@@ -83,11 +93,11 @@ public class Member {
         return Objects.hashCode(id);
     }
 
-    public static Member president(final String memberId, final String userId, final String clubId) {
-        return new Member(memberId, userId, MemberRole.PRESIDENT, clubId, LocalDateTime.now(), LocalDateTime.now(), null);
+    public static Member president(final String userId, final String clubId) {
+        return new Member(generateUlid(), userId, MemberRole.PRESIDENT, clubId, LocalDateTime.now(), LocalDateTime.now(), null);
     }
 
-    public static Member player(final String memberId, final String userId, final String clubId) {
-        return new Member(memberId, userId, MemberRole.PLAYER, clubId, LocalDateTime.now(), LocalDateTime.now(), null);
+    public static Member basic(final String userId, final String clubId) {
+        return new Member(generateUlid(), userId, MemberRole.BASIC, clubId, LocalDateTime.now(), LocalDateTime.now(), null);
     }
 }

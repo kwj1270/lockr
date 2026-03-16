@@ -1,7 +1,7 @@
 package com.official.lockr.domain.club.club.domain;
 
 public enum MemberRole {
-    PLAYER,
+    BASIC,
     COACH,
     MANAGER,
     TREASURER,
@@ -15,5 +15,9 @@ public enum MemberRole {
 
     public boolean isManager() {
         return this == MANAGER;
+    }
+
+    public boolean isStaff() {
+        return this == COACH || this == MANAGER || this == TREASURER || this == VICE_PRESIDENT || this == PRESIDENT;
     }
 }

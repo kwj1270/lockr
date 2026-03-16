@@ -2,7 +2,7 @@ package com.official.lockr.global.http;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.official.lockr.domain.auth.domain.auth.SignInSession;
+import com.official.lockr.domain.auth.signin.domain.SignInSession;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -126,7 +126,11 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
 
     private String getHeadersAsString(final HttpServletResponse response) throws JsonProcessingException {
         final Map<String, String> headers = response.getHeaderNames().stream()
-                .collect(Collectors.toMap(headerName -> headerName, response::getHeader));
+                .collect(Collectors.toMap(
+                        headerName -> headerName,
+                        response::getHeader,
+                        (existing, replacement) -> existing + ", " + replacement
+                ));
         return objectMapper.writeValueAsString(headers);
     }
 

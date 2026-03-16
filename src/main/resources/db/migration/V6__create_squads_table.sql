@@ -1,3 +1,4 @@
+use lockr;
 CREATE TABLE `squads`
 (
     `id`         CHAR(128)   NOT NULL COMMENT '스쿼드 식별키' PRIMARY KEY,
@@ -15,9 +16,8 @@ CREATE TABLE `squad_players`
     `squad_id`      CHAR(128)    NOT NULL COMMENT '스쿼드 식별키',
     `profile_image` VARCHAR(255) NULL COMMENT '선수 프로필',
     `name`          VARCHAR(100) NULL COMMENT '선수 이름',
-    `nationality`   VARCHAR(50)  NULL COMMENT '국적',
     `positions`     VARCHAR(255) NULL COMMENT '포지션 목록 (콤마 구분)',
-    `birth`         VARCHAR(10)  NULL COMMENT '생년월일',
+    `birth_date`    DATE         NULL COMMENT '생년월일',
     `height`        VARCHAR(10)  NULL COMMENT '키',
     `weight`        VARCHAR(10)  NULL COMMENT '몸무게',
     `foot`          VARCHAR(10)  NULL COMMENT '주발' CHECK (foot IN ('LEFT', 'RIGHT', 'BOTH')),
