@@ -14,9 +14,9 @@ public class Admin {
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
 
-    public static Admin init(final String id, final String password) {
+    public static Admin init(final String id, final String userId, final String password) {
         final LocalDateTime now = LocalDateTime.now();
-        return new Admin(id, password, null, "BASIC", now, now, null);
+        return new Admin(id, password, userId, "BASIC", now, now, null);
     }
 
     public Admin(final String id,
@@ -38,6 +38,10 @@ public class Admin {
 
     public boolean hasNotUserId() {
         return isNull(userId);
+    }
+
+    public boolean matchPassword(final String rawPassword) {
+        return this.password.equals(rawPassword);
     }
 
     public void setUserId(final String userId) {

@@ -1,5 +1,7 @@
 package com.official.lockr.domain.users.domain;
 
+import com.official.lockr.domain.users.domain.event.WithdrawnUserEvent;
+import com.official.lockr.global.ddd.AggregateRoot;
 import com.official.lockr.global.vo.BirthDate;
 import com.official.lockr.global.vo.Gender;
 
@@ -8,13 +10,13 @@ import java.util.Objects;
 
 import static com.official.lockr.global.util.UlidUtils.generateUlid;
 
-public class Users {
+public class Users extends AggregateRoot {
 
     private final String id;
     private final UserAdditionalInfo userAdditionalInfo;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
-    private final LocalDateTime deletedAt;
+    private LocalDateTime deletedAt;
 
     public static Users init() {
         final String userId = generateUlid();
@@ -33,8 +35,20 @@ public class Users {
         this.deletedAt = deletedAt;
     }
 
-    public void updateAdditionalInfo(final String name, final BirthDate birthDate, final String phone, final Gender gender) {
-        this.userAdditionalInfo.update(name, birthDate, phone, gender);
+    public void updateAdditionalInfo(final String name, final BirthDate birthDate, final String phone, final Gender gender, final String profileImage) {
+        this.userAdditionalInfo.update(name, birthDate, phone, gender, profileImage);
+    }
+
+    public void withdraw() {
+        if (this.deletedAt != null) {
+            throw new IllegalStateException("이미 탈퇴한 회원입니다.");
+        }
+        this.deletedAt = LocalDateTime.now();
+        this.addEvent(new WithdrawnUserEvent(this.id, this.deletedAt));
+    }
+
+    public boolean isWithdrawn() {
+        return this.deletedAt != null;
     }
 
     public String getId() {

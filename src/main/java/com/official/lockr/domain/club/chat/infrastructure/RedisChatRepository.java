@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -54,6 +55,13 @@ public class RedisChatRepository implements ChatRepository {
     }
 
     @Override
+    public Optional<Chat> findById(final String chatId) {
+        // Redis에서는 개별 메시지 조회가 비효율적이므로 Optional.empty() 반환
+        // ChatRepositoryAdapter에서 DB 조회로 폴백됨
+        return Optional.empty();
+    }
+
+    @Override
     public List<Chat> findAllByChatRoomId(final String chatRoomId) {
         final String key = getChatRoomKey(chatRoomId);
         final Set<String> messages = redisTemplate.opsForZSet().reverseRange(key, 0, -1);
@@ -87,6 +95,32 @@ public class RedisChatRepository implements ChatRepository {
                 .filter(chat -> !chat.getId().equals(lastChatId)) // lastChatId 제외
                 .limit(limit)  // 최종적으로 limit개만 반환
                 .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    @Override
+    public List<Chat> findAllAfterChatId(final String chatRoomId, final String afterChatId, final int limit) {
+        final String key = getChatRoomKey(chatRoomId);
+        final Double afterScore = findScoreByMessageId(key, afterChatId);
+        if (Objects.isNull(afterScore)) {
+            return List.of();
+        }
+        // afterChatId 이후의 메시지를 오래된순으로 조회
+        final Set<String> messages = redisTemplate.opsForZSet()
+                .rangeByScore(key, afterScore, Double.POSITIVE_INFINITY, 0, limit + 1);
+        if (Collections.isEmpty(messages)) {
+            return List.of();
+        }
+        return messages.stream()
+                .map(this::deserialize)
+                .filter(chat -> !chat.getId().equals(afterChatId))
+                .limit(limit)
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    @Override
+    public void softDelete(final String chatId) {
+        // Redis는 캐시 용도이므로 TTL에 의해 자연 만료
+        // 명시적 삭제가 필요하면 구현 가능하나, 현재는 no-op
     }
 
     private List<Chat> findAllChatRoomId(final int limit, final String key) {
@@ -138,8 +172,10 @@ public class RedisChatRepository implements ChatRepository {
         public String id;
         public String chatRoomId;
         public String senderId;
-        public String senderNickname;
         public String message;
+        public String repliedToId;
+        public String quotedSenderName;
+        public String quotedContent;
         public LocalDateTime createdAt;
 
         public ChatDto() {
@@ -149,13 +185,18 @@ public class RedisChatRepository implements ChatRepository {
             this.id = chat.getId();
             this.chatRoomId = chat.getChatRoomId();
             this.senderId = chat.getSenderId();
-            this.senderNickname = chat.getSenderNickname();
             this.message = chat.getMessage();
+            this.repliedToId = chat.getRepliedToId();
+            this.quotedSenderName = chat.getQuotedSenderName();
+            this.quotedContent = chat.getQuotedContent();
             this.createdAt = chat.getCreatedAt();
         }
 
         public Chat toDomain() {
-            return new Chat(id, chatRoomId, senderId, senderNickname, message, createdAt);
+            return new Chat(
+                    id, chatRoomId, senderId, message,
+                    repliedToId, quotedSenderName, quotedContent, createdAt
+            );
         }
     }
 }

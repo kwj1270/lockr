@@ -1,31 +1,67 @@
 package com.official.lockr.domain.club.sport.football.squad.api;
 
 import com.official.lockr.domain.club.club.domain.event.AddedClubMemberEvent;
-import com.official.lockr.domain.club.sport.football.squad.application.dto.AddFootBallPlayerCommand;
+import com.official.lockr.domain.club.club.domain.event.FoundClubEvent;
+import com.official.lockr.domain.club.sport.football.lineup.application.command.AddLineupsCommand;
+import com.official.lockr.domain.club.sport.football.squad.application.command.AddFootBallPlayerCommand;
+import com.official.lockr.domain.club.sport.football.squad.application.command.CreateSquadCommand;
 import com.official.lockr.domain.club.sport.football.squad.application.usecase.AddSquadPlayerUseCase;
-import org.springframework.context.event.EventListener;
+import com.official.lockr.domain.club.sport.football.squad.application.usecase.CreateSquadUseCase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
 public class SquadEventConsumer {
 
-    private final AddSquadPlayerUseCase addSquadPlayerUseCase;
+    private static final Logger log = LoggerFactory.getLogger(SquadEventConsumer.class);
 
-    public SquadEventConsumer(final AddSquadPlayerUseCase addSquadPlayerUseCase) {
+    private final AddSquadPlayerUseCase addSquadPlayerUseCase;
+    private final CreateSquadUseCase createSquadUseCase;
+    private final RetryTemplate retryTemplate;
+
+    public SquadEventConsumer(final AddSquadPlayerUseCase addSquadPlayerUseCase,
+                              final CreateSquadUseCase createSquadUseCase
+    ) {
         this.addSquadPlayerUseCase = addSquadPlayerUseCase;
+        this.createSquadUseCase = createSquadUseCase;
+        this.retryTemplate = RetryTemplate.builder()
+                .maxAttempts(3)
+                .exponentialBackoff(1000, 1.5, 5000)
+                .retryOn(Exception.class)
+                .build();
     }
 
-    @EventListener
-    public void create(final AddedClubMemberEvent event) {
-        if (event.sportType().equals("FOOT_BALL")) {
-            addSquadPlayerUseCase.addPlayer(new AddFootBallPlayerCommand(event.clubId(), event.userId()));
+    @TransactionalEventListener
+    public void consume(final FoundClubEvent event) {
+        if (!"FOOT_BALL".equals(event.sportType())) {
+            return;
+        }
+        try {
+            retryTemplate.execute(ctx -> {
+                createSquadUseCase.create(new CreateSquadCommand(event.id(), event.foundUserId()));
+                return null;
+            });
+        } catch (Exception e) {
+            log.error("Failed to create squad after all retries. clubId={}", event.id(), e);
         }
     }
 
-//    @TransactionalEventListener
-//    public void create(final ApprovedApplicationEvent event) {
-//        if(event.sportType().equals("FOOT_BALL")) {
-//            addFootBallPlayerUseCase.addPlayer(new AddFootBallPlayerCommand(event.clubId(), event.userId()));
-//        }
-//    }
+    @TransactionalEventListener
+    public void create(final AddedClubMemberEvent event) {
+        if (!"FOOT_BALL".equals(event.sportType())) {
+            return;
+        }
+        try {
+            retryTemplate.execute(ctx -> {
+                addSquadPlayerUseCase.addPlayer(new AddFootBallPlayerCommand(event.clubId(), event.userId()));
+                return null;
+            });
+        } catch (Exception e) {
+            log.error("Failed to add squad player after all retries. clubId={}, userId={}",
+                    event.clubId(), event.userId(), e);
+        }
+    }
 }

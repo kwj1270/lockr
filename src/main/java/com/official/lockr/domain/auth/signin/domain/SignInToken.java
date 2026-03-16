@@ -3,6 +3,9 @@ package com.official.lockr.domain.auth.signin.domain;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+import static com.official.lockr.global.util.UlidUtils.generateUlid;
+import static com.official.lockr.global.util.UuidUtils.generateUuid;
+
 public class SignInToken {
     private final String id;
     private final String userId;
@@ -20,6 +23,11 @@ public class SignInToken {
         this.expiresAt = expiresAt;
         this.createdAt = createdAt;
         this.deletedAt = deletedAt;
+    }
+
+    public static SignInToken init(final String userId, final String signInId) {
+        final LocalDateTime now = LocalDateTime.now();
+        return new SignInToken(generateUlid(), userId, signInId, generateUuid(), now.plusDays(30), now, null);
     }
 
     public void revoke() {

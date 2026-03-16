@@ -1,20 +1,28 @@
 package com.official.lockr.domain.club.schedule.api.dto;
 
+import com.official.lockr.domain.club.schedule.application.command.CreateScheduleCommand;
 import com.official.lockr.domain.club.schedule.domain.ScheduleType;
+import com.official.lockr.domain.club.schedule.domain.vo.ScheduleDetailData;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 public record CreateScheduleRequest(
-        String title,
+        @NotBlank String title,
         String content,
         String location,
-        LocalDateTime scheduleTime,
-        ScheduleType scheduleType,
+        @NotNull LocalDateTime scheduleTime,
+        @NotNull ScheduleType scheduleType,
         String detail,
-        List<String> memberIds,
-        int minParticipants,
-        int maxParticipants,
+        Integer minParticipants,
+        Integer maxParticipants,
         int deadlineDays
 ) {
+    public CreateScheduleCommand toCommand(final String userId, final String clubId, final ScheduleDetailData parsedDetail) {
+        return new CreateScheduleCommand(
+                userId, clubId, title, content, location, scheduleTime, scheduleType, parsedDetail,
+                minParticipants, maxParticipants, deadlineDays
+        );
+    }
 }

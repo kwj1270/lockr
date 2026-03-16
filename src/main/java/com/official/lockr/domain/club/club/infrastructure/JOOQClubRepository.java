@@ -130,6 +130,8 @@ public class JOOQClubRepository implements ClubRepository {
                 MEMBERS.USER_ID,
                 MEMBERS.MEMBER_ROLE,
                 MEMBERS.CLUB_ID,
+                MEMBERS.NAME,
+                MEMBERS.PROFILE_IMAGE,
                 MEMBERS.CREATED_AT,
                 MEMBERS.UPDATED_AT,
                 MEMBERS.DELETED_AT
@@ -141,6 +143,8 @@ public class JOOQClubRepository implements ClubRepository {
                     member.getUserId(),
                     member.getRole().name(),
                     member.getClubId(),
+                    member.getName(),
+                    member.getProfileImage(),
                     member.getCreatedAt(),
                     member.getUpdatedAt(),
                     member.getDeletedAt()
@@ -150,6 +154,8 @@ public class JOOQClubRepository implements ClubRepository {
         query.onDuplicateKeyUpdate()
                 .set(MEMBERS.USER_ID, excluded(MEMBERS.USER_ID))
                 .set(MEMBERS.MEMBER_ROLE, excluded(MEMBERS.MEMBER_ROLE))
+                .set(MEMBERS.NAME, excluded(MEMBERS.NAME))
+                .set(MEMBERS.PROFILE_IMAGE, excluded(MEMBERS.PROFILE_IMAGE))
                 .set(MEMBERS.UPDATED_AT, excluded(MEMBERS.UPDATED_AT))
                 .set(MEMBERS.DELETED_AT, excluded(MEMBERS.DELETED_AT))
                 .execute();
@@ -199,6 +205,8 @@ public class JOOQClubRepository implements ClubRepository {
                 entity.getUserId(),
                 MemberRole.valueOf(entity.getMemberRole()),
                 entity.getClubId(),
+                entity.getName(),
+                entity.getProfileImage(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt(),
                 entity.getDeletedAt()

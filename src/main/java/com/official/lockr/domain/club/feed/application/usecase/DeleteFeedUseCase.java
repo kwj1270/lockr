@@ -1,6 +1,6 @@
 package com.official.lockr.domain.club.feed.application.usecase;
 
-import com.official.lockr.domain.club.feed.application.dto.DeleteFeedCommand;
+import com.official.lockr.domain.club.feed.application.command.DeleteFeedCommand;
 
 public interface DeleteFeedUseCase {
 

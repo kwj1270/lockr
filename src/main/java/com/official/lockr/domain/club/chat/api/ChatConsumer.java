@@ -1,21 +1,21 @@
 package com.official.lockr.domain.club.chat.api;
 
-import com.official.lockr.domain.club.chat.application.dto.AddChatterCommand;
-import com.official.lockr.domain.club.chat.application.dto.CreateChatRoomCommand;
+import com.official.lockr.domain.club.chat.application.command.AddChatterCommand;
+import com.official.lockr.domain.club.chat.application.command.CreateChatRoomCommand;
+import com.official.lockr.domain.club.chat.application.command.RemoveChatterCommand;
 import com.official.lockr.domain.club.chat.application.usecase.AddChatterUseCase;
 import com.official.lockr.domain.club.chat.application.usecase.CreateChatRoomUseCase;
 import com.official.lockr.domain.club.chat.application.usecase.GetChatRoomsUseCase;
+import com.official.lockr.domain.club.chat.application.usecase.RemoveChatterUseCase;
 import com.official.lockr.domain.club.chat.domain.ChatRoom;
 import com.official.lockr.domain.club.club.domain.event.AddedClubMemberEvent;
 import com.official.lockr.domain.club.club.domain.event.FoundClubEvent;
+import com.official.lockr.domain.club.club.domain.event.RemovedClubMemberEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.event.EventListener;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Recover;
-import org.springframework.retry.annotation.Retryable;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.List;
 
@@ -27,39 +27,74 @@ public class ChatConsumer {
     private final CreateChatRoomUseCase createChatRoomUseCase;
     private final GetChatRoomsUseCase getChatRoomsUseCase;
     private final AddChatterUseCase addChatterUseCase;
+    private final RemoveChatterUseCase removeChatterUseCase;
+    private final RetryTemplate addMemberRetryTemplate;
 
     public ChatConsumer(final CreateChatRoomUseCase createChatRoomUseCase,
                         final GetChatRoomsUseCase getChatRoomsUseCase,
-                        final AddChatterUseCase addChatterUseCase
+                        final AddChatterUseCase addChatterUseCase,
+                        final RemoveChatterUseCase removeChatterUseCase
     ) {
         this.createChatRoomUseCase = createChatRoomUseCase;
         this.getChatRoomsUseCase = getChatRoomsUseCase;
         this.addChatterUseCase = addChatterUseCase;
+        this.removeChatterUseCase = removeChatterUseCase;
+        this.addMemberRetryTemplate = RetryTemplate.builder()
+                .maxAttempts(10)
+                .exponentialBackoff(1000, 1.5, 5000)
+                .retryOn(IllegalStateException.class)
+                .build();
     }
 
-    @EventListener
+    @TransactionalEventListener
     public void create(final FoundClubEvent event) {
-        log.info("Creating chat room for club: {}", event.id());
-        createChatRoomUseCase.create(new CreateChatRoomCommand(event.id(), event.name(), event.foundUserId()));
-        log.info("Chat room created successfully for club: {}", event.id());
-    }
-
-    @EventListener
-    public void addMember(final AddedClubMemberEvent event) {
-        log.debug("Received AddedMemberEvent for club: {}, user: {}", event.clubId(), event.userId());
         try {
-            addMemberWithRetry(event);
+            log.info("Creating chat room for club: {}", event.id());
+            createChatRoomUseCase.create(new CreateChatRoomCommand(event.id(), event.name(), event.foundUserId()));
+            log.info("Chat room created successfully for club: {}", event.id());
         } catch (Exception e) {
-            log.error("Failed to add member to chat room after retries. club: {}, user: {}", event.clubId(), event.userId(), e);
+            log.error("Failed to create chat room for club: {}", event.id(), e);
         }
     }
 
-    @Retryable(
-            retryFor = {IllegalStateException.class},
-            maxAttempts = 10,
-            backoff = @Backoff(delay = 1000, multiplier = 1.5, maxDelay = 5000)
-    )
-    public void addMemberWithRetry(final AddedClubMemberEvent event) {
+    @TransactionalEventListener
+    public void addMember(final AddedClubMemberEvent event) {
+        log.debug("Received AddedMemberEvent for club: {}, user: {}", event.clubId(), event.userId());
+        try {
+            addMemberRetryTemplate.execute(ctx -> {
+                doAddMember(event);
+                return null;
+            });
+        } catch (Exception e) {
+            log.error("Failed to add member to chat room after all retries. club: {}, user: {}",
+                    event.clubId(), event.userId(), e);
+        }
+    }
+
+    @TransactionalEventListener
+    public void removeMember(final RemovedClubMemberEvent event) {
+        log.debug("Received RemovedClubMemberEvent for club: {}, user: {}", event.clubId(), event.userId());
+        try {
+            final List<ChatRoom> chatRooms = getChatRoomsUseCase.getChatRooms(event.clubId(), event.userId());
+            if (chatRooms.isEmpty()) {
+                log.warn("ChatRoom not found for club: {}. Skipping chatter removal.", event.clubId());
+                return;
+            }
+            final ChatRoom chatRoom = chatRooms.getFirst();
+            removeChatterUseCase.removeChatter(new RemoveChatterCommand(
+                    chatRoom.getClubId(),
+                    chatRoom.getId(),
+                    event.userId()
+            ));
+            log.info("Member removed from chat room successfully. club: {}, user: {}, chatRoom: {}",
+                    event.clubId(), event.userId(), chatRoom.getId());
+        } catch (Exception e) {
+            log.error("Failed to remove member from chat room. club: {}, user: {}",
+                    event.clubId(), event.userId(), e);
+        }
+    }
+
+    private void doAddMember(final AddedClubMemberEvent event) {
         log.debug("Attempting to add member to chat room. club: {}, user: {}", event.clubId(), event.userId());
 
         final List<ChatRoom> chatRooms = getChatRoomsUseCase.getChatRooms(event.clubId(), event.userId());
@@ -74,11 +109,7 @@ public class ChatConsumer {
                 event.userId()
         ));
 
-        log.info("Member added to chat room successfully. club: {}, user: {}, chatRoom: {}", event.clubId(), event.userId(), chatRoom.getId());
-    }
-
-    @Recover
-    public void recoverAddMember(final IllegalStateException e, final AddedClubMemberEvent event) {
-        log.error("Failed to add member to chat room after all retries. " + "ChatRoom may not have been created. club: {}, user: {}", event.clubId(), event.userId(), e);
+        log.info("Member added to chat room successfully. club: {}, user: {}, chatRoom: {}",
+                event.clubId(), event.userId(), chatRoom.getId());
     }
 }

@@ -1,6 +1,6 @@
 package com.official.lockr.domain.club.feed.api.dto;
 
-import com.official.lockr.domain.club.feed.application.dto.CreateFeedCommand;
+import com.official.lockr.domain.club.feed.application.command.CreateFeedCommand;
 import com.official.lockr.domain.club.feed.domain.FeedType;
 
 import java.util.List;

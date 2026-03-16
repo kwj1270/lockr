@@ -5,7 +5,6 @@ import com.official.lockr.domain.club.sport.football.squad.api.dto.UpdateSquadPl
 import com.official.lockr.domain.club.sport.football.squad.application.command.UpdateSquadPlayerCommand;
 import com.official.lockr.domain.club.sport.football.squad.application.usecase.UpdateSquadPlayerUseCase;
 import com.official.lockr.domain.club.sport.football.squad.domain.Squad;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,15 +22,21 @@ public class SquadApi {
     public ResponseEntity<Squad> registerOrUpdatePlayer(
             @PathVariable String clubId,
             @PathVariable String squadId,
-            @RequestBody UpdateSquadPlayerRequest request,
-            final HttpSession httpSession
+            @RequestAttribute("signInSession") final SignInSession signInSession,
+            @RequestBody UpdateSquadPlayerRequest request
     ) {
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
-        if (signIn == null) {
-            return ResponseEntity.status(401).build();
-        }
+        final Squad squad = updateSquadPlayerUseCase.updatePlayer(request.toCommand(signInSession.userId(), clubId, squadId));
+        return ResponseEntity.ok(squad);
+    }
 
-        final UpdateSquadPlayerCommand command = request.toCommand(signIn.userId(), clubId);
+    @PostMapping("/player")
+    public ResponseEntity<Squad> UpdatePlayer(
+            @PathVariable String clubId,
+            @PathVariable String squadId,
+            @RequestBody UpdateSquadPlayerRequest request,
+            @RequestAttribute("signInSession") final SignInSession signInSession
+    ) {
+        final UpdateSquadPlayerCommand command = request.toCommand(signInSession.userId(), clubId, squadId);
         final Squad squad = updateSquadPlayerUseCase.updatePlayer(command);
         return ResponseEntity.ok(squad);
     }

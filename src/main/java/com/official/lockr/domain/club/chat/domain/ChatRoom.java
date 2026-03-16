@@ -1,6 +1,7 @@
 package com.official.lockr.domain.club.chat.domain;
 
 import com.official.lockr.domain.club.chat.domain.event.CreatedChatRoomEvent;
+import com.official.lockr.domain.club.chat.domain.event.RemovedChatterEvent;
 import com.official.lockr.global.ddd.AggregateRoot;
 
 import java.time.LocalDateTime;
@@ -55,6 +56,7 @@ public class ChatRoom extends AggregateRoot {
     public void removeChatter(final String userId) {
         chatters.removeIf(chatter -> chatter.isSame(userId));
         userIdCache.remove(userId);
+        addEvent(new RemovedChatterEvent(this.id, this.clubId, userId));
     }
 
     public boolean hasMember(final String userId) {

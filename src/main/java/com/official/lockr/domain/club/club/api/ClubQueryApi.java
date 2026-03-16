@@ -1,27 +1,23 @@
 package com.official.lockr.domain.club.club.api;
 
 import com.official.lockr.domain.auth.signin.domain.SignInSession;
-import com.official.lockr.domain.club.club.api.dto.MyClubResponse;
-import com.official.lockr.domain.club.club.api.dto.MyClubsResponse;
-import com.official.lockr.domain.club.club.api.dto.MyMemberInfoResponse;
+import com.official.lockr.domain.club.club.api.dto.*;
 import com.official.lockr.domain.club.club.domain.MemberRole;
-import jakarta.servlet.http.HttpSession;
 import org.jooq.Configuration;
 import org.jooq.generated.tables.daos.ClubsDao;
 import org.jooq.generated.tables.pojos.MembersEntity;
 import org.jooq.impl.DSL;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 import static java.util.stream.Collectors.toMap;
 import static org.jooq.generated.tables.ClubsJOOQEntity.CLUBS;
 import static org.jooq.generated.tables.MembersJOOQEntity.MEMBERS;
+import static org.jooq.generated.tables.SquadPlayersJOOQEntity.SQUAD_PLAYERS;
+import static org.jooq.generated.tables.SquadsJOOQEntity.SQUADS;
+import static org.jooq.generated.tables.UserAdditionalInfoJOOQEntity.USER_ADDITIONAL_INFO;
 
 @RestController
 @RequestMapping("/api/v1/clubs")
@@ -33,19 +29,35 @@ public class ClubQueryApi {
         this.clubsDao = new ClubsDao(configuration);
     }
 
+    @GetMapping
+    public ResponseEntity<FindClubsResponse> clubs(
+            @RequestAttribute("signInSession") final SignInSession signInSession,
+            @RequestParam("name") final String name,
+            @RequestParam("sportType") final String sportType
+    ) {
+        final FindClubsResponse findClubsResponses = new FindClubsResponse(clubsDao.ctx()
+                .select(CLUBS)
+                .from(CLUBS)
+                .where(
+                        CLUBS.NAME.eq(name),
+                        CLUBS.SPORT_TYPE.eq("FOOT_BALL")
+                )
+                .and(CLUBS.DELETED_AT.isNull())
+                .fetchInto(FindClubResponse.class));
+        return ResponseEntity.ok(findClubsResponses);
+    }
+
     @GetMapping("/my")
     public ResponseEntity<MyClubsResponse> getMyClubs(
-            final HttpSession httpSession,
+            @RequestAttribute("signInSession") final SignInSession signInSession,
             @RequestParam(value = "cursor", required = false, defaultValue = "") String cursor,
             @RequestParam(value = "limit", defaultValue = "5") int limit
     ) {
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
-
         var myClubDataQuery = clubsDao.ctx()
                 .select(CLUBS.ID, MEMBERS.MEMBER_ROLE)
                 .from(CLUBS)
                 .innerJoin(MEMBERS).on(MEMBERS.CLUB_ID.eq(CLUBS.ID))
-                .where(MEMBERS.USER_ID.eq(signIn.userId()))
+                .where(MEMBERS.USER_ID.eq(signInSession.userId()))
                 .and(CLUBS.DELETED_AT.isNull())
                 .and(MEMBERS.DELETED_AT.isNull());
 
@@ -105,15 +117,13 @@ public class ClubQueryApi {
 
     @GetMapping("/{clubId}/me")
     public ResponseEntity<MyMemberInfoResponse> getMyMemberInfo(
-            final HttpSession httpSession,
+            @RequestAttribute("signInSession") final SignInSession signInSession,
             @PathVariable final String clubId
     ) {
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
-
         final MembersEntity member = clubsDao.ctx()
                 .selectFrom(MEMBERS)
                 .where(MEMBERS.CLUB_ID.eq(clubId))
-                .and(MEMBERS.USER_ID.eq(signIn.userId()))
+                .and(MEMBERS.USER_ID.eq(signInSession.userId()))
                 .and(MEMBERS.DELETED_AT.isNull())
                 .fetchOneInto(MembersEntity.class);
 
@@ -125,11 +135,73 @@ public class ClubQueryApi {
                 member.getId(),
                 member.getUserId(),
                 member.getClubId(),
+                member.getName(),
                 MemberRole.valueOf(member.getMemberRole()),
+                member.getProfileImage(),
                 member.getCreatedAt(),
                 member.getUpdatedAt()
         );
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{clubId}/members")
+    public ResponseEntity<MembersResponse> getMembers(
+            @RequestAttribute("signInSession") final SignInSession signInSession,
+            @PathVariable final String clubId
+    ) {
+        final var nameField = DSL.coalesce(MEMBERS.NAME, USER_ADDITIONAL_INFO.NAME).as("name");
+
+        final List<MemberResponse> members = clubsDao.ctx()
+                .select(
+                        MEMBERS.USER_ID,
+                        nameField,
+                        MEMBERS.MEMBER_ROLE,
+                        MEMBERS.CREATED_AT,
+                        MEMBERS.PROFILE_IMAGE,
+                        SQUAD_PLAYERS.POSITIONS,
+                        SQUAD_PLAYERS.BACK_NUMBER,
+                        USER_ADDITIONAL_INFO.PHONE
+                )
+                .from(MEMBERS)
+                .leftJoin(USER_ADDITIONAL_INFO).on(MEMBERS.USER_ID.eq(USER_ADDITIONAL_INFO.USER_ID))
+                .leftJoin(SQUADS).on(SQUADS.CLUB_ID.eq(MEMBERS.CLUB_ID).and(SQUADS.DELETED_AT.isNull()))
+                .leftJoin(SQUAD_PLAYERS).on(SQUAD_PLAYERS.SQUAD_ID.eq(SQUADS.ID)
+                        .and(SQUAD_PLAYERS.USER_ID.eq(MEMBERS.USER_ID))
+                        .and(SQUAD_PLAYERS.DELETED_AT.isNull()))
+                .where(MEMBERS.CLUB_ID.eq(clubId))
+                .and(MEMBERS.DELETED_AT.isNull())
+                .orderBy(MEMBERS.CREATED_AT.asc())
+                .fetch()
+                .map(record -> new MemberResponse(
+                        record.get(MEMBERS.USER_ID),
+                        record.get("name", String.class),
+                        record.get(MEMBERS.MEMBER_ROLE),
+                        record.get(MEMBERS.CREATED_AT),
+                        record.get(MEMBERS.PROFILE_IMAGE),
+                        record.get(SQUAD_PLAYERS.POSITIONS),
+                        record.get(SQUAD_PLAYERS.BACK_NUMBER),
+                        record.get(USER_ADDITIONAL_INFO.PHONE)
+                ));
+
+        return ResponseEntity.ok(new MembersResponse(members));
+    }
+
+    @GetMapping("/{clubId}/me/profile-image")
+    public ResponseEntity<MemberProfileResponse> getMemberProfileImage(
+            @RequestAttribute("signInSession") final SignInSession signInSession,
+            @PathVariable final String clubId
+    ) {
+        final String profileImage = clubsDao.ctx()
+                .select(MEMBERS.PROFILE_IMAGE)
+                .from(MEMBERS)
+                .where(MEMBERS.CLUB_ID.eq(clubId))
+                .and(MEMBERS.USER_ID.eq(signInSession.userId()))
+                .and(MEMBERS.DELETED_AT.isNull())
+                .fetchOneInto(String.class);
+        if (profileImage == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(new MemberProfileResponse(profileImage));
     }
 }

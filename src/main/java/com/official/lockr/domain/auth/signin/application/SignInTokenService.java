@@ -8,11 +8,8 @@ import com.official.lockr.domain.auth.signin.application.usecase.RegisterSignInT
 import com.official.lockr.domain.auth.signin.domain.SignInToken;
 import com.official.lockr.domain.auth.signin.domain.SignInTokenRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-
-import static com.official.lockr.global.util.UlidUtils.generateUlid;
-import static com.official.lockr.global.util.UuidUtils.generateUuid;
 import static java.util.Objects.isNull;
 
 @Service
@@ -26,9 +23,7 @@ public class SignInTokenService implements RegisterSignInTokenUseCase, RefreshSi
 
     @Override
     public SignInToken register(final RegisterSignInTokenCommand command) {
-        final LocalDateTime now = LocalDateTime.now();
-        final SignInToken signInToken = new SignInToken(generateUlid(), command.userId(), command.signInId(), generateUuid(), now.plusDays(30), now, null);
-        return signInTokenRepository.save(signInToken);
+        return signInTokenRepository.save(SignInToken.init(command.userId(), command.signInId()));
     }
 
     @Override
@@ -39,17 +34,7 @@ public class SignInTokenService implements RegisterSignInTokenUseCase, RefreshSi
         }
         oldToken.revoke();
         signInTokenRepository.save(oldToken);
-        final LocalDateTime now = LocalDateTime.now();
-        final SignInToken newToken = new SignInToken(
-                generateUlid(),
-                oldToken.getUserId(),
-                oldToken.getSignInId(),
-                generateUuid(),
-                now.plusDays(30),
-                now,
-                null
-        );
-        return signInTokenRepository.save(newToken);
+        return signInTokenRepository.save(SignInToken.init(oldToken.getUserId(), oldToken.getSignInId()));
     }
 
     @Override

@@ -16,8 +16,6 @@ public class SquadPlayer {
     private final String id;
     private final String squadId;
     private final String userId;
-    private String name;
-    private String profileImageUrl;
     private BirthDate birthDate;
     private String height;
     private String weight;
@@ -31,8 +29,6 @@ public class SquadPlayer {
     public SquadPlayer(final String id,
                        final String squadId,
                        final String userId,
-                       final String name,
-                       final String profileImageUrl,
                        final BirthDate birthDate,
                        final String height,
                        final String weight,
@@ -44,8 +40,6 @@ public class SquadPlayer {
         this.id = id;
         this.squadId = squadId;
         this.userId = userId;
-        this.profileImageUrl = profileImageUrl;
-        this.name = name;
         this.positions = positions;
         this.birthDate = birthDate;
         this.height = height;
@@ -59,7 +53,7 @@ public class SquadPlayer {
 
     public static SquadPlayer init(final String id, final String squadId, final String userId, final BackNumber backNumber) {
         return new SquadPlayer(
-                id, squadId, userId, null, null, null, null, null, null, null, backNumber,
+                id, squadId, userId, null, null, null, null, null, backNumber,
                 LocalDateTime.now(), LocalDateTime.now(), null
         );
     }
@@ -69,8 +63,6 @@ public class SquadPlayer {
                 id,
                 squadId,
                 userId,
-                application.getName(),
-                application.getProfileImage(),
                 application.getBirthDate(),
                 footballSportSpecificData.height(),
                 footballSportSpecificData.weight(),
@@ -83,10 +75,8 @@ public class SquadPlayer {
     }
 
 
-    public void update(final String name, final String profileImage, final String birthDate, final String height, final String weight, final Foot foot, final List<Position> positions, final BackNumber backNumber) {
-        this.name = name;
-        this.profileImageUrl = profileImage;
-        this.birthDate = new BirthDate(birthDate);
+    public void update(final String birthDate, final String height, final String weight, final Foot foot, final List<Position> positions, final BackNumber backNumber) {
+        this.birthDate = birthDate != null ? new BirthDate(birthDate) : this.birthDate;
         this.height = height;
         this.weight = weight;
         this.foot = foot;
@@ -141,14 +131,6 @@ public class SquadPlayer {
 
     public String getSquadId() {
         return squadId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getProfileImageUrl() {
-        return profileImageUrl;
     }
 
     public boolean isSame(final String userId) {

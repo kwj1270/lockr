@@ -8,8 +8,8 @@ import com.official.lockr.global.vo.BirthDate;
 import com.official.lockr.global.vo.Foot;
 import com.official.lockr.global.vo.Position;
 import jakarta.annotation.Nullable;
-import jakarta.servlet.http.HttpSession;
 import org.jooq.Configuration;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.jooq.generated.tables.daos.SquadPlayersDao;
 import org.jooq.generated.tables.daos.SquadsDao;
 import org.jooq.generated.tables.pojos.SquadPlayersEntity;
@@ -54,14 +54,9 @@ public class SquadQueryApi {
     @GetMapping("/me")
     public ResponseEntity<SquadPlayer> findMySquadPlayer(
             @PathVariable String clubId,
-            final HttpSession httpSession
+            @RequestAttribute("signInSession") final SignInSession signInSession
     ) {
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
-        if (signIn == null) {
-            return ResponseEntity.status(401).build();
-        }
-
-        final SquadPlayer mySquadPlayer = findMySquadPlayerByUserIdAndClubId(signIn.userId(), clubId);
+        final SquadPlayer mySquadPlayer = findMySquadPlayerByUserIdAndClubId(signInSession.userId(), clubId);
 
         if (mySquadPlayer == null) {
             return ResponseEntity.notFound().build();
@@ -118,8 +113,6 @@ public class SquadQueryApi {
                 entity.getId(),
                 entity.getSquadId(),
                 entity.getUserId(),
-                entity.getName(),
-                entity.getProfileImage(),
                 Objects.nonNull(entity.getBirthDate()) ? new BirthDate(entity.getBirthDate()) : null,
                 entity.getHeight(),
                 entity.getWeight(),

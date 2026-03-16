@@ -9,7 +9,7 @@ import java.util.List;
 public record UpdateSquadPlayerCommand(
         String userId,
         String clubId,
-        String profileImage,
+        String squadId,
         String height,
         String weight,
         Foot foot,

@@ -106,12 +106,12 @@ class ClubServiceTest {
                 clubId, userId, "FC 테스트", "FOOTBALL", "서울", "강남구", "테스트 클럽",
                 null, null, new java.util.ArrayList<>(), now, now, null
         );
-        club.addMember(Member.president(userId, clubId, null));
+        club.addMember(Member.president(userId, clubId, null, null));
 
         when(clubRepository.findById(clubId)).thenReturn(club);
         when(clubRepository.save(any(Club.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        AddMemberCommand command = new AddMemberCommand(clubId, newMemberUserId, applicationProfileImage);
+        AddMemberCommand command = AddMemberCommand.basic(clubId, newMemberUserId, null, applicationProfileImage);
 
         // when
         Club result = clubService.addMember(command);
@@ -138,7 +138,7 @@ class ClubServiceTest {
                 clubId, userId, "FC 테스트", "FOOTBALL", "서울", "강남구", "테스트 클럽",
                 null, null, new java.util.ArrayList<>(), now, now, null
         );
-        club.addMember(Member.president(userId, clubId, null));
+        club.addMember(Member.president(userId, clubId, null, null));
 
         UserAdditionalInfo additionalInfo = new UserAdditionalInfo(
                 "info-002", newMemberUserId, "김철수", null, null, null, userProfileImage, now, now, null
@@ -149,7 +149,7 @@ class ClubServiceTest {
         when(usersRepository.findById(newMemberUserId)).thenReturn(newUser);
         when(clubRepository.save(any(Club.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        AddMemberCommand command = new AddMemberCommand(clubId, newMemberUserId, null);
+        AddMemberCommand command = AddMemberCommand.basic(clubId, newMemberUserId, null, null);
 
         // when
         Club result = clubService.addMember(command);
@@ -171,7 +171,7 @@ class ClubServiceTest {
         String newProfileImage = "https://example.com/new-profile.jpg";
 
         LocalDateTime now = LocalDateTime.now();
-        Member member = new Member(memberId, userId, com.official.lockr.domain.club.club.domain.MemberRole.BASIC, clubId, "https://example.com/old.jpg", now, now, null);
+        Member member = new Member(memberId, userId, com.official.lockr.domain.club.club.domain.MemberRole.BASIC, clubId, null, "https://example.com/old.jpg", now, now, null);
         Club club = new Club(
                 clubId, "founder-001", "FC 테스트", "FOOTBALL", "서울", "강남구", "테스트 클럽",
                 null, null, new java.util.ArrayList<>(), now, now, null
@@ -206,7 +206,7 @@ class ClubServiceTest {
                 clubId, "founder-001", "FC 테스트", "FOOTBALL", "서울", "강남구", "테스트 클럽",
                 null, null, new java.util.ArrayList<>(), now, now, null
         );
-        club.addMember(Member.president("founder-001", clubId, null));
+        club.addMember(Member.president("founder-001", clubId, null, null));
 
         when(clubRepository.findById(clubId)).thenReturn(club);
 

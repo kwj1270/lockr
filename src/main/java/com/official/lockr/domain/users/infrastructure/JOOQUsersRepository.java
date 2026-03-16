@@ -23,11 +23,13 @@ public class JOOQUsersRepository implements UsersRepository {
 
     private final UsersDao usersDao;
     private final UserAdditionalInfoDao userAdditionalInfoDao;
+    private final DomainEventPublisher domainEventPublisher;
 
     public JOOQUsersRepository(final Configuration configuration,
                                final DomainEventPublisher domainEventPublisher) {
         this.usersDao = new UsersDao(configuration);
         this.userAdditionalInfoDao = new UserAdditionalInfoDao(configuration);
+        this.domainEventPublisher = domainEventPublisher;
     }
 
     @Transactional
@@ -35,6 +37,7 @@ public class JOOQUsersRepository implements UsersRepository {
     public Users save(final Users users) {
         upsertUser(users);
         upsertUserAdditionalInfo(users.getUserAdditionalInfo());
+        users.publish(domainEventPublisher);
         return users;
     }
 
@@ -68,6 +71,7 @@ public class JOOQUsersRepository implements UsersRepository {
                 Objects.nonNull(additionalInfoRecord.getBirthDate())? new BirthDate(additionalInfoRecord.getBirthDate()) : null,
                 additionalInfoRecord.getPhone(),
                 Gender.fromDbValue(additionalInfoRecord.getGender()),
+                additionalInfoRecord.getProfileImage(),
                 additionalInfoRecord.getCreatedAt(),
                 additionalInfoRecord.getUpdatedAt(),
                 additionalInfoRecord.getDeletedAt()
@@ -104,6 +108,7 @@ public class JOOQUsersRepository implements UsersRepository {
                 .set(USER_ADDITIONAL_INFO.BIRTH_DATE, info.getBirthDate())
                 .set(USER_ADDITIONAL_INFO.PHONE, info.getPhone())
                 .set(USER_ADDITIONAL_INFO.GENDER, Objects.nonNull(info.getGender()) ? info.getGender().toDbValue() : null)
+                .set(USER_ADDITIONAL_INFO.PROFILE_IMAGE, info.getProfileImage())
                 .set(USER_ADDITIONAL_INFO.CREATED_AT, info.getCreatedAt())
                 .set(USER_ADDITIONAL_INFO.UPDATED_AT, info.getUpdatedAt())
                 .set(USER_ADDITIONAL_INFO.DELETED_AT, info.getDeletedAt())
@@ -112,6 +117,7 @@ public class JOOQUsersRepository implements UsersRepository {
                 .set(USER_ADDITIONAL_INFO.BIRTH_DATE, excluded(USER_ADDITIONAL_INFO.BIRTH_DATE))
                 .set(USER_ADDITIONAL_INFO.PHONE, excluded(USER_ADDITIONAL_INFO.PHONE))
                 .set(USER_ADDITIONAL_INFO.GENDER, excluded(USER_ADDITIONAL_INFO.GENDER))
+                .set(USER_ADDITIONAL_INFO.PROFILE_IMAGE, excluded(USER_ADDITIONAL_INFO.PROFILE_IMAGE))
                 .set(USER_ADDITIONAL_INFO.UPDATED_AT, excluded(USER_ADDITIONAL_INFO.UPDATED_AT))
                 .set(USER_ADDITIONAL_INFO.DELETED_AT, excluded(USER_ADDITIONAL_INFO.DELETED_AT))
                 .execute();

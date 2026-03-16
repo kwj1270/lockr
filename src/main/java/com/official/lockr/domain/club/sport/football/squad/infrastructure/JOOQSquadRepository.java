@@ -42,6 +42,26 @@ public class JOOQSquadRepository implements SquadRepository {
         this.domainEventPublisher = domainEventPublisher;
     }
 
+    @Override
+    public Squad findById(final String squadId) {
+        final SquadsEntity squadEntity = squadsDao.ctx()
+                .selectFrom(SQUADS)
+                .where(SQUADS.ID.eq(squadId))
+                .fetchOptional()
+                .map(record -> new SquadsEntity(
+                        record.getId(),
+                        record.getClubId(),
+                        record.getCreatedAt(),
+                        record.getUpdatedAt(),
+                        record.getDeletedAt()
+                ))
+                .orElse(null);
+        if (isNull(squadEntity)) {
+            return null;
+        }
+        return domain(squadEntity, findPlayersBySquadId(squadEntity.getId()));
+    }
+
     @Nullable
     @Override
     public Squad findByClubId(final String clubId) {
@@ -65,11 +85,11 @@ public class JOOQSquadRepository implements SquadRepository {
 
     @Transactional
     @Override
-    public Squad save(final Squad lineUp) {
-        upsertSquad(lineUp);
-        syncPlayers(lineUp);
-        lineUp.publish(domainEventPublisher);
-        return lineUp;
+    public Squad save(final Squad squad) {
+        upsertSquad(squad);
+        syncPlayers(squad);
+        squad.publish(domainEventPublisher);
+        return squad;
     }
 
     private void upsertSquad(final Squad lineUp) {
@@ -125,8 +145,6 @@ public class JOOQSquadRepository implements SquadRepository {
                 SQUAD_PLAYERS.ID,
                 SQUAD_PLAYERS.USER_ID,
                 SQUAD_PLAYERS.SQUAD_ID,
-                SQUAD_PLAYERS.PROFILE_IMAGE,
-                SQUAD_PLAYERS.NAME,
                 SQUAD_PLAYERS.POSITIONS,
                 SQUAD_PLAYERS.BIRTH_DATE,
                 SQUAD_PLAYERS.HEIGHT,
@@ -143,8 +161,6 @@ public class JOOQSquadRepository implements SquadRepository {
                     squadPlayer.getId(),
                     squadPlayer.getUserId(),
                     squadPlayer.getSquadId(),
-                    squadPlayer.getProfileImageUrl(),
-                    squadPlayer.getName(),
                     Objects.nonNull(squadPlayer.getPositions())
                             ? squadPlayer.getPositions().stream().map(Enum::name).collect(Collectors.joining(","))
                             : null,
@@ -160,8 +176,6 @@ public class JOOQSquadRepository implements SquadRepository {
         }
 
         query.onDuplicateKeyUpdate()
-                .set(SQUAD_PLAYERS.PROFILE_IMAGE, excluded(SQUAD_PLAYERS.PROFILE_IMAGE))
-                .set(SQUAD_PLAYERS.NAME, excluded(SQUAD_PLAYERS.NAME))
                 .set(SQUAD_PLAYERS.POSITIONS, excluded(SQUAD_PLAYERS.POSITIONS))
                 .set(SQUAD_PLAYERS.BIRTH_DATE, excluded(SQUAD_PLAYERS.BIRTH_DATE))
                 .set(SQUAD_PLAYERS.HEIGHT, excluded(SQUAD_PLAYERS.HEIGHT))
@@ -199,8 +213,6 @@ public class JOOQSquadRepository implements SquadRepository {
                 entity.getId(),
                 entity.getSquadId(),
                 entity.getUserId(),
-                entity.getName(),
-                entity.getProfileImage(),
                 Objects.nonNull(entity.getBirthDate()) ? new BirthDate(entity.getBirthDate()): null,
                 entity.getHeight(),
                 entity.getWeight(),

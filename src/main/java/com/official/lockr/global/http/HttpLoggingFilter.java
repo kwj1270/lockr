@@ -27,6 +27,8 @@ import java.util.stream.Collectors;
 @Component
 public class HttpLoggingFilter extends OncePerRequestFilter {
 
+    private static final String SSE_CONTENT_TYPE = "text/event-stream";
+
     private final HttpHeaders httpHeaders;
     private final HttpLoggingRepository httpLoggingRepository;
     private final ObjectMapper objectMapper;
@@ -39,6 +41,13 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
         this.httpHeaders = httpHeaders;
         this.httpLoggingRepository = httpLoggingRepository;
         this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected boolean shouldNotFilter(final HttpServletRequest request) {
+        // SSE 요청은 로깅 제외 (스트리밍이라 ContentCachingWrapper 사용 불가)
+        final String accept = request.getHeader("Accept");
+        return accept != null && accept.contains(SSE_CONTENT_TYPE);
     }
 
     @Override
@@ -89,8 +98,12 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
         if (Objects.isNull(httpSession)) {
             return "";
         }
-        final SignInSession signIn = (SignInSession) httpSession.getAttribute("signIn");
-        return signIn.userId();
+        try {
+            final SignInSession signIn = (SignInSession) httpSession.getAttribute(SignInSession.SESSION_KEY);
+            return signIn.userId();
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     private void saveHttpResponse(

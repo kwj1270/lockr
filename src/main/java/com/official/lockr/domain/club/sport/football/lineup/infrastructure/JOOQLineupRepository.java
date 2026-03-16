@@ -67,6 +67,7 @@ class JOOQLineupRepository implements LineupRepository {
         final List<LineupsEntity> lineupEntities = lineupsDao.ctx()
                 .selectFrom(LINEUPS)
                 .where(LINEUPS.CLUB_ID.eq(clubId))
+                .orderBy(LINEUPS.NAME.asc())
                 .fetchInto(LineupsEntity.class);
 
         return lineupEntities.stream()
@@ -153,7 +154,7 @@ class JOOQLineupRepository implements LineupRepository {
         );
 
         for (final LineupSlot player : lineupSlots) {
-            query.values(
+            query = query.values(
                     player.getId(),
                     player.getLineupId(),
                     player.getSquadPlayerId(),

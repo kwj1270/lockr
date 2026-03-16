@@ -3,10 +3,10 @@ package com.official.lockr.domain.club.club.api.dto;
 import com.official.lockr.domain.club.club.application.command.AssignManagerCommand;
 
 public record AssignManagerRequest(
-        String targetMemberId
+        String targetUserId
 ) {
 
     public AssignManagerCommand toCommand(final String clubId, final String userId) {
-        return new AssignManagerCommand(clubId, userId, targetMemberId);
+        return new AssignManagerCommand(clubId, userId, targetUserId);
     }
 }

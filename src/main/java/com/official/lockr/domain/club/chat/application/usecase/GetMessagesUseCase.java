@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface GetMessagesUseCase {
     List<Chat> getMessages(final String chatRoomId, final String userId, final String lastChatId, final int limit);
+
+    List<Chat> getMessagesAfter(final String chatRoomId, final String userId, final String afterChatId, final int limit);
 }

@@ -7,18 +7,17 @@ import com.official.lockr.global.vo.Position;
 import java.util.List;
 
 public record UpdateSquadPlayerRequest(
-        String profileImage,
         String height,
         String weight,
         String foot,
         List<String> positions,
         Integer backNumber
 ) {
-    public UpdateSquadPlayerCommand toCommand(final String userId, final String clubId) {
+    public UpdateSquadPlayerCommand toCommand(final String userId, final String clubId, final String squadId) {
         return new UpdateSquadPlayerCommand(
                 userId,
                 clubId,
-                profileImage,
+                squadId,
                 height,
                 weight,
                 Foot.valueOf(foot),

@@ -28,3 +28,16 @@ X-DEVICE-INFO: web
   "slotIndex": 5,
   "squadPlayerId": "{{SQUAD_PLAYER_2}}"
 }
+
+### 슬롯 삭제
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/lineups/{{LINEUP_ID_2}}/slots/remove
+Cookie: {{SESSION_COOKIE}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+{
+  "slotType": "starter",
+  "slotIndex": 5
+}

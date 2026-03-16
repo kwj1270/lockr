@@ -10,7 +10,7 @@ public class JooqConfig {
     @Bean
     public DefaultConfigurationCustomizer jooqDefaultConfigurationCustomizer() {
         return c -> {
-            c.set(PerformanceListener::new);
+            c.set(JooqPerformanceListener::new);
             c.settings()
                     .withExecuteDeleteWithoutWhere(ExecuteWithoutWhere.THROW)
                     .withExecuteUpdateWithoutWhere(ExecuteWithoutWhere.THROW)

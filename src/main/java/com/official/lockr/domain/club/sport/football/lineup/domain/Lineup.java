@@ -96,6 +96,17 @@ public class Lineup extends AggregateRoot {
         players.add(LineupSlot.of(this.id, squadPlayerId, slotType, slotIndex));
     }
 
+    /**
+     * 특정 슬롯에서 선수를 제거합니다.
+     * 슬롯에 선수가 없으면 아무 동작도 하지 않습니다.
+     */
+    public void removeSlot(final String slotTypeValue, final int slotIndex) {
+        final SlotType slotType = SlotType.fromValue(slotTypeValue);
+        final List<LineupSlot> currentPlayers = new ArrayList<>(this.lineupSlots.getLineupPlayers());
+        currentPlayers.removeIf(slot -> slot.isSameSlot(slotType, slotIndex));
+        this.lineupSlots = new LineupSlots(currentPlayers);
+    }
+
     public void changeFormation(final String formation) {
         this.formation = Formation.fromName(formation);
     }

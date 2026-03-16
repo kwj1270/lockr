@@ -75,11 +75,11 @@ public class Squad extends AggregateRoot {
                 .orElse(null);
     }
 
-    public void updatePlayer(final String userId, final String name, final String profileImage, final String birthDate, final String height, final String weight, final Foot foot, final List<Position> positions, final Integer backNumber) {
+    public void updatePlayer(final String userId, final String birthDate, final String height, final String weight, final Foot foot, final List<Position> positions, final Integer backNumber) {
         final SquadPlayer squadPlayer = findByUserId(userId);
         if(isNull(squadPlayer)) {
             throw new IllegalArgumentException();
         }
-        squadPlayer.update(name, profileImage, birthDate, height, weight, foot, positions, new BackNumber(backNumber));
+        squadPlayer.update(birthDate, height, weight, foot, positions, new BackNumber(backNumber));
     }
 }

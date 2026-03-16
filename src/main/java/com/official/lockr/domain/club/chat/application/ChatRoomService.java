@@ -1,10 +1,12 @@
 package com.official.lockr.domain.club.chat.application;
 
-import com.official.lockr.domain.club.chat.application.dto.AddChatterCommand;
-import com.official.lockr.domain.club.chat.application.dto.CreateChatRoomCommand;
+import com.official.lockr.domain.club.chat.application.command.AddChatterCommand;
+import com.official.lockr.domain.club.chat.application.command.CreateChatRoomCommand;
+import com.official.lockr.domain.club.chat.application.command.RemoveChatterCommand;
 import com.official.lockr.domain.club.chat.application.usecase.AddChatterUseCase;
 import com.official.lockr.domain.club.chat.application.usecase.CreateChatRoomUseCase;
 import com.official.lockr.domain.club.chat.application.usecase.GetChatRoomsUseCase;
+import com.official.lockr.domain.club.chat.application.usecase.RemoveChatterUseCase;
 import com.official.lockr.domain.club.chat.domain.ChatRoom;
 import com.official.lockr.domain.club.chat.domain.ChatRoomRepository;
 import org.springframework.stereotype.Service;
@@ -16,7 +18,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 @Service
-public class ChatRoomService implements CreateChatRoomUseCase, AddChatterUseCase, GetChatRoomsUseCase {
+public class ChatRoomService implements CreateChatRoomUseCase, AddChatterUseCase, RemoveChatterUseCase, GetChatRoomsUseCase {
 
     private final ChatRoomRepository chatRoomRepository;
 
@@ -38,6 +40,13 @@ public class ChatRoomService implements CreateChatRoomUseCase, AddChatterUseCase
     public ChatRoom addChatter(final AddChatterCommand command) {
         final ChatRoom chatRoom = findChatRoom(command.chatRoomId());
         chatRoom.addChatter(command.userId());
+        return chatRoomRepository.save(chatRoom);
+    }
+
+    @Override
+    public ChatRoom removeChatter(final RemoveChatterCommand command) {
+        final ChatRoom chatRoom = findChatRoom(command.chatRoomId());
+        chatRoom.removeChatter(command.userId());
         return chatRoomRepository.save(chatRoom);
     }
 

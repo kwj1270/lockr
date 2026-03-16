@@ -1,4 +1,3 @@
-use lockr;
 
 CREATE TABLE `sign_in`
 (

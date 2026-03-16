@@ -75,7 +75,7 @@ public class LineupQueryApi {
 
         final List<SquadPlayerResponse> squadPlayerResponses = createSquadPlayers(squadPlayers, memberMap);
         final List<LineupResponse> lineupResponses = lineups.stream()
-                .map(lineup -> createLineupResponse(lineup, squadPlayerMap, squadPlayerResponses))
+                .map(lineup -> createLineupResponse(lineup, squadPlayerMap, memberMap, squadPlayerResponses))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(new LineupsResponse(lineupResponses, squadPlayerResponses));
     }
@@ -83,6 +83,7 @@ public class LineupQueryApi {
     private LineupResponse createLineupResponse(
             final LineupsEntity lineup,
             final Map<String, SquadPlayersEntity> squadPlayerMap,
+            final Map<String, MembersEntity> memberMap,
             final List<SquadPlayerResponse> memberPool
     ) {
         final List<LineupSlotsEntity> lineupPlayers = lineupPlayersDao.ctx()
@@ -99,11 +100,11 @@ public class LineupQueryApi {
                 .collect(Collectors.toMap(LineupSlotsEntity::getSlotIndex, lp -> lp));
 
         final List<SlotResponse> starters = IntStream.rangeClosed(0, 10)
-                .mapToObj(index -> createSlotResponse(index, starterMap.get(index), squadPlayerMap))
+                .mapToObj(index -> createSlotResponse(index, starterMap.get(index), squadPlayerMap, memberMap))
                 .collect(Collectors.toList());
 
         final List<SlotResponse> substitutes = IntStream.rangeClosed(0, 6)
-                .mapToObj(index -> createSlotResponse(index, substituteMap.get(index), squadPlayerMap))
+                .mapToObj(index -> createSlotResponse(index, substituteMap.get(index), squadPlayerMap, memberMap))
                 .collect(Collectors.toList());
 
         return new LineupResponse(
@@ -118,7 +119,8 @@ public class LineupQueryApi {
     private SlotResponse createSlotResponse(
             final int slotIndex,
             final LineupSlotsEntity lineupPlayer,
-            final Map<String, SquadPlayersEntity> squadPlayerMap
+            final Map<String, SquadPlayersEntity> squadPlayerMap,
+            final Map<String, MembersEntity> memberMap
     ) {
         if (lineupPlayer == null) {
             return new SlotResponse(slotIndex, null);
@@ -129,9 +131,10 @@ public class LineupQueryApi {
             return new SlotResponse(slotIndex, null);
         }
 
+        final MembersEntity member = memberMap.get(squadPlayer.getUserId());
         final PlayerInSlotResponse player = new PlayerInSlotResponse(
                 squadPlayer.getId(),
-                squadPlayer.getName(),
+                member != null ? member.getName() : null,
                 squadPlayer.getBackNumber(),
                 squadPlayer.getPositions() != null && !squadPlayer.getPositions().isEmpty()
                         ? squadPlayer.getPositions().split(",")[0]
@@ -150,7 +153,7 @@ public class LineupQueryApi {
                     final MembersEntity member = memberMap.get(squadPlayer.getUserId());
                     return new SquadPlayerResponse(
                             squadPlayer.getId(),
-                            squadPlayer.getName(),
+                            member != null ? member.getName() : null,
                             squadPlayer.getBackNumber(),
                             squadPlayer.getPositions() != null && !squadPlayer.getPositions().isEmpty()
                                     ? squadPlayer.getPositions().split(",")[0]
