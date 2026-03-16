@@ -1,6 +1,7 @@
 package com.official.lockr.global.http;
 
 import com.github.f4b6a3.ulid.UlidCreator;
+import com.official.lockr.global.util.UlidUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.util.Strings;
 
@@ -56,7 +57,7 @@ public record HttpHeaderContext(
     }
 
     private static String createRootGuid(final String rootGuid) {
-        return Strings.isNotBlank(rootGuid) ? rootGuid : UlidCreator.getUlid().toString();
+        return Strings.isNotBlank(rootGuid) ? rootGuid : UlidUtils.generateUlid();
     }
 
     private static String createChildGuid(final String rootGuid, final String childGuid) {

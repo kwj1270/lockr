@@ -6,6 +6,7 @@ import com.official.lockr.domain.auth.domain.auth.SignIn;
 import com.official.lockr.domain.auth.domain.auth.SignInRepository;
 import com.official.lockr.domain.auth.domain.auth.SignUpAuthorization;
 import com.official.lockr.domain.auth.domain.auth.SignUpAuthorizationRepository;
+import com.official.lockr.global.util.UlidUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
@@ -32,7 +33,7 @@ public class SignInService implements ProcessSignInUseCase {
 
     private SignIn mapToSignIn(final SignUpAuthorization signUpAuthorization, final ProcessSignInCommand command) {
         return new SignIn(
-                UlidCreator.getUlid().toString(),
+                UlidUtils.generateUlid(),
                 signUpAuthorization.getId(),
                 signUpAuthorization.getProviderId(),
                 signUpAuthorization.getProviderType(),
