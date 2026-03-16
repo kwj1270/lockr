@@ -1,5 +1,5 @@
 -- auto-generated definition
-create table http_logs
+create table http_log
 (
     id          varchar(128) not null comment '고유한 로그 ID (UUID)'
         primary key,
@@ -18,20 +18,20 @@ create table http_logs
     collate = utf8mb4_unicode_ci;
 
 create index idx_child_guid
-    on http_logs (child_guid);
+    on http_log (child_guid);
 
 create index idx_client_ip
-    on http_logs (client_ip);
+    on http_log (client_ip);
 
 create index idx_root_guid
-    on http_logs (root_guid);
+    on http_log (root_guid);
 
 create index idx_tx_date
-    on http_logs (tx_date);
+    on http_log (tx_date);
 
 create index idx_tx_time
-    on http_logs (tx_time);
+    on http_log (tx_time);
 
 create index idx_user_id
-    on http_logs (user_id);
+    on http_log (user_id);
 

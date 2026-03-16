@@ -9,6 +9,12 @@ services:
       - MYSQL_ROOT_PASSWORD=1234
     volumes:
       - ./infra/mysql/initdb.d:/docker-entrypoint-initdb.d
+  redis:
+    container_name: redis
+    image: redis:latest
+    restart: always
+    ports:
+      - '6379:6379'
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
