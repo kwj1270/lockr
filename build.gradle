@@ -29,14 +29,18 @@ repositories {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
     implementation 'com.github.f4b6a3:ulid-creator:5.2.3'
+
     implementation('org.springframework.boot:spring-boot-starter-jooq') {
-        exclude group: 'org.jooq:jooq'
-    }
+        exclude group: 'org.jooq:jooq'}
+
     implementation "org.jooq:jooq:3.19.5"
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.flywaydb:flyway-mysql'
     runtimeOnly 'com.mysql:mysql-connector-j'
+
     jooqGenerator project(':jooq-custom')
     jooqGenerator "org.jooq:jooq:3.19.5"
     jooqGenerator "org.jooq:jooq-meta:3.19.5"

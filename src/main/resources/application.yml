@@ -1,3 +1,5 @@
+server:
+  port: ${SERVER_PORT:8080}
 spring:
   application:
     name: lockr
@@ -10,6 +12,24 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jooq:
     sql-dialect: mysql
+management:
+  server:
+    port: ${METRIC_SERVER_PORT:18080}
+  endpoint:
+    prometheus:
+      access: read_only
+  endpoints:
+    web:
+      base-path: ${METRIC_PATH:/prefer}
+      exposure:
+        exclude:
+        include: prometheus
+    jmx:
+      exposure:
+        exclude:
+        include: prometheus
+    access:
+      default: read_only
 logging:
   level:
     root: INFO
