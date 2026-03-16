@@ -40,11 +40,10 @@ public class ChatConsumer {
     @EventListener
     public void create(final FoundClubEvent event) {
         log.info("Creating chat room for club: {}", event.id());
-        createChatRoomUseCase.create(new CreateChatRoomCommand(event.id(), event.name()));
+        createChatRoomUseCase.create(new CreateChatRoomCommand(event.id(), event.name(), event.foundUserId()));
         log.info("Chat room created successfully for club: {}", event.id());
     }
 
-    @Async
     @EventListener
     public void addMember(final AddedClubMemberEvent event) {
         log.debug("Received AddedMemberEvent for club: {}, user: {}", event.clubId(), event.userId());
@@ -57,19 +56,17 @@ public class ChatConsumer {
 
     @Retryable(
             retryFor = {IllegalStateException.class},
-            maxAttempts = 5,
+            maxAttempts = 10,
             backoff = @Backoff(delay = 1000, multiplier = 1.5, maxDelay = 5000)
     )
     public void addMemberWithRetry(final AddedClubMemberEvent event) {
         log.debug("Attempting to add member to chat room. club: {}, user: {}", event.clubId(), event.userId());
 
         final List<ChatRoom> chatRooms = getChatRoomsUseCase.getChatRooms(event.clubId(), event.userId());
-
         if (chatRooms.isEmpty()) {
             log.warn("ChatRoom not found yet for club: {}. Will retry...", event.clubId());
             throw new IllegalStateException("ChatRoom not created yet for club: " + event.clubId());
         }
-
         final ChatRoom chatRoom = chatRooms.getFirst();
         addChatterUseCase.addChatter(new AddChatterCommand(
                 chatRoom.getClubId(),

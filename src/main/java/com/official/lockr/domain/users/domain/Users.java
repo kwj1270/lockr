@@ -1,5 +1,8 @@
 package com.official.lockr.domain.users.domain;
 
+import com.official.lockr.global.vo.BirthDate;
+import com.official.lockr.global.vo.Gender;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -28,6 +31,10 @@ public class Users {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.deletedAt = deletedAt;
+    }
+
+    public void updateAdditionalInfo(final String name, final BirthDate birthDate, final String phone, final Gender gender) {
+        this.userAdditionalInfo.update(name, birthDate, phone, gender);
     }
 
     public String getId() {
@@ -62,4 +69,11 @@ public class Users {
         return Objects.hashCode(id);
     }
 
+    public String birthDate() {
+        return userAdditionalInfo.getBirthDate();
+    }
+
+    public String name() {
+        return userAdditionalInfo.getName();
+    }
 }

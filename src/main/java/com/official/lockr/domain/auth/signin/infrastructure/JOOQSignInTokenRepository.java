@@ -118,4 +118,15 @@ public class JOOQSignInTokenRepository implements SignInTokenRepository {
                 .where(SIGN_IN_TOKENS.ID.eq(id))
                 .execute();
     }
+
+    @Transactional
+    @Override
+    public void deleteByUserId(final String userId) {
+        signInTokensDao.ctx()
+                .update(SIGN_IN_TOKENS)
+                .set(SIGN_IN_TOKENS.DELETED_AT, java.time.LocalDateTime.now())
+                .where(SIGN_IN_TOKENS.USER_ID.eq(userId))
+                .and(SIGN_IN_TOKENS.DELETED_AT.isNull())
+                .execute();
+    }
 }

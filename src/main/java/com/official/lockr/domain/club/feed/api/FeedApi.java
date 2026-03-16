@@ -54,16 +54,7 @@ public class FeedApi {
             @RequestBody final CreateFeedRequest request
     ) {
         final SignInSession session = session(httpSession);
-
-        final Feed feed = createFeedUseCase.create(new CreateFeedCommand(
-                session.userId(),
-                clubId,
-                request.content(),
-                request.feedType(),
-                request.imageUrls(),
-                request.videoUrls()
-        ));
-
+        final Feed feed = createFeedUseCase.create(request.toCommand(session.userId(), clubId));
         return ResponseEntity.ok(FeedResponse.from(feed));
     }
 
@@ -75,16 +66,7 @@ public class FeedApi {
             @RequestBody final UpdateFeedRequest request
     ) {
         final SignInSession session = session(httpSession);
-
-        final Feed feed = updateFeedUseCase.update(new UpdateFeedCommand(
-                feedId,
-                session.userId(),
-                clubId,
-                request.content(),
-                request.imageUrls(),
-                request.videoUrls()
-        ));
-
+        final Feed feed = updateFeedUseCase.update(request.toCommand(feedId, session.userId(), clubId));
         return ResponseEntity.ok(FeedResponse.from(feed));
     }
 
@@ -95,13 +77,7 @@ public class FeedApi {
             @PathVariable final String feedId
     ) {
         final SignInSession session = session(httpSession);
-
-        deleteFeedUseCase.delete(new DeleteFeedCommand(
-                feedId,
-                session.userId(),
-                clubId
-        ));
-
+        deleteFeedUseCase.delete(new DeleteFeedCommand(feedId, session.userId(), clubId));
         return ResponseEntity.noContent().build();
     }
 
@@ -113,16 +89,7 @@ public class FeedApi {
             @RequestBody final AddCommentRequest request
     ) {
         final SignInSession session = session(httpSession);
-
-        final Feed feed = addCommentUseCase.addComment(new AddCommentCommand(
-                feedId,
-                session.userId(),
-                clubId,
-                request.content(),
-                request.imageUrls(),
-                request.videoUrls()
-        ));
-
+        final Feed feed = addCommentUseCase.addComment(request.toCommand(feedId, session.userId(), clubId));
         return ResponseEntity.ok(FeedResponse.from(feed));
     }
 
@@ -135,17 +102,7 @@ public class FeedApi {
             @RequestBody final UpdateCommentRequest request
     ) {
         final SignInSession session = session(httpSession);
-
-        final Feed feed = updateCommentUseCase.updateComment(new UpdateCommentCommand(
-                feedId,
-                commentId,
-                session.userId(),
-                clubId,
-                request.content(),
-                request.imageUrls(),
-                request.videoUrls()
-        ));
-
+        final Feed feed = updateCommentUseCase.updateComment(request.toCommand(feedId, commentId, session.userId(), clubId));
         return ResponseEntity.ok(FeedResponse.from(feed));
     }
 
@@ -157,14 +114,7 @@ public class FeedApi {
             @PathVariable final String commentId
     ) {
         final SignInSession session = session(httpSession);
-
-        final Feed feed = addCommentHeartUseCase.addCommentHeart(new AddCommentHeartCommand(
-                feedId,
-                commentId,
-                session.userId(),
-                clubId
-        ));
-
+        final Feed feed = addCommentHeartUseCase.addCommentHeart(new AddCommentHeartCommand(feedId, commentId, session.userId(), clubId));
         return ResponseEntity.ok(FeedResponse.from(feed));
     }
 
@@ -176,14 +126,7 @@ public class FeedApi {
             @PathVariable final String commentId
     ) {
         final SignInSession session = session(httpSession);
-
-        final Feed feed = removeCommentHeartUseCase.removeCommentHeart(new RemoveCommentHeartCommand(
-                feedId,
-                commentId,
-                session.userId(),
-                clubId
-        ));
-
+        final Feed feed = removeCommentHeartUseCase.removeCommentHeart(new RemoveCommentHeartCommand(feedId, commentId, session.userId(), clubId));
         return ResponseEntity.ok(FeedResponse.from(feed));
     }
 
@@ -194,9 +137,7 @@ public class FeedApi {
             @PathVariable final String feedId
     ) {
         final SignInSession session = session(httpSession);
-
         final Feed feed = addHeartUseCase.addHeart(new AddHeartCommand(feedId, session.userId(), clubId));
-
         return ResponseEntity.ok(FeedResponse.from(feed));
     }
 
@@ -207,13 +148,7 @@ public class FeedApi {
             @PathVariable final String feedId
     ) {
         final SignInSession session = session(httpSession);
-
-        final Feed feed = removeHeartUseCase.removeHeart(new RemoveHeartCommand(
-                feedId,
-                session.userId(),
-                clubId
-        ));
-
+        final Feed feed = removeHeartUseCase.removeHeart(new RemoveHeartCommand(feedId, session.userId(), clubId));
         return ResponseEntity.ok(FeedResponse.from(feed));
     }
 

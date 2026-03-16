@@ -4,12 +4,9 @@ import com.official.lockr.domain.auth.admin.application.RegisterAdminUsecase;
 import com.official.lockr.domain.auth.admin.application.command.RegisterAdminCommand;
 import com.official.lockr.domain.auth.admin.domain.Admin;
 import com.official.lockr.domain.auth.signin.api.dto.SignInAdminHttpRequest;
-import com.official.lockr.domain.auth.signin.application.command.RegisterSignInTokenCommand;
-import com.official.lockr.domain.auth.signin.application.usecase.RegisterSignInTokenUseCase;
 import com.official.lockr.domain.auth.signin.application.usecase.RegisterSignInUseCase;
 import com.official.lockr.domain.auth.signin.domain.SignIn;
 import com.official.lockr.domain.auth.signin.domain.SignInSession;
-import com.official.lockr.domain.auth.signin.domain.SignInToken;
 import com.official.lockr.global.http.HttpHeaderContext;
 import com.official.lockr.global.http.HttpHeaders;
 import jakarta.servlet.http.HttpSession;
@@ -26,16 +23,14 @@ public class SignInAdminApi {
     private final HttpHeaders httpHeaders;
     private final RegisterAdminUsecase registerAdminUsecase;
     private final RegisterSignInUseCase registerSignInUseCase;
-    private final RegisterSignInTokenUseCase registerSignInTokenUseCase;
 
     public SignInAdminApi(final HttpHeaders httpHeaders,
                           final RegisterAdminUsecase registerAdminUsecase,
-                          final RegisterSignInUseCase registerSignInUseCase,
-                          final RegisterSignInTokenUseCase registerSignInTokenUseCase) {
+                          final RegisterSignInUseCase registerSignInUseCase
+    ) {
         this.httpHeaders = httpHeaders;
         this.registerAdminUsecase = registerAdminUsecase;
         this.registerSignInUseCase = registerSignInUseCase;
-        this.registerSignInTokenUseCase = registerSignInTokenUseCase;
     }
 
     @PostMapping("/admin")
@@ -49,6 +44,7 @@ public class SignInAdminApi {
                 admin.getUserId(), httpHeaderContext.deviceId(), httpHeaderContext.deviceName(), httpHeaderContext.deviceOS(),
                 httpHeaderContext.ipAddress(), httpHeaderContext.userAgent()
         );
+
         session(session, signIn);
         return ResponseEntity.ok().body(admin);
     }
@@ -59,7 +55,6 @@ public class SignInAdminApi {
                 signIn.getDeviceId(),
                 signIn.getDeviceName(),
                 signIn.getDeviceOS(),
-                signIn.getDeviceName(),
                 signIn.getIpAddress(),
                 signIn.getUserAgent(),
                 signIn.getCreatedAt()

@@ -6,6 +6,7 @@ public record UpdateFeedCommand(
         String feedId,
         String userId,
         String clubId,
+        String title,
         String content,
         List<String> imageUrls,
         List<String> videoUrls

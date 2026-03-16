@@ -12,6 +12,7 @@ import com.official.lockr.domain.club.recruitment.applications.domain.vo.sport.F
 import com.official.lockr.domain.club.recruitment.applications.domain.vo.sport.SportSpecificData;
 import com.official.lockr.domain.club.recruitment.applications.domain.vo.sport.SportType;
 import com.official.lockr.global.ddd.DomainEventPublisher;
+import com.official.lockr.global.vo.BirthDate;
 import jakarta.annotation.Nullable;
 import org.jooq.Configuration;
 import org.jooq.JSON;
@@ -85,7 +86,7 @@ public class JOOQApplicationRepository implements ApplicationRepository {
                 .set(APPLICATIONS.NAME, application.getApplicationFormData().name())
                 .set(APPLICATIONS.PHONE, application.getApplicationFormData().phone())
                 .set(APPLICATIONS.EMAIL, application.getApplicationFormData().detailedInfo() != null ? application.getApplicationFormData().detailedInfo().email() : "")
-                .set(APPLICATIONS.BIRTH_DATE, application.getApplicationFormData().detailedInfo() != null ? application.getApplicationFormData().detailedInfo().birthDate() : null)
+                .set(APPLICATIONS.BIRTH_DATE, application.getApplicationFormData().detailedInfo() != null ? application.getApplicationFormData().detailedInfo().birthDate().birthDate() : null)
                 .set(APPLICATIONS.GENDER, application.getApplicationFormData().gender())
                 .set(APPLICATIONS.EMERGENCY_CONTACT_PHONE, application.getApplicationFormData().detailedInfo() != null ? application.getApplicationFormData().detailedInfo().emergencyContactPhone() : null)
                 .set(APPLICATIONS.PROFILE_IMAGE_URL, application.getApplicationFormData().detailedInfo() != null ? application.getApplicationFormData().detailedInfo().profileImageUrl() : null)
@@ -130,7 +131,7 @@ public class JOOQApplicationRepository implements ApplicationRepository {
                 entity.getProfileImageUrl(),
                 entity.getEmail(),
                 entity.getAddress(),
-                entity.getBirthDate(),
+                new BirthDate(entity.getBirthDate()),
                 entity.getEmergencyContactPhone()
         );
 

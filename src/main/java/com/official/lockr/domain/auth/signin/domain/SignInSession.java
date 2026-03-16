@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 public record SignInSession(
         String userId,
         String deviceId, String deviceName, String deviceOS,
-        String deviceInfo, String ipAddress, String userAgent,
+        String ipAddress, String userAgent,
         LocalDateTime createdAt
 ) implements Serializable {
 }

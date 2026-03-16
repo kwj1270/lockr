@@ -30,7 +30,7 @@ public class ChatRoomService implements CreateChatRoomUseCase, AddChatterUseCase
         if (nonNull(existedClub)) {
             return existedClub;
         }
-        final ChatRoom chatRoom = ChatRoom.init(generateUlid(), command.clubId(), command.name());
+        final ChatRoom chatRoom = ChatRoom.init(generateUlid(), command.clubId(), command.name(), command.defaultChatterUserId());
         return chatRoomRepository.save(chatRoom);
     }
 

@@ -1,0 +1,94 @@
+package com.official.lockr.domain.club.sport.football.squad.application;
+
+import com.official.lockr.domain.club.sport.football.squad.application.command.UpdateSquadPlayerCommand;
+import com.official.lockr.domain.club.sport.football.squad.application.dto.AddFootBallPlayerCommand;
+import com.official.lockr.domain.club.sport.football.squad.application.usecase.AddSquadPlayerUseCase;
+import com.official.lockr.domain.club.sport.football.squad.application.usecase.UpdateSquadPlayerUseCase;
+import com.official.lockr.domain.club.sport.football.squad.domain.Squad;
+import com.official.lockr.domain.club.sport.football.squad.domain.SquadPlayer;
+import com.official.lockr.domain.club.sport.football.squad.domain.SquadRepository;
+import com.official.lockr.domain.club.recruitment.applications.domain.Application;
+import com.official.lockr.domain.club.recruitment.applications.domain.ApplicationRepository;
+import com.official.lockr.domain.club.recruitment.applications.domain.vo.sport.FootballSportSpecificData;
+import com.official.lockr.domain.users.domain.Users;
+import com.official.lockr.domain.users.domain.UsersRepository;
+import com.official.lockr.global.vo.BackNumber;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Random;
+
+import static com.github.f4b6a3.ulid.UlidCreator.getUlid;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+
+@Service
+public class SquadService implements AddSquadPlayerUseCase, UpdateSquadPlayerUseCase {
+
+    private final UsersRepository usersRepository;
+    private final ApplicationRepository applicationRepository;
+    private final SquadRepository squadRepository;
+
+    public SquadService(final UsersRepository usersRepository,
+                        final ApplicationRepository applicationRepository,
+                        final SquadRepository squadRepository) {
+        this.usersRepository = usersRepository;
+        this.applicationRepository = applicationRepository;
+        this.squadRepository = squadRepository;
+    }
+
+    @Override
+    public Squad addPlayer(final AddFootBallPlayerCommand command) {
+        final Squad squad = squad(command.clubId());
+        if (squad.hasPlayer(command.userId())) {
+            return squad;
+        }
+        final BackNumber backNumber = new BackNumber(randomNumber());
+        final Application application = applicationRepository.findByClubAndUser(command.clubId(), command.userId());
+        final SquadPlayer lineUpMember = squadPlayer(squad.getId(), command.userId(), application, backNumber);
+        squad.addPlayer(lineUpMember);
+        return squadRepository.save(squad);
+    }
+
+    @Override
+    public Squad updatePlayer(final UpdateSquadPlayerCommand command) {
+        final Squad squad = squad(command.clubId());
+        if (!squad.hasPlayer(command.userId())) {
+            throw new IllegalArgumentException();
+        }
+        final Users user = usersRepository.findById(command.userId());
+        squad.updatePlayer(command.userId(), user.name(), command.profileImage(), user.birthDate(),
+                command.height(), command.weight(), command.foot(), command.positions(), command.backNumber()
+        );
+        return squadRepository.save(squad);
+    }
+
+    private Squad squad(final String clubId) {
+        final Squad lineUp = squadRepository.findByClubId(clubId);
+        if (nonNull(lineUp)) {
+            return lineUp;
+        }
+        return new Squad(getUlid().toString(), clubId, new ArrayList<>(), LocalDateTime.now(), LocalDateTime.now(), null);
+    }
+
+    private SquadPlayer squadPlayer(final String squadId, String memberId, final Application application, final BackNumber backNumber) {
+        if (isNull(application)) {
+            return SquadPlayer.init(getUlid().toString(), squadId, memberId, backNumber);
+        }
+        final FootballSportSpecificData footballSportSpecificData = (FootballSportSpecificData) application.getSportSpecificData();
+        return SquadPlayer.init(
+                getUlid().toString(),
+                squadId,
+                memberId,
+                application,
+                footballSportSpecificData,
+                backNumber
+        );
+    }
+
+    private static int randomNumber() {
+        return new Random().nextInt(99);
+    }
+
+}

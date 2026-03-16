@@ -1,0 +1,30 @@
+### 스쿼드 조회
+GET http://localhost:8080/api/v1/clubs/{{CLUB_ID}}/lineups
+Cookie: {{SESSION_COOKIE}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+> {%
+    client.global.set("LINEUP_ID_1", response.body.lineups[0].id);
+    client.global.set("LINEUP_ID_2", response.body.lineups[1].id);
+    client.global.set("LINEUP_ID_3", response.body.lineups[2].id);
+    client.global.set("SQUAD_PLAYER_1", response.body.squadPlayers[0].id);
+    client.global.set("SQUAD_PLAYER_2", response.body.squadPlayers[1].id);
+    client.global.set("SQUAD_PLAYER_3", response.body.squadPlayers[2].id);
+%}
+
+### 슬롯 추가
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/lineups/{{LINEUP_ID_2}}/slots
+Cookie: {{SESSION_COOKIE}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+{
+  "slotType": "starter",
+  "slotIndex": 5,
+  "squadPlayerId": "{{SQUAD_PLAYER_2}}"
+}

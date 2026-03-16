@@ -3,6 +3,7 @@ package com.official.lockr.domain.club.club.domain;
 import com.official.lockr.domain.club.club.domain.event.AddedClubMemberEvent;
 import com.official.lockr.domain.club.club.domain.event.FoundClubEvent;
 import com.official.lockr.global.ddd.AggregateRoot;
+import reactor.util.annotation.Nullable;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -49,7 +50,7 @@ public class Club extends AggregateRoot {
 
     public void addMember(final Member member) {
         members.add(member);
-        addEvent(new AddedClubMemberEvent(member, sportType));
+        this.addEvent(new AddedClubMemberEvent(member, sportType));
     }
 
     public boolean isEqual(final String id) {
@@ -112,10 +113,10 @@ public class Club extends AggregateRoot {
         return members.stream().anyMatch(it -> it.isSame(userId));
     }
 
-    public boolean isNotPresident(final String memberId) {
+    public boolean isPresident(final String memberId) {
         return members.stream()
                 .filter(it -> it.isEqual(memberId))
-                .noneMatch(Member::isPresident);
+                .anyMatch(Member::isPresident);
     }
 
     public boolean hasNotMember(final String memberId) {
@@ -162,7 +163,15 @@ public class Club extends AggregateRoot {
 
     public static Club init(final String foundUserId, final String name, final String sportType, final String city, final String district, final String description, final String profileImageUrl, final String backgroundImageUrl) {
         final Club club = new Club(generateUlid(), foundUserId, name, sportType, city, district, district, profileImageUrl, backgroundImageUrl);
-        club.addEvent(new FoundClubEvent(club.id, club.name, club.sportType, club.city, club.district, club.description, club.createdAt));
+        club.addEvent(new FoundClubEvent(club.id, club.foundUserId, club.name, club.sportType, club.city, club.district, club.description, club.createdAt));
         return club;
+    }
+
+    @Nullable
+    public Member findByUserId(final String userId) {
+        return members.stream()
+                .filter(it -> it.isSame(userId))
+                .findFirst()
+                .orElse(null);
     }
 }

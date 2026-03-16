@@ -1,0 +1,107 @@
+#### 일반 선수 생성
+// @no-cookie-jar
+POST http://127.0.0.1:8080/api/v1/auth/sign_in/admin
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-NAME: woozi's local
+X-DEVICE-OS: mac-os
+
+{
+  "id": "id3",
+  "password": "password3"
+}
+> {%
+    client.global.set("SESSION_COOKIE_3", response.headers.valueOf("Set-Cookie"));
+    client.global.set("PLAYER_ID_3", response.body.id);
+%}
+
+### 모집중인 클럽 공고 목록 조회
+GET http://127.0.0.1:8080/api/v1/recruitments
+Cookie: {{SESSION_COOKIE_3}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 2
+X-DEVICE-INFO: web
+
+> {%
+    client.global.set("RECRUITMENT_ID", response.body.recruitments[0].id);
+%}
+
+#### 입단 신청
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/applications
+Cookie: {{SESSION_COOKIE_3}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 2
+X-DEVICE-INFO: web
+
+{
+  "recruitmentId": "{{RECRUITMENT_ID}}",
+  "applicationFormType": "DETAILED",
+  "name": "우지르",
+  "phone": "010-1234-5678",
+  "gender": "MALE",
+  "introduction": "안녕하세요",
+  "profileImageUrl": "",
+  "email": "gildong@example.com",
+  "address": "서울특별시 강남구 테헤란로 123",
+  "birthDate": "1998-07-15",
+  "emergencyContactPhone": "010-8765-4321",
+  "sportType": "FOOT_BALL",
+  "sportSpecificData": {
+        "position": "CF",
+        "foot": "RIGHT",
+        "height": "180",
+        "weight": "75",
+        "career": "비선출"
+  }
+}
+> {%
+    client.global.set("APPLICATION_ID", response.body.id);
+%}
+
+#### 지원서 승인
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/applications/{{APPLICATION_ID}}/approve
+Cookie: {{SESSION_COOKIE}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+
+### 내 클럽 목록 조회
+GET http://127.0.0.1:8080/api/v1/clubs/my
+Cookie: {{SESSION_COOKIE_3}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+> {%
+    client.global.set("CLUB_ID", response.body.clubs[0].clubId);
+%}
+
+### 클럽내 내 정보 조회
+GET http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/me
+Cookie: {{SESSION_COOKIE_3}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+> {%
+    client.global.set("MEMBER_ID_2", response.body.memberId);
+%}
+
+#### 매니저 임명
+POST http://127.0.0.1:8080/api/v1/clubs/{{CLUB_ID}}/manager
+Cookie: {{SESSION_COOKIE}}
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-INFO: web
+
+{
+  "targetMemberId": "{{MEMBER_ID_2}}"
+}
