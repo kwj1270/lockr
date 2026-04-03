@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.official.lockr.domain.club.chat.domain.Chat;
 import com.official.lockr.domain.club.chat.domain.ChatRepository;
-import io.jsonwebtoken.lang.Collections;
+import org.springframework.util.CollectionUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -66,7 +66,7 @@ public class RedisChatRepository implements ChatRepository {
         final String key = getChatRoomKey(chatRoomId);
         final Set<String> messages = redisTemplate.opsForZSet().reverseRange(key, 0, -1);
 
-        if (Collections.isEmpty(messages)) {
+        if (CollectionUtils.isEmpty(messages)) {
             return List.of();
         }
         return messages.stream()
@@ -87,7 +87,7 @@ public class RedisChatRepository implements ChatRepository {
         // lastChatId를 필터링으로 제거하므로 limit+1개를 가져옴
         final Set<String> messages = redisTemplate.opsForZSet()
                 .reverseRangeByScore(key, Double.NEGATIVE_INFINITY, lastScore, 0, limit + 1);
-        if (Collections.isEmpty(messages)) {
+        if (CollectionUtils.isEmpty(messages)) {
             return List.of();
         }
         return messages.stream()
@@ -107,7 +107,7 @@ public class RedisChatRepository implements ChatRepository {
         // afterChatId 이후의 메시지를 오래된순으로 조회
         final Set<String> messages = redisTemplate.opsForZSet()
                 .rangeByScore(key, afterScore, Double.POSITIVE_INFINITY, 0, limit + 1);
-        if (Collections.isEmpty(messages)) {
+        if (CollectionUtils.isEmpty(messages)) {
             return List.of();
         }
         return messages.stream()
@@ -143,7 +143,7 @@ public class RedisChatRepository implements ChatRepository {
      */
     private Double findScoreByMessageId(final String key, final String messageId) {
         final Set<String> allMessages = redisTemplate.opsForZSet().range(key, 0, -1);
-        if (Collections.isEmpty(allMessages)) {
+        if (CollectionUtils.isEmpty(allMessages)) {
             return null;
         }
 

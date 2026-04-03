@@ -9,8 +9,10 @@ import com.official.lockr.domain.club.club.domain.Club;
 import com.official.lockr.domain.club.club.domain.MemberRole;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URI;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/clubs")
@@ -143,5 +145,25 @@ public class ClubApi {
     ) {
         leaveClubUseCase.leave(new LeaveClubCommand(clubId, signInSession.userId()));
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{clubId}/images")
+    public ResponseEntity<Map<String, String>> uploadClubImage(
+            @PathVariable("clubId") final String clubId,
+            @RequestParam("file") final MultipartFile file,
+            @RequestAttribute("signInSession") final SignInSession signInSession
+    ) {
+        // TODO: implement file storage (local/S3)
+        String imageUrl = "/images/clubs/" + clubId + "/" + file.getOriginalFilename();
+        return ResponseEntity.ok(Map.of("imageUrl", imageUrl));
+    }
+
+    @PostMapping("/{clubId}/delete")
+    public ResponseEntity<Void> delete(
+            @PathVariable("clubId") final String clubId,
+            @RequestAttribute("signInSession") final SignInSession signInSession
+    ) {
+        // TODO: implement club deletion (soft delete, president only)
+        return ResponseEntity.ok().build();
     }
 }

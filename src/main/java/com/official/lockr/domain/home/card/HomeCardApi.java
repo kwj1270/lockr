@@ -84,7 +84,7 @@ public class HomeCardApi {
         return ResponseEntity.ok(new HomeCardsResponse(cards));
     }
 
-    @PutMapping("/pin")
+    @PostMapping("/pin")
     @Transactional
     public ResponseEntity<Void> pinClubs(
             @RequestBody PinClubsRequest request,

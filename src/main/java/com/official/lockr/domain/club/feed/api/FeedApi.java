@@ -153,4 +153,17 @@ public class FeedApi {
         reportFeedUseCase.report(request.toCommand(feedId, signInSession.userId(), clubId));
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/{feedId}/poll/vote")
+    public ResponseEntity<Void> votePoll(
+            @PathVariable("clubId") final String clubId,
+            @PathVariable("feedId") final String feedId,
+            @RequestBody final VotePollRequest request,
+            @RequestAttribute("signInSession") final SignInSession signInSession
+    ) {
+        // TODO: implement poll voting logic
+        return ResponseEntity.ok().build();
+    }
+
+    record VotePollRequest(String optionId) {}
 }

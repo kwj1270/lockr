@@ -59,7 +59,7 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
         final HttpSession session = request.getSession(false);
         final HttpHeaderContext headerContext = new HttpHeaderContext(request);
         httpHeaders.set(headerContext);
-        final var contentCachingRequestWrapper = new ContentCachingRequestWrapper(request);
+        final var contentCachingRequestWrapper = new ContentCachingRequestWrapper(request, 10240);
         final var contentCachingResponseWrapper = new ContentCachingResponseWrapper(response);
         try {
             filterChain.doFilter(contentCachingRequestWrapper, contentCachingResponseWrapper);

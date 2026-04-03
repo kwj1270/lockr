@@ -11,7 +11,6 @@ import com.official.lockr.domain.users.application.command.SaveUsersCommand;
 import com.official.lockr.domain.users.application.command.WithdrawUsersCommand;
 import com.official.lockr.domain.users.domain.Users;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -51,7 +50,7 @@ public class UsersApi {
         return ResponseEntity.ok(new SaveUsersResponse(users.getId()));
     }
 
-    @DeleteMapping("/me")
+    @PostMapping("/me/withdraw")
     public ResponseEntity<Void> withdrawUser(@RequestAttribute("signInSession") final SignInSession signInSession) {
         withdrawUsersUseCase.withdraw(new WithdrawUsersCommand(signInSession.userId()));
         return ResponseEntity.ok().build();

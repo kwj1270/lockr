@@ -9,7 +9,7 @@ import com.official.lockr.domain.club.recruitment.recruitment.domain.vo.Recruitm
 import com.official.lockr.domain.club.recruitment.recruitment.domain.RecruitmentRepository;
 import com.official.lockr.domain.club.recruitment.recruitment.domain.vo.RecruitmentStatus;
 import com.official.lockr.global.ddd.DomainEventPublisher;
-import io.jsonwebtoken.lang.Collections;
+
 import jakarta.annotation.Nullable;
 import org.jooq.Configuration;
 import org.jooq.generated.tables.daos.RecruitmentsDao;

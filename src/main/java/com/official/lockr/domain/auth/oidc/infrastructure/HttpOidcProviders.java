@@ -60,10 +60,10 @@ public class HttpOidcProviders implements OidcProviders {
     }
 
     private Claims parseClaims(final String token, final PublicKey publicKey) {
-        return Jwts.parserBuilder()
-                .setSigningKey(publicKey)
+        return Jwts.parser()
+                .verifyWith((java.security.interfaces.RSAPublicKey) publicKey)
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
     }
 }
