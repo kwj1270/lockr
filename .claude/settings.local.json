@@ -61,7 +61,31 @@
       "Bash(gh pr view:*)",
       "Bash(wc:*)",
       "WebFetch(domain:www.spond.com)",
-      "WebFetch(domain:bcoach.app)"
+      "WebFetch(domain:bcoach.app)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)",
+      "Bash(jar tf:*)",
+      "Read(//Users/kimwoojae/Documents/**)",
+      "Bash(CLAUDE_FILE_PATH=\"src/main/java/com/official/lockr/domain/club/club/domain/Club.java\" bash:*)",
+      "Bash(CLAUDE_FILE_PATH=\"/tmp/domain/club/club/domain/test-domain-violation.java\" bash /Users/kimwoojae/IdeaProjects/side-project/lockr/lockr-server/.claude/hooks/check-domain-purity.sh)",
+      "Bash(rm /tmp/test-domain-violation.java)",
+      "Bash(mkdir -p /tmp/ddd-test/domain/club/club/domain)",
+      "Bash(CLAUDE_FILE_PATH=\"/tmp/ddd-test/domain/club/club/domain/BadEntity.java\" bash .claude/hooks/check-domain-purity.sh)",
+      "Bash(mkdir -p /tmp/ddd-test/application)",
+      "Bash(CLAUDE_FILE_PATH=\"/tmp/ddd-test/application/BadService.java\" bash .claude/hooks/check-domain-purity.sh)",
+      "Bash(rm -rf /tmp/ddd-test)",
+      "Bash(CLAUDE_FILE_PATH=\"src/main/java/com/official/lockr/domain/club/club/domain/event/FoundClubEvent.java\" bash .claude/hooks/check-doc-drift.sh)",
+      "Bash(bash .claude/scripts/generate-event-flow.sh)",
+      "Bash(bash .claude/scripts/check-domain-test-coverage.sh)",
+      "Read(//Users/kimwoojae/IdeaProjects/side-project/lockr/**)",
+      "Read(//Users/kimwoojae/IdeaProjects/side-project/lockr/lockr-front/src/features/**)",
+      "Bash(bash /Users/kimwoojae/IdeaProjects/side-project/lockr/.claude/scripts/generate-api-contract.sh)",
+      "Bash(bash /Users/kimwoojae/IdeaProjects/side-project/lockr/.claude/scripts/verify-feature.sh --all)",
+      "Bash(mkdir -p /tmp/fsd-test/features/chat)",
+      "Bash(printf \"import { something } from '@/features/feed';\\\\nimport { Club } from '@/entities/club';\\\\n\")",
+      "Bash(CLAUDE_FILE_PATH=\"/tmp/fsd-test/features/chat/ChatView.tsx\" bash .claude/hooks/check-fsd-rules.sh)",
+      "Bash(printf \"import { Club } from '@/entities/club/model/types';\\\\n\")",
+      "Bash(CLAUDE_FILE_PATH=\"/tmp/fsd-test/features/chat/Bad.tsx\" bash .claude/hooks/check-fsd-rules.sh)"
     ],
     "deny": [],
     "ask": []
@@ -70,5 +94,26 @@
     "context7",
     "filesystem",
     "memory"
-  ]
+  ],
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/check-domain-purity.sh",
+            "timeout": 5,
+            "statusMessage": "DDD 레이어 순수성 검증 중..."
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/check-doc-drift.sh",
+            "timeout": 5,
+            "statusMessage": "도메인 문서 동기화 검증 중..."
+          }
+        ]
+      }
+    ]
+  }
 }

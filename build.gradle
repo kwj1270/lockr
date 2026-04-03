@@ -4,7 +4,7 @@ import org.jooq.meta.jaxb.Strategy
 
 buildscript {
     ext {
-        jooqVersion = '3.19.5'
+        jooqVersion = '3.19.31'
     }
 }
 
@@ -45,15 +45,16 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.session:spring-session-data-redis'
     implementation 'org.springframework.boot:spring-boot-starter-aop'
-    implementation 'org.springframework.retry:spring-retry:2.0.3'
+    implementation 'org.springframework.retry:spring-retry:2.0.12'
     implementation 'org.springframework.security:spring-security-crypto'
 
     implementation 'io.micrometer:micrometer-registry-prometheus'
-    implementation 'com.github.f4b6a3:ulid-creator:5.2.3'
-    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-    implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
-    implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
-    implementation 'org.apache.httpcomponents.client5:httpclient5:5.5'
+    implementation 'com.github.f4b6a3:ulid-creator:5.2.4'
+    implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
+    implementation 'io.jsonwebtoken:jjwt-impl:0.13.0'
+    implementation 'io.jsonwebtoken:jjwt-jackson:0.13.0'
+    implementation 'org.apache.httpcomponents.client5:httpclient5:5.6'
+    implementation 'com.google.firebase:firebase-admin:9.8.0'
 
     implementation('org.springframework.boot:spring-boot-starter-jooq') {
         exclude group: 'org.jooq:jooq'
@@ -65,22 +66,23 @@ dependencies {
     jooqCodegen "org.jooq:jooq:${jooqVersion}"
     jooqCodegen "org.jooq:jooq-meta:${jooqVersion}"
     jooqCodegen "org.jooq:jooq-codegen:${jooqVersion}"
-    jooqCodegen 'org.flywaydb:flyway-core:10.8.1'
-    jooqCodegen 'org.flywaydb:flyway-mysql:10.8.1'
-    implementation 'org.flywaydb:flyway-core:10.8.1'
-    implementation 'org.flywaydb:flyway-mysql:10.8.1'
+    jooqCodegen 'org.flywaydb:flyway-core:11.8.1'
+    jooqCodegen 'org.flywaydb:flyway-mysql:11.8.1'
+    jooqCodegen 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'org.flywaydb:flyway-core:11.8.1'
+    implementation 'org.flywaydb:flyway-mysql:11.8.1'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'io.rest-assured:rest-assured:5.5.6'
-    testImplementation 'io.rest-assured:json-path:5.5.6'
-    testImplementation 'com.h2database:h2:2.2.224'
+    testImplementation 'io.rest-assured:rest-assured:5.5.7'
+    testImplementation 'io.rest-assured:json-path:5.5.7'
+    testImplementation 'com.h2database:h2:2.4.240'
     testAndDevelopmentOnly 'org.springframework.boot:spring-boot-docker-compose'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     // Cucumber BDD
-    testImplementation 'io.cucumber:cucumber-java:7.15.0'
-    testImplementation 'io.cucumber:cucumber-junit-platform-engine:7.15.0'
-    testImplementation 'org.junit.platform:junit-platform-suite:1.10.2'
+    testImplementation 'io.cucumber:cucumber-java:7.34.3'
+    testImplementation 'io.cucumber:cucumber-junit-platform-engine:7.34.3'
+    testImplementation 'org.junit.platform:junit-platform-suite:1.12.2'
     // Spring 통합 테스트 시 주석 해제:
     // testImplementation 'io.cucumber:cucumber-spring:7.15.0'
 }

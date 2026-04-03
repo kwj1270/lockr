@@ -56,6 +56,10 @@ management:
         include: prometheus
     access:
       default: read_only
+firebase:
+  credentials:
+    path: ${FIREBASE_CREDENTIALS_PATH:firebase-service-account.json}
+
 logging:
   level:
     root: INFO

@@ -38,4 +38,15 @@ out/
 /src/generated/
 /infra/mysql/data/
 /.omc/
-/.claude/
+
+### Firebase ###
+**/firebase-service-account.json
+
+### Claude Code ###
+.agents/
+caches/
+daemon/
+native/
+wrapper/
+skills-lock.json
+tactical-design-workspace/
