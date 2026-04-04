@@ -19,7 +19,7 @@ Spring Boot + jOOQ 기반 스포츠 동호회 관리 서버. DDD + Simplified CQ
 ## Infrastructure
 
 ```bash
-docker-compose up -d mysql redis    # MySQL 8 (3306, root/1234, db:lockr) + Redis (6379)
+docker compose up -d mysql redis    # MySQL 8 (3306, root/1234, db:lockr) + Redis (6379)
 ```
 
 Spring Boot가 앱 실행 시 Docker Compose를 자동 시작 (`spring.docker.compose.enabled=true`).
@@ -29,8 +29,11 @@ Spring Boot가 앱 실행 시 Docker Compose를 자동 시작 (`spring.docker.co
 ### 의존성 방향
 
 ```
-Infrastructure → Application → Domain
-  (adapters)     (use cases)    (core, 순수 Java)
+Domain (core, 순수 Java)  ← 의존 없음
+  ↑
+Application (use cases)    ← Domain만 의존
+  ↑
+Infrastructure (adapters)  ← Application, Domain 의존
 ```
 
 domain/ 패키지에 jOOQ, Spring, Jakarta import 금지 — Hook이 자동 감지.
@@ -69,7 +72,7 @@ domain/{context}/{subdomain}/
 도메인 구조와 비즈니스 로직 이해를 위한 컨텍스트 문서:
 
 - `docs/domains/README.md` - 전체 도메인 구조 개요
-- `docs/domains/auth-context.md` - 인증 도메인 (Admin, OIDC, SignIn, SignUp)
+- `docs/domains/auth-context.md` - 인증 도메인 (Admin, OIDC, SignIn)
 - `docs/domains/users-context.md` - 사용자 도메인
 - `docs/domains/club-context.md` - 클럽 도메인 (핵심: Club, Schedule, Chat, Feed, Recruitment)
 - `docs/domains/notification-context.md` - 알림 도메인
