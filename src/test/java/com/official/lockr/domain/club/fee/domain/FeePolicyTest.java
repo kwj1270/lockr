@@ -95,6 +95,20 @@ class FeePolicyTest {
             assertThat(event.amount()).isEqualTo(50000);
             assertThat(event.dueDay()).isEqualTo(20);
         }
+
+        @Test
+        @DisplayName("updatePolicy() 호출 시 updatedAt이 갱신되어야 한다")
+        void shouldUpdateUpdatedAtOnPolicyChange() {
+            FeePolicy policy = FeePolicy.init("club-1", 30000, 15, null);
+            java.time.LocalDateTime before = policy.getUpdatedAt();
+
+            try { Thread.sleep(1); } catch (InterruptedException ignored) {}
+
+            BankAccount account = new BankAccount("국민은행", "123-456", "홍길동");
+            policy.updatePolicy(50000, 20, account);
+
+            assertThat(policy.getUpdatedAt()).isAfter(before);
+        }
     }
 
     @Nested

@@ -82,19 +82,6 @@ public class JOOQFeeRecordRepository implements FeeRecordRepository {
         return domain(entity);
     }
 
-    @Override
-    public int countNotificationsByClubIdAndYearAndMonth(final String clubId, final int year, final int month) {
-        final Integer count = feeRecordsDao.ctx()
-                .selectCount()
-                .from(FEE_RECORDS)
-                .where(FEE_RECORDS.CLUB_ID.eq(clubId))
-                .and(FEE_RECORDS.YEAR.eq(year))
-                .and(FEE_RECORDS.MONTH.eq(month))
-                .and(FEE_RECORDS.STATUS.eq(FeeStatus.UNPAID.name()))
-                .fetchOne(0, Integer.class);
-        return count != null ? count : 0;
-    }
-
     private static FeeRecord domain(final FeeRecordsEntity entity) {
         return new FeeRecord(
                 entity.getId(),

@@ -1,8 +1,5 @@
 package com.official.lockr.domain.club.fee.application;
 
-import com.official.lockr.domain.club.club.domain.Club;
-import com.official.lockr.domain.club.club.domain.ClubRepository;
-import com.official.lockr.domain.club.club.domain.MemberRole;
 import com.official.lockr.domain.club.fee.application.command.NotifyUnpaidFeeCommand;
 import com.official.lockr.domain.club.fee.application.command.SetFeePolicyCommand;
 import com.official.lockr.domain.club.fee.application.command.UpdateFeeRecordCommand;
@@ -10,13 +7,14 @@ import com.official.lockr.domain.club.fee.application.usecase.NotifyUnpaidFeeUse
 import com.official.lockr.domain.club.fee.application.usecase.SetFeePolicyUseCase;
 import com.official.lockr.domain.club.fee.application.usecase.UpdateFeeRecordUseCase;
 import com.official.lockr.domain.club.fee.domain.BankAccount;
+import com.official.lockr.domain.club.fee.domain.FeeClub;
+import com.official.lockr.domain.club.fee.domain.FeeNotification;
+import com.official.lockr.domain.club.fee.domain.FeeNotificationRepository;
 import com.official.lockr.domain.club.fee.domain.FeePolicy;
 import com.official.lockr.domain.club.fee.domain.FeePolicyRepository;
 import com.official.lockr.domain.club.fee.domain.FeeRecord;
 import com.official.lockr.domain.club.fee.domain.FeeRecordRepository;
 import com.official.lockr.domain.club.fee.domain.FeeStatus;
-import com.official.lockr.domain.club.fee.domain.event.UnpaidFeeNotifiedEvent;
-import com.official.lockr.global.ddd.DomainEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,25 +25,25 @@ import static java.util.Objects.nonNull;
 @Service
 public class FeeService implements SetFeePolicyUseCase, UpdateFeeRecordUseCase, NotifyUnpaidFeeUseCase {
 
-    private final ClubRepository clubRepository;
+    private final FeeClub feeClub;
     private final FeePolicyRepository feePolicyRepository;
     private final FeeRecordRepository feeRecordRepository;
-    private final DomainEventPublisher domainEventPublisher;
+    private final FeeNotificationRepository feeNotificationRepository;
 
-    public FeeService(final ClubRepository clubRepository,
+    public FeeService(final FeeClub feeClub,
                       final FeePolicyRepository feePolicyRepository,
                       final FeeRecordRepository feeRecordRepository,
-                      final DomainEventPublisher domainEventPublisher) {
-        this.clubRepository = clubRepository;
+                      final FeeNotificationRepository feeNotificationRepository) {
+        this.feeClub = feeClub;
         this.feePolicyRepository = feePolicyRepository;
         this.feeRecordRepository = feeRecordRepository;
-        this.domainEventPublisher = domainEventPublisher;
+        this.feeNotificationRepository = feeNotificationRepository;
     }
 
     @Override
     public FeePolicy setPolicy(final SetFeePolicyCommand command) {
-        final Club club = requireClub(command.clubId());
-        requireFeePermission(club, command.userId());
+        feeClub.validateClubExists(command.clubId());
+        requireFeePermission(command.clubId(), command.userId());
 
         final BankAccount bankAccount = BankAccount.of(command.bankName(), command.accountNumber(), command.accountHolder());
         final FeePolicy existing = feePolicyRepository.findByClubId(command.clubId());
@@ -60,8 +58,8 @@ public class FeeService implements SetFeePolicyUseCase, UpdateFeeRecordUseCase, 
 
     @Override
     public void updateRecord(final UpdateFeeRecordCommand command) {
-        final Club club = requireClub(command.clubId());
-        requireFeePermission(club, command.userId());
+        feeClub.validateClubExists(command.clubId());
+        requireFeePermission(command.clubId(), command.userId());
         requireFeePolicy(command.clubId());
 
         FeeRecord record = feeRecordRepository.findByClubIdAndMemberIdAndYearAndMonth(
@@ -86,10 +84,10 @@ public class FeeService implements SetFeePolicyUseCase, UpdateFeeRecordUseCase, 
 
     @Override
     public void notifyUnpaid(final NotifyUnpaidFeeCommand command) {
-        final Club club = requireClub(command.clubId());
-        requireFeePermission(club, command.userId());
+        feeClub.validateClubExists(command.clubId());
+        requireFeePermission(command.clubId(), command.userId());
 
-        final int count = feeRecordRepository.countNotificationsByClubIdAndYearAndMonth(
+        final int count = feeNotificationRepository.countByClubIdAndYearAndMonth(
                 command.clubId(), command.year(), command.month()
         );
         if (count >= 3) {
@@ -109,17 +107,10 @@ public class FeeService implements SetFeePolicyUseCase, UpdateFeeRecordUseCase, 
             return;
         }
 
-        domainEventPublisher.publish(
-                new UnpaidFeeNotifiedEvent(command.clubId(), command.year(), command.month(), unpaidMemberIds)
+        final FeeNotification notification = FeeNotification.init(
+                command.clubId(), command.year(), command.month(), command.userId(), unpaidMemberIds
         );
-    }
-
-    private Club requireClub(final String clubId) {
-        final Club club = clubRepository.findById(clubId);
-        if (isNull(club)) {
-            throw new IllegalStateException("클럽을 찾을 수 없습니다.");
-        }
-        return club;
+        feeNotificationRepository.save(notification);
     }
 
     private void requireFeePolicy(final String clubId) {
@@ -128,14 +119,8 @@ public class FeeService implements SetFeePolicyUseCase, UpdateFeeRecordUseCase, 
         }
     }
 
-    private void requireFeePermission(final Club club, final String userId) {
-        if (club.isPresidency(userId)) {
-            return;
-        }
-        final boolean isTreasurer = club.getMembers().stream()
-                .filter(m -> m.getUserId().equals(userId))
-                .anyMatch(m -> m.getRole() == MemberRole.TREASURER);
-        if (!isTreasurer) {
+    private void requireFeePermission(final String clubId, final String userId) {
+        if (!feeClub.hasFeePermission(clubId, userId)) {
             throw new IllegalArgumentException("회비 관리 권한이 없습니다.");
         }
     }

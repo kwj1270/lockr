@@ -6,10 +6,10 @@ import com.official.lockr.domain.club.fee.domain.FeeStatus;
 public record UpdateFeeRecordRequest(
         int year,
         int month,
-        String status,
+        FeeStatus status,
         String memo
 ) {
     public UpdateFeeRecordCommand toCommand(final String clubId, final String userId, final String memberId) {
-        return new UpdateFeeRecordCommand(clubId, userId, memberId, year, month, FeeStatus.valueOf(status), memo);
+        return new UpdateFeeRecordCommand(clubId, userId, memberId, year, month, status, memo);
     }
 }

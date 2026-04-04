@@ -181,7 +181,7 @@ public class FeeQueryApi {
                 .and(MEMBERS.USER_ID.eq(userId))
                 .and(MEMBERS.DELETED_AT.isNull())
                 .fetchOne(MEMBERS.MEMBER_ROLE);
-        return "PRESIDENT".equals(role) || "MANAGER".equals(role);
+        return "PRESIDENT".equals(role) || "VICE_PRESIDENT".equals(role) || "TREASURER".equals(role);
     }
 
     private String resolveMemberId(final String clubId, final String userId) {

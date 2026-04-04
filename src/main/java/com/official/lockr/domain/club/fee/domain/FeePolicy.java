@@ -16,7 +16,7 @@ public class FeePolicy extends AggregateRoot {
     private int dueDay;
     private BankAccount bankAccount;
     private final LocalDateTime createdAt;
-    private final LocalDateTime updatedAt;
+    private LocalDateTime updatedAt;
 
     public FeePolicy(final String id, final String clubId, final int amount, final int dueDay,
                      final BankAccount bankAccount, final LocalDateTime createdAt, final LocalDateTime updatedAt) {
@@ -52,6 +52,7 @@ public class FeePolicy extends AggregateRoot {
         this.amount = amount;
         this.dueDay = dueDay;
         this.bankAccount = bankAccount;
+        this.updatedAt = LocalDateTime.now();
 
         this.addEvent(new FeePolicyChangedEvent(
                 this.id, this.clubId, this.amount, this.dueDay, LocalDateTime.now()

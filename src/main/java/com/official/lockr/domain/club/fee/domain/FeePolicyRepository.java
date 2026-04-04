@@ -1,10 +1,8 @@
 package com.official.lockr.domain.club.fee.domain;
 
-import jakarta.annotation.Nullable;
-
 public interface FeePolicyRepository {
     FeePolicy save(FeePolicy feePolicy);
 
-    @Nullable
+    /** @return null if not found */
     FeePolicy findByClubId(String clubId);
 }

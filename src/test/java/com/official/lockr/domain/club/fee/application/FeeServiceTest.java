@@ -1,32 +1,27 @@
 package com.official.lockr.domain.club.fee.application;
 
-import com.official.lockr.domain.club.club.domain.Club;
-import com.official.lockr.domain.club.club.domain.ClubRepository;
-import com.official.lockr.domain.club.club.domain.Member;
-import com.official.lockr.domain.club.club.domain.MemberRole;
 import com.official.lockr.domain.club.fee.application.command.NotifyUnpaidFeeCommand;
 import com.official.lockr.domain.club.fee.application.command.SetFeePolicyCommand;
 import com.official.lockr.domain.club.fee.application.command.UpdateFeeRecordCommand;
+import com.official.lockr.domain.club.fee.domain.FeeClub;
+import com.official.lockr.domain.club.fee.domain.FeeNotification;
+import com.official.lockr.domain.club.fee.domain.FeeNotificationRepository;
 import com.official.lockr.domain.club.fee.domain.FeePolicy;
 import com.official.lockr.domain.club.fee.domain.FeePolicyRepository;
 import com.official.lockr.domain.club.fee.domain.FeeRecord;
 import com.official.lockr.domain.club.fee.domain.FeeRecordRepository;
 import com.official.lockr.domain.club.fee.domain.FeeStatus;
-import com.official.lockr.domain.club.fee.domain.event.UnpaidFeeNotifiedEvent;
-import com.official.lockr.global.ddd.DomainEventPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -34,10 +29,10 @@ import static org.mockito.Mockito.when;
 
 class FeeServiceTest {
 
-    private ClubRepository clubRepository;
+    private FeeClub feeClub;
     private FeePolicyRepository feePolicyRepository;
     private FeeRecordRepository feeRecordRepository;
-    private DomainEventPublisher domainEventPublisher;
+    private FeeNotificationRepository feeNotificationRepository;
     private FeeService feeService;
 
     private static final String CLUB_ID = "club-001";
@@ -48,24 +43,27 @@ class FeeServiceTest {
 
     @BeforeEach
     void setUp() {
-        clubRepository = mock(ClubRepository.class);
+        feeClub = mock(FeeClub.class);
         feePolicyRepository = mock(FeePolicyRepository.class);
         feeRecordRepository = mock(FeeRecordRepository.class);
-        domainEventPublisher = mock(DomainEventPublisher.class);
-        feeService = new FeeService(clubRepository, feePolicyRepository, feeRecordRepository, domainEventPublisher);
-    }
-
-    private Club clubWithMembers() {
-        LocalDateTime now = LocalDateTime.now();
-        List<Member> members = new ArrayList<>();
-        members.add(new Member("m-president", PRESIDENT_USER_ID, MemberRole.PRESIDENT, CLUB_ID, "회장", null, now, now, null));
-        members.add(new Member("m-treasurer", TREASURER_USER_ID, MemberRole.TREASURER, CLUB_ID, "회계", null, now, now, null));
-        members.add(new Member("m-basic", BASIC_USER_ID, MemberRole.BASIC, CLUB_ID, "일반", null, now, now, null));
-        return new Club(CLUB_ID, PRESIDENT_USER_ID, "FC 테스트", "FOOTBALL", "서울", "강남구", "테스트", null, null, members, now, now, null);
+        feeNotificationRepository = mock(FeeNotificationRepository.class);
+        feeService = new FeeService(feeClub, feePolicyRepository, feeRecordRepository, feeNotificationRepository);
     }
 
     private void givenClubExists() {
-        when(clubRepository.findById(CLUB_ID)).thenReturn(clubWithMembers());
+        // validateClubExists does nothing (no exception)
+    }
+
+    private void givenPresidentPermission() {
+        when(feeClub.hasFeePermission(CLUB_ID, PRESIDENT_USER_ID)).thenReturn(true);
+    }
+
+    private void givenTreasurerPermission() {
+        when(feeClub.hasFeePermission(CLUB_ID, TREASURER_USER_ID)).thenReturn(true);
+    }
+
+    private void givenNoPermission() {
+        when(feeClub.hasFeePermission(CLUB_ID, BASIC_USER_ID)).thenReturn(false);
     }
 
     // ============ setPolicy ============
@@ -78,6 +76,7 @@ class FeeServiceTest {
         @DisplayName("회장이 정책을 처음 설정하면 FeePolicy가 생성된다")
         void shouldCreateWhenPresidentSetsForFirstTime() {
             givenClubExists();
+            givenPresidentPermission();
             when(feePolicyRepository.findByClubId(CLUB_ID)).thenReturn(null);
             when(feePolicyRepository.save(any(FeePolicy.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -92,6 +91,7 @@ class FeeServiceTest {
         @DisplayName("TREASURER도 정책을 설정할 수 있다")
         void shouldAllowTreasurer() {
             givenClubExists();
+            givenTreasurerPermission();
             when(feePolicyRepository.findByClubId(CLUB_ID)).thenReturn(null);
             when(feePolicyRepository.save(any(FeePolicy.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -105,6 +105,7 @@ class FeeServiceTest {
         @DisplayName("기존 정책이 있으면 업데이트한다")
         void shouldUpdateWhenPolicyExists() {
             givenClubExists();
+            givenPresidentPermission();
             FeePolicy existing = FeePolicy.init(CLUB_ID, 30000, 10, null);
             when(feePolicyRepository.findByClubId(CLUB_ID)).thenReturn(existing);
             when(feePolicyRepository.save(any(FeePolicy.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -120,6 +121,7 @@ class FeeServiceTest {
         @DisplayName("일반 회원이 설정하면 예외가 발생한다")
         void shouldThrowWhenBasicMember() {
             givenClubExists();
+            givenNoPermission();
 
             assertThatThrownBy(() -> feeService.setPolicy(
                     new SetFeePolicyCommand(CLUB_ID, BASIC_USER_ID, 50000, 10, null, null, null)))
@@ -129,7 +131,8 @@ class FeeServiceTest {
         @Test
         @DisplayName("클럽이 없으면 예외가 발생한다")
         void shouldThrowWhenClubNotFound() {
-            when(clubRepository.findById(CLUB_ID)).thenReturn(null);
+            doThrow(new IllegalStateException("클럽을 찾을 수 없습니다."))
+                    .when(feeClub).validateClubExists(CLUB_ID);
 
             assertThatThrownBy(() -> feeService.setPolicy(
                     new SetFeePolicyCommand(CLUB_ID, PRESIDENT_USER_ID, 50000, 10, null, null, null)))
@@ -147,6 +150,7 @@ class FeeServiceTest {
         @DisplayName("정책이 없으면 예외가 발생한다")
         void shouldThrowWhenPolicyNotFound() {
             givenClubExists();
+            givenPresidentPermission();
             when(feePolicyRepository.findByClubId(CLUB_ID)).thenReturn(null);
 
             assertThatThrownBy(() -> feeService.updateRecord(
@@ -159,6 +163,7 @@ class FeeServiceTest {
         @DisplayName("기록이 없으면 새로 생성 후 PAID로 변경한다")
         void shouldCreateAndMarkPaid() {
             givenClubExists();
+            givenPresidentPermission();
             when(feePolicyRepository.findByClubId(CLUB_ID)).thenReturn(FeePolicy.init(CLUB_ID, 50000, 10, null));
             when(feeRecordRepository.findByClubIdAndMemberIdAndYearAndMonth(CLUB_ID, MEMBER_ID, 2024, 1)).thenReturn(null);
             when(feeRecordRepository.save(any(FeeRecord.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -173,6 +178,7 @@ class FeeServiceTest {
         @DisplayName("기존 기록을 PAID로 변경한다")
         void shouldMarkPaid() {
             givenClubExists();
+            givenPresidentPermission();
             FeeRecord record = FeeRecord.create(CLUB_ID, MEMBER_ID, 2024, 1);
             when(feePolicyRepository.findByClubId(CLUB_ID)).thenReturn(FeePolicy.init(CLUB_ID, 50000, 10, null));
             when(feeRecordRepository.findByClubIdAndMemberIdAndYearAndMonth(CLUB_ID, MEMBER_ID, 2024, 1)).thenReturn(record);
@@ -188,6 +194,7 @@ class FeeServiceTest {
         @DisplayName("UNPAID로 변경한다")
         void shouldMarkUnpaid() {
             givenClubExists();
+            givenPresidentPermission();
             FeeRecord record = FeeRecord.create(CLUB_ID, MEMBER_ID, 2024, 1);
             record.markPaid(PRESIDENT_USER_ID);
             when(feePolicyRepository.findByClubId(CLUB_ID)).thenReturn(FeePolicy.init(CLUB_ID, 50000, 10, null));
@@ -204,6 +211,7 @@ class FeeServiceTest {
         @DisplayName("memo를 업데이트한다")
         void shouldUpdateMemo() {
             givenClubExists();
+            givenPresidentPermission();
             FeeRecord record = FeeRecord.create(CLUB_ID, MEMBER_ID, 2024, 1);
             when(feePolicyRepository.findByClubId(CLUB_ID)).thenReturn(FeePolicy.init(CLUB_ID, 50000, 10, null));
             when(feeRecordRepository.findByClubIdAndMemberIdAndYearAndMonth(CLUB_ID, MEMBER_ID, 2024, 1)).thenReturn(record);
@@ -219,6 +227,7 @@ class FeeServiceTest {
         @DisplayName("일반 회원이 변경하면 예외가 발생한다")
         void shouldThrowWhenBasicMemberUpdates() {
             givenClubExists();
+            givenNoPermission();
 
             assertThatThrownBy(() -> feeService.updateRecord(
                     new UpdateFeeRecordCommand(CLUB_ID, BASIC_USER_ID, MEMBER_ID, 2024, 1, FeeStatus.PAID, null)))
@@ -236,7 +245,8 @@ class FeeServiceTest {
         @DisplayName("3회 이상이면 예외가 발생한다")
         void shouldThrowWhenExceedsLimit() {
             givenClubExists();
-            when(feeRecordRepository.countNotificationsByClubIdAndYearAndMonth(CLUB_ID, 2024, 1)).thenReturn(3);
+            givenPresidentPermission();
+            when(feeNotificationRepository.countByClubIdAndYearAndMonth(CLUB_ID, 2024, 1)).thenReturn(3);
 
             assertThatThrownBy(() -> feeService.notifyUnpaid(
                     new NotifyUnpaidFeeCommand(CLUB_ID, PRESIDENT_USER_ID, 2024, 1)))
@@ -244,43 +254,67 @@ class FeeServiceTest {
         }
 
         @Test
-        @DisplayName("미납 회원이 있으면 UnpaidFeeNotifiedEvent를 발행한다")
-        void shouldPublishEvent() {
+        @DisplayName("미납 회원이 있으면 FeeNotification을 저장한다")
+        void shouldSaveNotificationWhenUnpaidExists() {
             givenClubExists();
+            givenPresidentPermission();
             FeeRecord unpaid1 = FeeRecord.create(CLUB_ID, "member-001", 2024, 1);
             FeeRecord unpaid2 = FeeRecord.create(CLUB_ID, "member-002", 2024, 1);
             FeeRecord paid = FeeRecord.create(CLUB_ID, "member-003", 2024, 1);
             paid.markPaid(PRESIDENT_USER_ID);
 
-            when(feeRecordRepository.countNotificationsByClubIdAndYearAndMonth(CLUB_ID, 2024, 1)).thenReturn(1);
+            when(feeNotificationRepository.countByClubIdAndYearAndMonth(CLUB_ID, 2024, 1)).thenReturn(1);
             when(feeRecordRepository.findByClubIdAndYearAndMonth(CLUB_ID, 2024, 1)).thenReturn(List.of(unpaid1, unpaid2, paid));
+            when(feeNotificationRepository.save(any(FeeNotification.class))).thenAnswer(inv -> inv.getArgument(0));
 
             feeService.notifyUnpaid(new NotifyUnpaidFeeCommand(CLUB_ID, PRESIDENT_USER_ID, 2024, 1));
 
-            ArgumentCaptor<UnpaidFeeNotifiedEvent> captor = ArgumentCaptor.forClass(UnpaidFeeNotifiedEvent.class);
-            verify(domainEventPublisher).publish(captor.capture());
-            assertThat(captor.getValue().notifiedMemberIds()).containsExactly("member-001", "member-002");
+            verify(feeNotificationRepository).save(any(FeeNotification.class));
         }
 
         @Test
-        @DisplayName("미납 회원이 없으면 이벤트를 발행하지 않는다")
-        void shouldNotPublishWhenNoUnpaid() {
+        @DisplayName("미납 회원이 없으면 알림을 저장하지 않는다")
+        void shouldNotSaveWhenNoUnpaid() {
             givenClubExists();
+            givenPresidentPermission();
             FeeRecord paid = FeeRecord.create(CLUB_ID, "member-001", 2024, 1);
             paid.markPaid(PRESIDENT_USER_ID);
 
-            when(feeRecordRepository.countNotificationsByClubIdAndYearAndMonth(CLUB_ID, 2024, 1)).thenReturn(0);
+            when(feeNotificationRepository.countByClubIdAndYearAndMonth(CLUB_ID, 2024, 1)).thenReturn(0);
             when(feeRecordRepository.findByClubIdAndYearAndMonth(CLUB_ID, 2024, 1)).thenReturn(List.of(paid));
 
             feeService.notifyUnpaid(new NotifyUnpaidFeeCommand(CLUB_ID, PRESIDENT_USER_ID, 2024, 1));
 
-            verify(domainEventPublisher, never()).publish(any());
+            verify(feeNotificationRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("미납자 5명일 때에도 첫 알림 발송 가능해야 한다")
+        void shouldAllowFirstNotificationWhenFiveUnpaidMembers() {
+            givenClubExists();
+            givenPresidentPermission();
+            List<FeeRecord> unpaidRecords = List.of(
+                    FeeRecord.create(CLUB_ID, "member-001", 2024, 1),
+                    FeeRecord.create(CLUB_ID, "member-002", 2024, 1),
+                    FeeRecord.create(CLUB_ID, "member-003", 2024, 1),
+                    FeeRecord.create(CLUB_ID, "member-004", 2024, 1),
+                    FeeRecord.create(CLUB_ID, "member-005", 2024, 1)
+            );
+
+            when(feeNotificationRepository.countByClubIdAndYearAndMonth(CLUB_ID, 2024, 1)).thenReturn(0);
+            when(feeRecordRepository.findByClubIdAndYearAndMonth(CLUB_ID, 2024, 1)).thenReturn(unpaidRecords);
+            when(feeNotificationRepository.save(any(FeeNotification.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            feeService.notifyUnpaid(new NotifyUnpaidFeeCommand(CLUB_ID, PRESIDENT_USER_ID, 2024, 1));
+
+            verify(feeNotificationRepository).save(any(FeeNotification.class));
         }
 
         @Test
         @DisplayName("일반 회원이 알림을 보내면 예외가 발생한다")
         void shouldThrowWhenBasicMemberNotifies() {
             givenClubExists();
+            givenNoPermission();
 
             assertThatThrownBy(() -> feeService.notifyUnpaid(
                     new NotifyUnpaidFeeCommand(CLUB_ID, BASIC_USER_ID, 2024, 1)))
