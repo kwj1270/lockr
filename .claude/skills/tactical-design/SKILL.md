@@ -1,6 +1,6 @@
 ---
 name: tactical-design
-description: DDD 전술적 설계 패턴 가이드. Spring Boot + jOOQ 기반의 도메인별 패키징, Simplified CQRS, AggregateRoot, Domain Event, UseCase 인터페이스 패턴. 새 도메인 추가, Aggregate 설계, Command/Query 분리, Repository 구현, 도메인 이벤트 발행 시 사용. DDD, aggregate, entity, value object, domain event, repository, use case, CQRS, command, query 키워드에 트리거.
+description: DDD 전술적 설계 패턴 가이드. Spring Boot + jOOQ 기반의 도메인별 패키징, Simplified CQRS, AggregateRoot, Domain Event, UseCase 인터페이스 패턴. 새 도메인 추가, Aggregate 설계, Command/Query 분리, Repository 구현, 도메인 이벤트 발행, ACL 구현 시 사용. DDD, aggregate, entity, value object, domain event, repository, use case, CQRS, command, query, ACL, anti-corruption layer, 외부 시스템 연동, 이벤트 변환 키워드에 트리거.
 ---
 
 # Tactical Design — DDD 전술적 설계 패턴

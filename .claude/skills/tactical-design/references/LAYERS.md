@@ -426,6 +426,141 @@ public class SpringDomainEventPublisher implements DomainEventPublisher {
 }
 ```
 
+### 4.3 Anti-Corruption Layer (ACL) 구현
+
+외부 모델이 도메인으로 침투하는 것을 방지하는 변환 계층. 동기 ACL과 이벤트 ACL 두 가지 유형이 있다.
+
+#### 동기 ACL — 외부 API 호출
+
+내가 외부 시스템을 호출하고 결과를 내부 모델로 변환할 때. Port(domain) + Adapter(infrastructure) 패턴.
+
+```java
+// Domain Layer — Port (인터페이스)
+public interface OidcProviders {
+    String identifier(String idToken, ProviderType providerType);
+}
+
+// Infrastructure Layer — ACL Adapter (구현체)
+// 외부 모델(JWK, JWT claims)에 대한 의존은 이 클래스에만 존재
+@Component
+public class HttpOidcProviders implements OidcProviders {
+    private final HttpOidcClient httpOidcClient;
+
+    @Override
+    public String identifier(String idToken, ProviderType providerType) {
+        // JWT 파싱 → 공개키 검증 → subject 추출
+        // 외부 모델 → 도메인 값 변환이 여기서 완료
+        return claims.getSubject();
+    }
+}
+```
+
+**핵심:** Domain 레이어는 외부 시스템의 존재를 모른다. Infrastructure에서 변환하여 도메인 값만 반환한다.
+
+#### 이벤트 ACL — 외부 도메인 이벤트 수신
+
+다른 Bounded Context의 Domain Event를 수신하여 내부 Command로 변환할 때. EventConsumer(api 레이어)가 ACL 역할을 겸한다.
+
+```java
+// 단순화된 예시 — 실제 클래스명과 다를 수 있음
+// api/ 레이어에 위치
+@Component
+public class ScheduleNotificationConsumer {
+
+    private final RegisterNotificationUseCase registerNotificationUseCase;
+
+    // 외부 이벤트 타입(CreatedScheduleEvent)은 이 메서드 시그니처에만 존재
+    @TransactionalEventListener
+    public void on(final CreatedScheduleEvent event) {
+        // ACL 변환: 외부 이벤트 → 내부 Command
+        var command = new RegisterNotificationCommand(
+            "새 일정: " + event.title(),
+            event.clubName() + "에 새 일정이 등록되었습니다",
+            NotificationType.SCHEDULE.name(),
+            event.opponentClubId(),
+            Map.of("scheduleId", event.scheduleId())
+        );
+        // UseCase 이하로 외부 타입이 전파되지 않음
+        registerNotificationUseCase.register(command);
+    }
+}
+```
+
+**핵심:** EventConsumer 메서드 내에서 외부 이벤트 → 내부 Command 변환을 완료한다. UseCase 인터페이스의 파라미터에 외부 도메인 타입이 나타나면 ACL이 실패한 것이다.
+
+**Consumer 위치 기준:**
+- 단순 이벤트 변환만 수행 → `api/` 레이어 (ChatConsumer, FeedEventConsumer 패턴)
+- 변환에 도메인 서비스(cross-context 조회 등) 필요 → `infrastructure/` 레이어 (ScheduleNotificationEventConsumer 패턴)
+
+#### 이벤트 ACL이 복잡해질 때 — 전용 ACL 클래스 분리
+
+이벤트 종류가 많거나 변환에 외부 조회(도메인 서비스)가 필요하면 ACL 클래스를 분리한다.
+
+```java
+// 단순화된 예시 — 실제 클래스명과 다를 수 있음
+// api/ 레이어에 ACL 전용 클래스
+@Component
+public class NotificationACL {
+
+    private final ClubQueryService clubQueryService;  // 도메인 서비스 인터페이스 (예시)
+
+    // 메서드 오버로딩으로 이벤트 타입별 변환
+    // 외부 이벤트 import는 이 클래스에만 집중
+    public RegisterNotificationCommand translate(final CreatedScheduleEvent event) {
+        String clubName = clubQueryService.findName(event.clubId());
+        return new RegisterNotificationCommand(
+            "새 일정: " + event.title(),
+            clubName + "에 새 일정이 등록되었습니다",
+            NotificationType.SCHEDULE.name(),
+            event.opponentClubId(),
+            Map.of("scheduleId", event.scheduleId())
+        );
+    }
+
+    public RegisterNotificationCommand translate(final CancelledScheduleEvent event) {
+        return new RegisterNotificationCommand(
+            "일정 취소",
+            event.title() + " 일정이 취소되었습니다",
+            NotificationType.SCHEDULE.name(),
+            event.opponentClubId(),
+            Map.of("scheduleId", event.scheduleId())
+        );
+    }
+}
+
+// EventConsumer는 위임만
+@Component
+public class ScheduleNotificationConsumer {
+    private final NotificationACL acl;
+    private final RegisterNotificationUseCase useCase;
+
+    @TransactionalEventListener
+    public void on(final CreatedScheduleEvent event) {
+        useCase.register(acl.translate(event));
+    }
+
+    @TransactionalEventListener
+    public void on(final CancelledScheduleEvent event) {
+        useCase.register(acl.translate(event));
+    }
+}
+```
+
+#### ACL 분리 기준
+
+```
+ACL 클래스를 분리할까?
+├─ 이벤트 종류 ≤ 3개, 변환이 단순        → EventConsumer에서 직접 변환
+├─ 이벤트 종류 ≥ 4개                      → ACL 클래스 분리
+├─ 변환에 도메인 서비스 조회가 필요        → ACL 클래스 분리
+└─ Strategy 패턴이 필요한가?              → 대부분 불필요, 메서드 오버로딩으로 충분
+```
+
+**Strategy 패턴보다 메서드 오버로딩을 권장하는 이유:**
+- Strategy 패턴은 `isSupport()` + `convert()`로 외부 타입 체크가 전략 클래스마다 퍼짐 → 외부 의존이 분산됨
+- 메서드 오버로딩은 ACL 클래스 1곳에서 외부 타입별 변환을 집중 관리 → 단일 의존점 원칙 충족
+- 이벤트 타입이 10개 이상으로 늘어나는 극단적 경우에만 Strategy를 고려
+
 ---
 
 ## 새 도메인 추가 순서

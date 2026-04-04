@@ -1,7 +1,7 @@
 # Domain Event Flow
 
 > Auto-generated from codebase. Do not edit manually.
-> Run: `bash .claude/scripts/generate-event-flow.sh`
+> Run: `bash .claude/scripts/generate-domain-docs.sh`
 
 ```mermaid
 flowchart LR
@@ -16,6 +16,7 @@ flowchart LR
         Club_Schedule[Schedule]
         Club_Chat[Chat]
         Club_Feed[Feed]
+        Club_Fee[Fee]
         Club_Recruitment[Recruitment]
         Club_Squad[Squad]
         Club_Lineup[Lineup]

@@ -109,11 +109,13 @@ domain/{context}/{subdomain}/
 |------|----------|
 | `check-domain-purity` | domain/ 레이어에 jOOQ/Spring/Jakarta import 유입 |
 | `suggest-adr` | 새 의존성/마이그레이션/Aggregate 추가 시 ADR 작성 제안 |
+| `suggest-doc-regen` | domain/ 하위 Aggregate/Event/Enum 변경 시 문서 재생성 안내 |
 
 ### 스크립트 (수동 실행, `.claude/scripts/`)
 
 | 스크립트 | 명령어 | 역할 |
 |---------|--------|------|
+| Domain Docs | `bash .claude/scripts/generate-domain-docs.sh` | Event Flow + Aggregate Overview + 용어사전 + 비즈니스 규칙 통합 생성 |
 | Event Flow | `bash .claude/scripts/generate-event-flow.sh` | 이벤트 발행/구독 Mermaid 다이어그램 생성 |
 | 테스트 커버리지 | `bash .claude/scripts/check-domain-test-coverage.sh` | Aggregate 비즈니스 메서드 테스트 누락 리포트 |
 

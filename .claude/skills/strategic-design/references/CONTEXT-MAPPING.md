@@ -106,6 +106,53 @@ public class HttpOidcProviders implements OidcProviders {
 - Infrastructure에서 번역하여 도메인 값으로 변환
 - 외부 API 변경 시 ACL만 수정하면 도메인은 무영향
 
+#### ACL 상세 — 언제, 왜, 어떤 유형을 쓸 것인가
+
+##### ACL 필요 여부 판단 (Decision Tree)
+
+```
+ACL이 필요한가?
+├─ 외부 시스템 연동 (3rd party API)           → ACL 필수
+├─ 다른 Bounded Context의 이벤트 수신         → ACL 권장
+│   ├─ 이벤트 스키마를 수신 측이 통제 불가    → ACL 필수
+│   └─ 이벤트 스키마가 안정적이고 수신 측이 직접 통제 가능  → ACL 선택 (생략 가능)
+├─ 레거시 시스템과 통합                       → ACL 필수
+├─ 같은 Context 내 하위 도메인 간 이벤트      → ACL 불필요
+└─ 외부 모델 변경 빈도가 높음                 → ACL 필수
+```
+
+##### ACL의 두 가지 유형
+
+| 유형 | 방향 | 설명 | 이 프로젝트 예시 |
+|------|------|------|-----------------|
+| **동기 ACL** | 내가 외부를 호출 | API 호출 결과를 내부 모델로 변환 | `HttpOidcProviders` (JWT → subjectId) |
+| **이벤트 ACL** | 외부 이벤트를 수신 | 외부 도메인 이벤트를 내부 Command로 변환 | `ScheduleNotificationConsumer` (Schedule 이벤트 → Notification Command) |
+
+**동기 ACL** — Port(domain) + Adapter(infrastructure)로 구현. 이미 프로젝트에 `OidcProviders` 패턴이 있다.
+
+**이벤트 ACL** — EventConsumer(api 레이어)에서 외부 이벤트를 내부 Command로 변환. 변환이 복잡하면 별도 ACL 클래스로 분리한다.
+
+##### ACL 핵심 원칙
+
+| # | 원칙 | 설명 |
+|---|------|------|
+| 1 | **변환 경계** | 외부 타입은 ACL을 넘어서 투과하지 않는다. ACL 이후로는 내부 타입만 사용 |
+| 2 | **단일 의존점** | 외부 모델 import는 ACL 클래스 1곳(또는 EventConsumer 메서드)에만 집중 |
+| 3 | **내부 반환** | ACL은 항상 내부 도메인 타입(Command, VO, Domain Event)만 반환 |
+| 4 | **변경 격리** | 외부 모델이 변해도 ACL만 수정하면 도메인/애플리케이션 레이어는 무영향 |
+
+##### Anti-Pattern: "이름만 ACL"
+
+ACL이라는 이름을 붙였지만 실제 변환 경계가 없는 경우:
+
+- 제네릭 `DTO<T>`로 외부 이벤트 객체를 그대로 통과시킴 → ACL이 아니라 단순 wrapper
+- Translator/Strategy 클래스마다 외부 도메인 이벤트 타입에 직접 `instanceof` 체크 → 외부 의존이 분산됨
+- UseCase 인터페이스의 파라미터에 외부 도메인 타입이 포함됨 → ACL 경계가 무효화
+
+**판별법:** UseCase 인터페이스의 파라미터에 외부 도메인 타입이 있으면 ACL이 실패한 것이다. UseCase는 항상 내부 Command만 받아야 한다.
+
+구현 패턴과 Good/Bad 코드 예시는 [tactical-design LAYERS.md §4.3](../../../tactical-design/references/LAYERS.md)을 참조.
+
 ### 5. Shared Kernel (공유 커널)
 
 두 컨텍스트가 모델의 일부를 공유한다. 신중하게 사용해야 한다.

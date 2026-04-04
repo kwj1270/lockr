@@ -85,10 +85,10 @@ find "$SRC/domain" \( -name "*Consumer*.java" -o -name "*EventListener*.java" \)
   done
 done
 
-# 중복 제거
+# 이벤트 화살표 중복 제거 (HEADER 부분은 보존하고, 화살표 줄만 dedup)
 if [ -f "$OUTPUT" ]; then
   TEMP=$(mktemp)
-  awk '!seen[$0]++' "$OUTPUT" > "$TEMP" && mv "$TEMP" "$OUTPUT"
+  awk '/^ *[A-Z].*-->/{if(!seen[$0]++) print; next} {print}' "$OUTPUT" > "$TEMP" && mv "$TEMP" "$OUTPUT"
 fi
 
 echo '```' >> "$OUTPUT"
