@@ -12,7 +12,7 @@
 
 | # | 기능 | 유형 | 상태 |
 |---|------|------|------|
-| 1 | FeePolicy Aggregate Root | Domain | 대기 |
+| 1 | FeePolicy Aggregate Root | Domain | 완료 |
 | 2 | FeeRecord Aggregate Root | Domain | 대기 |
 | 3 | FeePolicy UseCase + Service | Application | 대기 |
 | 4 | FeeRecord UseCase + Service | Application | 대기 |
@@ -25,15 +25,15 @@
 
 ## Phase 1: Domain — FeePolicy
 
-- [ ] FeePolicy.init()으로 생성하면 id(ULID), clubId, amount, dueDay가 설정되어야 한다
-- [ ] FeePolicy.init()으로 생성하면 FeePolicyChangedEvent가 발행되어야 한다
-- [ ] dueDay가 1 미만이면 IllegalArgumentException이 발생해야 한다
-- [ ] dueDay가 28 초과이면 IllegalArgumentException이 발생해야 한다
-- [ ] amount가 0 미만이면 IllegalArgumentException이 발생해야 한다
-- [ ] amount가 0이면 유효한 정책으로 생성되어야 한다 (회비 없음)
-- [ ] updatePolicy()로 금액/기한/계좌를 변경하면 FeePolicyChangedEvent가 발행되어야 한다
-- [ ] BankAccount VO는 bankName, accountNumber, accountHolder를 가지며, 모두 null이면 null 반환해야 한다
-- [ ] equals/hashCode는 id 기반이어야 한다
+- [x] FeePolicy.init()으로 생성하면 id(ULID), clubId, amount, dueDay가 설정되어야 한다
+- [x] FeePolicy.init()으로 생성하면 FeePolicyChangedEvent가 발행되어야 한다
+- [x] dueDay가 1 미만이면 IllegalArgumentException이 발생해야 한다
+- [x] dueDay가 28 초과이면 IllegalArgumentException이 발생해야 한다
+- [x] amount가 0 미만이면 IllegalArgumentException이 발생해야 한다
+- [x] amount가 0이면 유효한 정책으로 생성되어야 한다 (회비 없음)
+- [x] updatePolicy()로 금액/기한/계좌를 변경하면 FeePolicyChangedEvent가 발행되어야 한다
+- [x] BankAccount VO는 bankName, accountNumber, accountHolder를 가지며, 모두 null이면 null 반환해야 한다
+- [x] equals/hashCode는 id 기반이어야 한다
 
 ## Phase 2: Domain — FeeRecord
 
