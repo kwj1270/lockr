@@ -119,6 +119,29 @@ domain/{context}/{subdomain}/
 | Event Flow | `bash .claude/scripts/generate-event-flow.sh` | 이벤트 발행/구독 Mermaid 다이어그램 생성 |
 | 테스트 커버리지 | `bash .claude/scripts/check-domain-test-coverage.sh` | Aggregate 비즈니스 메서드 테스트 누락 리포트 |
 
+## docs/ 구조
+
+```
+docs/
+├── adr/                          # ADR (수동, /adr 스킬)
+│   ├── TEMPLATE.md
+│   ├── README.md                 # 인덱스
+│   └── 0001~0004.md              # 아키텍처 결정 기록
+├── models/                       # 다이어그램 (자동 + Claude 스킬)
+│   ├── event-flow.md             # 이벤트 발행/구독 (자동: generate-domain-docs.sh)
+│   ├── class-diagrams/
+│   │   └── _overview.md          # Aggregate 관계도 (자동: generate-domain-docs.sh)
+│   ├── context-map.md            # BC간 관계도 (TODO: 반자동 — 이벤트 골격 자동 + 관계 유형 수동)
+│   ├── state-diagrams/           # 상태 전이 (TODO: Claude 스킬로 생성, 대상 7개 Enum)
+│   └── sequence-diagrams/        # Command + Saga 흐름 (TODO: Claude 스킬로 생성)
+├── glossary.md                   # 용어사전 (자동: generate-domain-docs.sh + 수동 보완)
+├── invariants/                   # Aggregate별 비즈니스 규칙 (자동: generate-domain-docs.sh)
+└── plans/                        # TDD Plan (/spec 실행 시 생성)
+```
+
+**자동 생성 갱신:** `bash .claude/scripts/generate-domain-docs.sh`
+**TODO 항목:** context-map, state-diagrams, sequence-diagrams는 grep으로 추출 불가 → Claude 스킬로 생성 예정
+
 ## 개발 워크플로우
 
 ```
