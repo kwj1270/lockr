@@ -10,7 +10,7 @@ Spring Boot + jOOQ 기반 스포츠 동호회 관리 서버. DDD + Simplified CQ
 
 # 테스트
 ./gradlew test
-./gradlew test --tests "com.official.lockr.domain.club.fee.*"
+./gradlew test --tests "com.official.lockr.domain.club.schedule.*"  # 특정 도메인만
 
 # jOOQ 코드 생성 (Docker MySQL 필요)
 ./gradlew generateJooqClasses
@@ -114,21 +114,6 @@ domain/{context}/{subdomain}/
 |---------|--------|------|
 | Event Flow | `bash .claude/scripts/generate-event-flow.sh` | 이벤트 발행/구독 Mermaid 다이어그램 생성 |
 | 테스트 커버리지 | `bash .claude/scripts/check-domain-test-coverage.sh` | Aggregate 비즈니스 메서드 테스트 누락 리포트 |
-
-## CUSTOM COMMANDS
-
-프로젝트 전용 슬래시 명령어 (`.claude/commands/`):
-
-| 명령어 | 설명 | 예시 |
-|--------|------|------|
-| `/test` | 테스트 실행 | `/test schedule`, `/test ScheduleTest` |
-| `/context` | 도메인 컨텍스트 조회 | `/context club`, `/context all` |
-| `/new-plan` | 새 TDD Plan 파일 생성 | `/new-plan user-profile` |
-| `/build` | 프로젝트 빌드 | `/build`, `/build fast`, `/build clean` |
-| `/db` | DB 작업 | `/db up`, `/db migrate`, `/db status` |
-| `/api` | API 분석/생성 | `/api list club`, `/api new POST /api/v1/...` |
-| `/research` | 도메인/기술/프로젝트 리서치 | `/research 축구 동호회 회비 관리` |
-| `/spec` | 새 기능 PRD + TDD Plan 생성 | `/spec 클럽 회비 관리` |
 
 ## 개발 워크플로우
 
