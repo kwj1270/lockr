@@ -129,6 +129,37 @@ Entity
 
 | # | 규칙 | 위반 시 |
 |---|------|--------|
+
+---
+
+## 7. Cucumber 시나리오
+
+> AC(Acceptance Criteria)를 BDD feature 파일로 작성한다.
+> 파일 위치: `src/test/resources/features/<feature-name>.feature`
+
+```gherkin
+# language: ko
+기능: [기능명]
+  [기능 설명 한 줄]
+
+  배경:
+    먼저 ...
+
+  시나리오: [핵심 성공 시나리오]
+    만약 ...
+    그러면 ...
+
+  시나리오: [주요 실패/엣지 케이스]
+    만약 ...
+    그러면 ...
+```
+
+**작성 원칙:**
+- 배경(Background)에 공통 전제 조건을 배치
+- 시나리오는 Command(상태 변경) → Query(조회) 순서
+- 도메인 이벤트 발행이 있으면 `그리고 {EventName}이/가 발행된다` 포함
+- 권한별 시나리오 분리 (운영진 vs 일반 멤버)
+- 비즈니스 규칙 위반 시나리오는 도메인 모델의 validate 메서드와 1:1 대응
 ```
 
 ### 4단계: TDD Plan 작성
@@ -151,6 +182,9 @@ PRD를 바탕으로 `docs/plans/<feature-name>-plan.md`에 TDD Plan을 작성한
 |---|------|------|------|
 
 ---
+
+## Phase 0: Cucumber Feature
+- [ ] `src/test/resources/features/<feature-name>.feature` 작성 (PRD §7 시나리오 기반)
 
 ## Phase 1: Domain Entity
 - [ ] 테스트 설명 1

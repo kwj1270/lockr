@@ -21,6 +21,12 @@
             "command": "bash .claude/hooks/suggest-doc-regen.sh",
             "timeout": 5,
             "statusMessage": "도메인 문서 갱신 필요 여부 확인 중..."
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/check-feature-drift.sh",
+            "timeout": 5,
+            "statusMessage": "Cucumber feature 동기화 확인 중..."
           }
         ]
       }
