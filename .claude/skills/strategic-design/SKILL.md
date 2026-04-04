@@ -19,7 +19,7 @@ description: DDD 전략적 설계 패턴 가이드. Bounded Context 정의, Cont
 
 domain/
 ├── auth/          # 인증 컨텍스트 (admin, oidc, signin)
-├── club/          # 클럽 컨텍스트 (club, schedule, chat, feed, recruitment, sport, stats, shorts)
+├── club/          # 클럽 컨텍스트 (club, schedule, chat, feed, recruitment, sport, stats)
 ├── home/          # 홈 컨텍스트 (card, notice, schedule 집계)
 ├── notification/  # 알림 컨텍스트
 ├── users/         # 사용자 컨텍스트
@@ -119,6 +119,8 @@ Bounded Context 간의 관계를 정의한다.
 │       ──FoundClubEvent────────> Lineup (라인업 생성)     │
 │       ──AddedMemberEvent──────> Chat (멤버 추가)         │
 │       ──AddedMemberEvent──────> Squad (선수 추가)        │
+│       ──RemovedMemberEvent────> Chat (멤버 제거)         │
+│       ──RemovedMemberEvent────> Squad (선수 제거)        │
 │                                                          │
 │  Schedule ──CreatedEvent──────> Feed (게시글 생성)       │
 │           ──CreatedEvent──────> Notification (알림)      │

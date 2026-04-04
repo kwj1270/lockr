@@ -1,3 +1,8 @@
+---
+name: spec
+description: 새 기능의 PRD와 TDD Plan 생성. /spec, 스펙, PRD, TDD Plan, 기능명세, 기능 설계 키워드에 트리거. 서버 전용 — 도메인 모델과 TDD 중심.
+---
+
 # Spec
 
 새 기능의 PRD(Product Requirements Document)와 TDD Plan을 생성한다.
@@ -42,7 +47,7 @@
 ### 3단계: PRD 작성
 
 `docs/specs/<feature-name>.md`에 아래 형식으로 작성한다.
-기존 스펙 문서(`docs/specs/club-management.md`)의 형식을 따른다.
+아래 PRD 템플릿 형식을 따른다.
 
 ```markdown
 # PRD: [기능명]

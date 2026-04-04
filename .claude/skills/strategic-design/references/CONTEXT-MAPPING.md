@@ -219,10 +219,16 @@ public void on(final AttendanceStatusChangedEvent event) {
 
 ```java
 // RetryTemplate 기본 설정 (global/config/RetryTemplateConfig)
-// - 최대 재시도: 10회
-// - 초기 간격: 100ms
-// - 지수 백오프: 2.0 (100ms → 200ms → 400ms → ...)
+// 글로벌 기본값 (RetryTemplateConfig):
+// - 최대 재시도: 3회
+// - 초기 간격: 1000ms
+// - 지수 백오프: 1.5 (1000ms → 1500ms → 2250ms)
 // - 최대 간격: 5000ms
+//
+// ChatConsumer 전용 (자체 RetryTemplate):
+// - 최대 재시도: 10회
+// - 초기 간격: 1000ms
+// - 지수 백오프: 1.5
 ```
 
 ---

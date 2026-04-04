@@ -99,13 +99,9 @@ ULID의 장점: 시간순 정렬 가능, UUID보다 가독성 좋음, DB 인덱�
 
 ---
 
-## Value Object
+## Aggregate 내부 Entity
 
-### 특성
-
-- 불변 (immutable) — 값 변경 시 새 객체 생성
-- 값 기반 동등성 — 모든 필드가 같으면 같은 객체
-- 자체 유효성 검증 — 생성 시 invariant 보장
+Aggregate Root 안에서만 접근 가능한 Entity. 고유 ID를 가지고 상태가 변경될 수 있지만, 외부에서 직접 참조하지 않는다.
 
 ### 구현 패턴
 
