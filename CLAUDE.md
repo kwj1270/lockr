@@ -6,11 +6,11 @@ Spring Boot + jOOQ 기반 스포츠 동호회 관리 서버. DDD + Simplified CQ
 
 ```bash
 # 빌드 (Java 24 필요)
-JAVA_HOME=/Users/kimwoojae/Library/Java/JavaVirtualMachines/azul-24.0.2/Contents/Home ./gradlew build -x test
+./gradlew build -x test
 
 # 테스트
-JAVA_HOME=/Users/kimwoojae/Library/Java/JavaVirtualMachines/azul-24.0.2/Contents/Home ./gradlew test
-JAVA_HOME=/Users/kimwoojae/Library/Java/JavaVirtualMachines/azul-24.0.2/Contents/Home ./gradlew test --tests "com.official.lockr.domain.club.fee.*"
+./gradlew test
+./gradlew test --tests "com.official.lockr.domain.club.fee.*"
 
 # jOOQ 코드 생성 (Docker MySQL 필요)
 ./gradlew generateJooqClasses
