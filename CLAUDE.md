@@ -17,7 +17,6 @@
 
 | 명령어 | 설명 | 예시 |
 |--------|------|------|
-| `/go` | TDD Plan의 다음 테스트 진행 | `/go docs/plans/schedule-domain-plan.md` |
 | `/test` | 테스트 실행 | `/test schedule`, `/test ScheduleTest` |
 | `/context` | 도메인 컨텍스트 조회 | `/context club`, `/context all` |
 | `/new-plan` | 새 TDD Plan 파일 생성 | `/new-plan user-profile` |

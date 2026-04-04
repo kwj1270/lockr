@@ -21,6 +21,12 @@ description: 새 기능의 PRD와 TDD Plan 생성. /spec, 스펙, PRD, TDD Plan,
 
 기능과 관련된 정보를 병렬로 수집한다.
 
+**상위 PRD 참조 (lockr/):**
+- `../docs/features/`에서 기능명과 매칭되는 Feature Tracker를 찾는다 → tracker 안의 `> 스펙:` 경로로 PRD 파일을 읽는다
+- Feature Tracker가 없으면 `../docs/specs/`에서 기능명 키워드로 파일을 검색한다
+- 상위 PRD가 있으면 API Contract, 도메인 모델, 비즈니스 규칙을 그대로 따른다 (중복 인터뷰 생략)
+- 상위 PRD가 없으면 아래 프로세스대로 진행한다
+
 **프로젝트 내부:**
 - `docs/domains/` 아래 관련 도메인 컨텍스트 문서를 읽는다
 - 관련 도메인의 기존 코드를 탐색한다 (Domain, Service, API, Repository)
@@ -180,7 +186,7 @@ TDD Plan 작성 원칙:
 - API 설계가 적절한지
 - TDD Phase 순서와 테스트 항목이 맞는지
 
-피드백을 반영하여 문서를 수정한 후, `/go docs/plans/<feature-name>-plan.md`로 구현을 시작할 수 있음을 안내한다.
+피드백을 반영하여 문서를 수정한 후, TDD Plan의 Phase 1부터 구현을 시작할 수 있음을 안내한다.
 
 ## 인자
 
