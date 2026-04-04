@@ -69,16 +69,16 @@ domain/{context}/{subdomain}/
 
 ## DOMAIN CONTEXT
 
-도메인 구조와 비즈니스 로직 이해를 위한 컨텍스트 문서:
+도메인 구조 파악은 코드를 직접 탐색하여 수행한다:
 
-- `docs/domains/README.md` - 전체 도메인 구조 개요
-- `docs/domains/auth-context.md` - 인증 도메인 (Admin, OIDC, SignIn)
-- `docs/domains/users-context.md` - 사용자 도메인
-- `docs/domains/club-context.md` - 클럽 도메인 (핵심: Club, Schedule, Chat, Feed, Recruitment)
-- `docs/domains/notification-context.md` - 알림 도메인
-- `docs/domains/home-context.md` - 홈 도메인
+- `src/main/java/com/official/lockr/domain/auth/` - 인증 도메인 (Admin, OIDC, SignIn)
+- `src/main/java/com/official/lockr/domain/users/` - 사용자 도메인
+- `src/main/java/com/official/lockr/domain/club/` - 클럽 도메인 (Club, Schedule, Chat, Feed, Recruitment, Sport, Stats)
+- `src/main/java/com/official/lockr/domain/notification/` - 알림 도메인
+- `src/main/java/com/official/lockr/domain/home/` - 홈 도메인
+- `src/main/java/com/official/lockr/domain/shorts/` - 숏폼 도메인
 
-새 기능 구현 전 관련 도메인 컨텍스트 문서를 먼저 읽어 비즈니스 규칙과 도메인 관계를 파악할 것.
+새 기능 구현 전 관련 도메인의 Aggregate Root, Event, Repository를 먼저 읽어 비즈니스 규칙과 도메인 관계를 파악할 것.
 
 ## 에이전트 & 스킬
 
@@ -108,7 +108,6 @@ domain/{context}/{subdomain}/
 | Hook | 감지 대상 |
 |------|----------|
 | `check-domain-purity` | domain/ 레이어에 jOOQ/Spring/Jakarta import 유입 |
-| `check-doc-drift` | 새 Event/Aggregate가 docs/domains/에 미반영 |
 | `suggest-adr` | 새 의존성/마이그레이션/Aggregate 추가 시 ADR 작성 제안 |
 
 ### 스크립트 (수동 실행, `.claude/scripts/`)
