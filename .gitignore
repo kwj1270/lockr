@@ -43,6 +43,7 @@ out/
 **/firebase-service-account.json
 
 ### Claude Code ###
+.claude/settings.local.json
 .agents/
 caches/
 daemon/

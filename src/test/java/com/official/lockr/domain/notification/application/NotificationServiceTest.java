@@ -2,14 +2,11 @@ package com.official.lockr.domain.notification.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.official.lockr.domain.club.club.domain.Club;
-import com.official.lockr.domain.club.club.domain.ClubRepository;
-import com.official.lockr.domain.club.club.domain.Member;
-import com.official.lockr.domain.club.club.domain.MemberRole;
 import com.official.lockr.domain.notification.application.command.CreateScheduleLinkNotificationCommand;
 import com.official.lockr.domain.notification.application.command.MarkAsReadNotificationCommand;
 import com.official.lockr.domain.notification.domain.Notification;
 import com.official.lockr.domain.notification.domain.NotificationRepository;
+import com.official.lockr.domain.notification.domain.NotificationTargetQuery;
 import com.official.lockr.domain.notification.domain.NotificationType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,14 +31,14 @@ class NotificationServiceTest {
     private NotificationRepository notificationRepository;
 
     @Mock
-    private ClubRepository clubRepository;
+    private NotificationTargetQuery notificationTargetQuery;
 
     private NotificationService notificationService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     void setUp() {
-        notificationService = new NotificationService(notificationRepository, clubRepository, objectMapper);
+        notificationService = new NotificationService(notificationRepository, notificationTargetQuery, objectMapper);
     }
 
     @Test
@@ -87,15 +84,7 @@ class NotificationServiceTest {
         final String scheduleTitle = "친선경기";
         final String scheduleTime = "2026-01-20 15:00";
 
-        final LocalDateTime now = LocalDateTime.now();
-        final Member staffMember = new Member("member-001", "staff-user-001", MemberRole.MANAGER, targetClubId, null, null, now, now, null);
-        final Member basicMember = new Member("member-002", "basic-user-001", MemberRole.BASIC, targetClubId, null, null, now, now, null);
-        final Club targetClub = new Club(
-                targetClubId, "founder-001", "상대팀", "SOCCER", "서울", "강남구", "설명",
-                null, null, List.of(staffMember, basicMember), now, now, null
-        );
-
-        when(clubRepository.findById(targetClubId)).thenReturn(targetClub);
+        when(notificationTargetQuery.findStaffUserIdsByClubId(targetClubId)).thenReturn(List.of("staff-user-001"));
 
         // when
         notificationService.create(new CreateScheduleLinkNotificationCommand(
@@ -110,7 +99,7 @@ class NotificationServiceTest {
     void shouldNotCreateNotificationWhenTargetClubNotExists() {
         // given
         final String targetClubId = "non-existent-club";
-        when(clubRepository.findById(targetClubId)).thenReturn(null);
+        when(notificationTargetQuery.findStaffUserIdsByClubId(targetClubId)).thenReturn(List.of());
 
         // when
         notificationService.create(new CreateScheduleLinkNotificationCommand(

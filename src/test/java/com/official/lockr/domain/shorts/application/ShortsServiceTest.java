@@ -1,18 +1,15 @@
 package com.official.lockr.domain.shorts.application;
 
-import com.official.lockr.domain.club.club.domain.Member;
-import com.official.lockr.domain.club.club.domain.MemberRole;
 import com.official.lockr.domain.shorts.application.command.*;
 import com.official.lockr.domain.shorts.domain.Shorts;
 import com.official.lockr.domain.shorts.domain.ShortsClub;
 import com.official.lockr.domain.shorts.domain.ShortsComment;
+import com.official.lockr.domain.shorts.domain.ShortsMember;
 import com.official.lockr.domain.shorts.domain.ShortsRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-
-import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -39,9 +36,8 @@ class ShortsServiceTest {
         shortsService = new ShortsService(shortsRepository, shortsClub);
     }
 
-    private Member createMember(final String userId, final MemberRole role) {
-        return new Member("member-001", userId, role, CLUB_ID, "테스트", null,
-                LocalDateTime.now(), LocalDateTime.now(), null);
+    private ShortsMember createMember(final String userId, final boolean isStaff) {
+        return new ShortsMember(userId, CLUB_ID, isStaff);
     }
 
     private Shorts createExistingShorts() {
@@ -57,7 +53,7 @@ class ShortsServiceTest {
         void shouldUploadShortsWhenUserIsClubMember() {
             // given
             when(shortsClub.findMemberByUserIdAndClubId(USER_ID, CLUB_ID))
-                    .thenReturn(createMember(USER_ID, MemberRole.BASIC));
+                    .thenReturn(createMember(USER_ID, false));
             when(shortsRepository.save(any(Shorts.class))).thenAnswer(inv -> inv.getArgument(0));
 
             final UploadShortsCommand command = new UploadShortsCommand(
@@ -101,7 +97,7 @@ class ShortsServiceTest {
         void shouldDeleteShortsWhenUserIsAuthor() {
             // given
             when(shortsClub.findMemberByUserIdAndClubId(USER_ID, CLUB_ID))
-                    .thenReturn(createMember(USER_ID, MemberRole.BASIC));
+                    .thenReturn(createMember(USER_ID, false));
             when(shortsRepository.findById(SHORTS_ID)).thenReturn(createExistingShorts());
             when(shortsRepository.save(any(Shorts.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -119,7 +115,7 @@ class ShortsServiceTest {
         void shouldDeleteShortsWhenUserIsStaff() {
             // given
             when(shortsClub.findMemberByUserIdAndClubId(OTHER_USER_ID, CLUB_ID))
-                    .thenReturn(createMember(OTHER_USER_ID, MemberRole.MANAGER));
+                    .thenReturn(createMember(OTHER_USER_ID, true));
             when(shortsRepository.findById(SHORTS_ID)).thenReturn(createExistingShorts());
             when(shortsRepository.save(any(Shorts.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -137,7 +133,7 @@ class ShortsServiceTest {
         void shouldThrowExceptionWhenShortsNotFound() {
             // given
             when(shortsClub.findMemberByUserIdAndClubId(USER_ID, CLUB_ID))
-                    .thenReturn(createMember(USER_ID, MemberRole.BASIC));
+                    .thenReturn(createMember(USER_ID, false));
             when(shortsRepository.findById(SHORTS_ID)).thenReturn(null);
 
             final DeleteShortsCommand command = new DeleteShortsCommand(SHORTS_ID, USER_ID, CLUB_ID);

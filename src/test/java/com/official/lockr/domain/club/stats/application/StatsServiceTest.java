@@ -1,15 +1,12 @@
 package com.official.lockr.domain.club.stats.application;
 
-import com.official.lockr.domain.club.club.domain.Club;
-import com.official.lockr.domain.club.club.domain.ClubRepository;
-import com.official.lockr.domain.club.club.domain.Member;
-import com.official.lockr.domain.club.club.domain.MemberRole;
 import com.official.lockr.domain.club.stats.application.command.PlayerPerformanceCommand;
 import com.official.lockr.domain.club.stats.application.command.RecordMatchCommand;
 import com.official.lockr.domain.club.stats.application.command.UpdateMatchCommand;
 import com.official.lockr.domain.club.stats.domain.MatchRecord;
 import com.official.lockr.domain.club.stats.domain.MatchRecordRepository;
 import com.official.lockr.domain.club.stats.domain.MatchScore;
+import com.official.lockr.domain.club.stats.domain.StatsClub;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,13 +14,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -34,13 +31,13 @@ class StatsServiceTest {
     private MatchRecordRepository matchRecordRepository;
 
     @Mock
-    private ClubRepository clubRepository;
+    private StatsClub statsClub;
 
     private StatsService statsService;
 
     @BeforeEach
     void setUp() {
-        statsService = new StatsService(matchRecordRepository, clubRepository);
+        statsService = new StatsService(matchRecordRepository, statsClub);
     }
 
     // Phase 3: record() authorization tests
@@ -50,8 +47,7 @@ class StatsServiceTest {
         final String clubId = "club-001";
         final String userId = "user-001";
 
-        final Club club = createClubWithMember(clubId, userId, MemberRole.BASIC);
-        given(clubRepository.findById(clubId)).willReturn(club);
+        doThrow(new IllegalArgumentException()).when(statsClub).verifyStaffMembership(userId, clubId);
 
         final RecordMatchCommand command = new RecordMatchCommand(
                 clubId, null, LocalDate.now(), "상대팀FC", 2, 1,
@@ -71,8 +67,6 @@ class StatsServiceTest {
         final String clubId = "club-001";
         final String userId = "user-001";
 
-        final Club club = createClubWithMember(clubId, userId, MemberRole.COACH);
-        given(clubRepository.findById(clubId)).willReturn(club);
         given(matchRecordRepository.save(any(MatchRecord.class)))
                 .willAnswer(invocation -> invocation.getArgument(0));
 
@@ -96,7 +90,7 @@ class StatsServiceTest {
         final String clubId = "non-existent-club";
         final String userId = "user-001";
 
-        given(clubRepository.findById(clubId)).willReturn(null);
+        doThrow(new IllegalArgumentException()).when(statsClub).verifyStaffMembership(userId, clubId);
 
         final RecordMatchCommand command = new RecordMatchCommand(
                 clubId, null, LocalDate.now(), "상대팀FC", 2, 1,
@@ -118,8 +112,7 @@ class StatsServiceTest {
         final String recordId = "match-001";
         final String userId = "user-001";
 
-        final Club club = createClubWithMember(clubId, userId, MemberRole.BASIC);
-        given(clubRepository.findById(clubId)).willReturn(club);
+        doThrow(new IllegalArgumentException()).when(statsClub).verifyStaffMembership(userId, clubId);
 
         final UpdateMatchCommand command = new UpdateMatchCommand(
                 recordId, clubId, userId,
@@ -139,9 +132,6 @@ class StatsServiceTest {
         final String clubId = "club-001";
         final String recordId = "match-001";
         final String userId = "user-001";
-
-        final Club club = createClubWithMember(clubId, userId, MemberRole.COACH);
-        given(clubRepository.findById(clubId)).willReturn(club);
 
         final MatchRecord existingRecord = createMatchRecord(recordId, clubId);
         given(matchRecordRepository.findById(recordId)).willReturn(existingRecord);
@@ -173,9 +163,6 @@ class StatsServiceTest {
         final String recordId = "match-001";
         final String userId = "user-001";
 
-        final Club club = createClubWithMember(clubId, userId, MemberRole.MANAGER);
-        given(clubRepository.findById(clubId)).willReturn(club);
-
         final MatchRecord existingRecord = createMatchRecord(recordId, clubId);
         given(matchRecordRepository.findById(recordId)).willReturn(existingRecord);
         given(matchRecordRepository.save(any(MatchRecord.class)))
@@ -202,8 +189,7 @@ class StatsServiceTest {
         final String recordId = "match-001";
         final String userId = "user-001";
 
-        final Club club = createClubWithMember(clubId, userId, MemberRole.BASIC);
-        given(clubRepository.findById(clubId)).willReturn(club);
+        doThrow(new IllegalArgumentException()).when(statsClub).verifyStaffMembership(userId, clubId);
 
         // when & then
         assertThatThrownBy(() -> statsService.delete(clubId, recordId, userId))
@@ -218,9 +204,6 @@ class StatsServiceTest {
         final String clubId = "club-001";
         final String recordId = "match-001";
         final String userId = "user-001";
-
-        final Club club = createClubWithMember(clubId, userId, MemberRole.COACH);
-        given(clubRepository.findById(clubId)).willReturn(club);
 
         final MatchRecord existingRecord = createMatchRecord(recordId, clubId);
         given(matchRecordRepository.findById(recordId)).willReturn(existingRecord);
@@ -239,7 +222,7 @@ class StatsServiceTest {
         final String recordId = "match-001";
         final String userId = "user-001";
 
-        given(clubRepository.findById(clubId)).willReturn(null);
+        doThrow(new IllegalArgumentException()).when(statsClub).verifyStaffMembership(userId, clubId);
 
         // when & then
         assertThatThrownBy(() -> statsService.delete(clubId, recordId, userId))
@@ -254,9 +237,6 @@ class StatsServiceTest {
         final String otherClubId = "club-002";
         final String recordId = "match-001";
         final String userId = "user-001";
-
-        final Club club = createClubWithMember(clubId, userId, MemberRole.COACH);
-        given(clubRepository.findById(clubId)).willReturn(club);
 
         final MatchRecord existingRecord = createMatchRecord(recordId, otherClubId);
         given(matchRecordRepository.findById(recordId)).willReturn(existingRecord);
@@ -281,9 +261,6 @@ class StatsServiceTest {
         final String recordId = "match-001";
         final String userId = "user-001";
 
-        final Club club = createClubWithMember(clubId, userId, MemberRole.COACH);
-        given(clubRepository.findById(clubId)).willReturn(club);
-
         final MatchRecord existingRecord = createMatchRecord(recordId, otherClubId);
         given(matchRecordRepository.findById(recordId)).willReturn(existingRecord);
 
@@ -300,9 +277,6 @@ class StatsServiceTest {
         final String clubId = "club-001";
         final String recordId = "match-001";
         final String userId = "user-001";
-
-        final Club club = createClubWithMember(clubId, userId, MemberRole.COACH);
-        given(clubRepository.findById(clubId)).willReturn(club);
 
         final MatchRecord existingRecord = createMatchRecord(recordId, clubId);
         given(matchRecordRepository.findById(recordId)).willReturn(existingRecord);
@@ -333,18 +307,6 @@ class StatsServiceTest {
         assertThat(updated.getPlayerPerformances().get(1).isMom()).isFalse();
 
         verify(matchRecordRepository).save(any(MatchRecord.class));
-    }
-
-    private Club createClubWithMember(final String clubId, final String userId, final MemberRole role) {
-        final Member member = new Member(
-                "member-001", userId, role, clubId,
-                null, null, LocalDateTime.now(), LocalDateTime.now(), null
-        );
-        return new Club(
-                clubId, "founder-001", "테스트클럽", "FOOTBALL",
-                "서울", "강남구", "테스트 클럽입니다", null, null,
-                List.of(member), LocalDateTime.now(), LocalDateTime.now(), null
-        );
     }
 
     private MatchRecord createMatchRecord(final String recordId, final String clubId) {
