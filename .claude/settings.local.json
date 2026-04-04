@@ -111,6 +111,12 @@
             "command": "bash .claude/hooks/check-doc-drift.sh",
             "timeout": 5,
             "statusMessage": "도메인 문서 동기화 검증 중..."
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/suggest-adr.sh",
+            "timeout": 5,
+            "statusMessage": "ADR 필요 여부 확인 중..."
           }
         ]
       }
