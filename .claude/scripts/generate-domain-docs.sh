@@ -6,7 +6,8 @@
 #   docs/models/event-flow.md               - Domain Event 발행/구독 흐름 다이어그램
 #   docs/models/class-diagrams/_overview.md - Aggregate 관계 클래스 다이어그램
 #   docs/glossary.md                        - 도메인 용어집
-#   docs/invariants/{aggregate}.md          - Aggregate별 비즈니스 불변 규칙
+#
+# 비즈니스 규칙은 각 도메인 CLAUDE.md에서 직접 관리 (docs/invariants/ 폐기)
 
 set -euo pipefail
 
@@ -289,69 +290,6 @@ generate_glossary() {
   echo "  [3/4] Glossary: $OUTPUT"
 }
 
-# ─── 4. Invariants ───────────────────────────────────────────────────────────
-
-generate_invariants() {
-  local OUTDIR="$PROJECT_ROOT/docs/invariants"
-  mkdir -p "$OUTDIR"
-
-  find "$SRC/domain" -name "*.java" | sort | while read -r f; do
-    if ! grep -qE "extends AggregateRoot" "$f" 2>/dev/null; then
-      continue
-    fi
-
-    # throw 라인이 없으면 스킵
-    if ! grep -qE "throw new Illegal(Argument|State)Exception" "$f" 2>/dev/null; then
-      continue
-    fi
-
-    AGG=$(basename "$f" .java)
-    # CamelCase → kebab-case
-    KEBAB=$(echo "$AGG" | sed -E 's/([A-Z])/-\1/g' | sed 's/^-//' | tr '[:upper:]' '[:lower:]')
-    OUTFILE="$OUTDIR/${KEBAB}.md"
-
-    {
-      echo "# ${AGG} — 비즈니스 규칙"
-      echo ""
-      echo "> Auto-generated from codebase. Do not edit manually."
-      echo "> Run: \`bash .claude/scripts/generate-domain-docs.sh\`"
-      echo ""
-      echo "| 메서드 | 규칙 | 위반 시 |"
-      echo "|--------|------|--------|"
-
-      # POSIX awk (macOS 호환): 3-arg match() 미지원이므로 sub/gsub로 메서드명 추출
-      awk '
-        /[[:space:]](public|private|protected)[[:space:]]/ && /\(/ && !/class |interface |enum |@/ {
-          line = $0
-          # 메서드명: 소문자로 시작하는 식별자 바로 앞에 공백이 있는 패턴
-          if (match(line, /[a-z][a-zA-Z0-9]*[[:space:]]*\(/)) {
-            mname = substr(line, RSTART, RLENGTH - 1)
-            gsub(/[[:space:]]/, "", mname)
-            current_method = mname
-          }
-        }
-        /throw new Illegal(Argument|State)Exception/ {
-          if ($0 ~ /IllegalArgumentException/) etype = "IllegalArgumentException"
-          else etype = "IllegalStateException"
-
-          msg = ""
-          line = $0
-          if (match(line, /"[^"]*"/)) {
-            msg = substr(line, RSTART + 1, RLENGTH - 2)
-          }
-          if (msg == "") msg = "(메시지 없음)"
-          if (current_method == "") current_method = "(unknown)"
-
-          print "| " current_method " | " msg " | " etype " |"
-        }
-      ' "$f"
-
-    } > "$OUTFILE"
-  done
-
-  echo "  [4/4] Invariants: $OUTDIR/"
-}
-
 # ─── main ─────────────────────────────────────────────────────────────────────
 
 main() {
@@ -361,14 +299,12 @@ main() {
   generate_event_flow
   generate_overview
   generate_glossary
-  generate_invariants
 
   echo ""
   echo "Done. Generated files:"
   echo "  docs/models/event-flow.md"
   echo "  docs/models/class-diagrams/_overview.md"
   echo "  docs/glossary.md"
-  echo "  docs/invariants/*.md"
 }
 
 main "$@"

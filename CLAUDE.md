@@ -1,6 +1,6 @@
 # lockr-server — Backend CLAUDE.md
 
-Spring Boot + jOOQ 기반 스포츠 동호회 관리 서버. DDD + Simplified CQRS 아키텍처.
+Spring Boot + jOOQ 기반 축구 동호회 관리 서버. DDD + Simplified CQRS 아키텍처.
 
 ## Build & Test
 
@@ -29,11 +29,7 @@ Spring Boot가 앱 실행 시 Docker Compose를 자동 시작 (`spring.docker.co
 ### 의존성 방향
 
 ```
-Domain (core, 순수 Java)  ← 의존 없음
-  ↑
-Application (use cases)    ← Domain만 의존
-  ↑
-Infrastructure (adapters)  ← Application, Domain 의존
+Application (use cases) -> Domain (core, 순수 Java) <- Infrastructure (adapters) 
 ```
 
 domain/ 패키지에 jOOQ, Spring, Jakarta import 금지 — Hook이 자동 감지.
@@ -69,16 +65,18 @@ domain/{context}/{subdomain}/
 
 ## DOMAIN CONTEXT
 
-도메인 구조 파악은 코드를 직접 탐색하여 수행한다:
+도메인별 컨텍스트는 각 도메인 디렉토리의 CLAUDE.md에서 관리 (`.claude/rules/routers/domain-*.md`가 라우터 역할):
 
-- `src/main/java/com/official/lockr/domain/auth/` - 인증 도메인 (Admin, OIDC, SignIn)
-- `src/main/java/com/official/lockr/domain/users/` - 사용자 도메인
-- `src/main/java/com/official/lockr/domain/club/` - 클럽 도메인 (Club, Schedule, Chat, Feed, Recruitment, Sport, Stats)
-- `src/main/java/com/official/lockr/domain/notification/` - 알림 도메인
-- `src/main/java/com/official/lockr/domain/home/` - 홈 도메인
-- `src/main/java/com/official/lockr/domain/shorts/` - 숏폼 도메인
+| 도메인 | 컨텍스트 위치 | 특성 |
+|--------|-------------|------|
+| club | `domain/club/CLAUDE.md` | 8 subdomains, 13 ARs — 가장 큰 BC |
+| auth | `domain/auth/CLAUDE.md` | SignIn AR, Token/OIDC |
+| users | `domain/users/CLAUDE.md` | Users AR, 탈퇴 이벤트 |
+| notification | `domain/notification/CLAUDE.md` | Notification AR, FCM |
+| shorts | `domain/shorts/CLAUDE.md` | Shorts AR, 신고/숨김 |
+| home | `domain/home/CLAUDE.md` | Query-only, 도메인 레이어 없음 |
 
-새 기능 구현 전 관련 도메인의 Aggregate Root, Event, Repository를 먼저 읽어 비즈니스 규칙과 도메인 관계를 파악할 것.
+새 기능 구현 전 해당 도메인의 컨텍스트 문서를 먼저 확인할 것.
 
 ## 에이전트 & 스킬
 
@@ -97,7 +95,6 @@ domain/{context}/{subdomain}/
 
 | 스킬 | 트리거 | 역할 |
 |------|--------|------|
-| `spec` | `/spec {기능명}` | 서버 PRD + TDD Plan 생성 |
 | `adr` | `/adr {제목}` | Architecture Decision Record 생성 |
 | `research` | `/research {주제}` | 도메인/기술 리서치 |
 | `tactical-design` | DDD, aggregate, entity, CQRS | DDD 전술적 설계 패턴 가이드 |
@@ -111,12 +108,13 @@ domain/{context}/{subdomain}/
 | `suggest-adr` | 새 의존성/마이그레이션/Aggregate 추가 시 ADR 작성 제안 |
 | `suggest-doc-regen` | domain/ 하위 Aggregate/Event/Enum 변경 시 문서 재생성 안내 |
 | `check-feature-drift` | Api 파일 변경 시 대응 .feature 파일 동기화 알림, 새 도메인 feature 누락 감지 |
+| `check-club-claudemd-drift` | club 도메인 AggregateRoot 변경 시 club/CLAUDE.md 동기화 확인 |
 
 ### 스크립트 (수동 실행, `.claude/scripts/`)
 
 | 스크립트 | 명령어 | 역할 |
 |---------|--------|------|
-| Domain Docs | `bash .claude/scripts/generate-domain-docs.sh` | Event Flow + Aggregate Overview + 용어사전 + 비즈니스 규칙 통합 생성 |
+| Domain Docs | `bash .claude/scripts/generate-domain-docs.sh` | Event Flow + Aggregate Overview + 용어사전 통합 생성 |
 | Event Flow | `bash .claude/scripts/generate-event-flow.sh` | 이벤트 발행/구독 Mermaid 다이어그램 생성 |
 | 테스트 커버리지 | `bash .claude/scripts/check-domain-test-coverage.sh` | Aggregate 비즈니스 메서드 테스트 누락 리포트 |
 
@@ -132,28 +130,39 @@ docs/
 │   ├── event-flow.md             # 이벤트 발행/구독 (자동: generate-domain-docs.sh)
 │   ├── class-diagrams/
 │   │   └── _overview.md          # Aggregate 관계도 (자동: generate-domain-docs.sh)
-│   ├── context-map.md            # BC간 관계도 (TODO: 반자동 — 이벤트 골격 자동 + 관계 유형 수동)
-│   ├── state-diagrams/           # 상태 전이 (TODO: Claude 스킬로 생성, 대상 7개 Enum)
+│   ├── context-map.md            # BC간 관계도 (TODO: 반자동)
+│   ├── state-diagrams/           # 상태 전이 (TODO: Claude 스킬로 생성)
 │   └── sequence-diagrams/        # Command + Saga 흐름 (TODO: Claude 스킬로 생성)
-├── glossary.md                   # 용어사전 (자동: generate-domain-docs.sh + 수동 보완)
-├── invariants/                   # Aggregate별 비즈니스 규칙 (자동: generate-domain-docs.sh)
-└── plans/                        # TDD Plan (/spec 실행 시 생성)
+└── glossary.md                   # 용어사전 (자동: generate-domain-docs.sh + 수동 보완)
 ```
+
+비즈니스 규칙은 각 도메인 CLAUDE.md에서 직접 관리 (docs/invariants/ 폐기).
 
 **자동 생성 갱신:** `bash .claude/scripts/generate-domain-docs.sh`
 **TODO 항목:** context-map, state-diagrams, sequence-diagrams는 grep으로 추출 불가 → Claude 스킬로 생성 예정
 
+## 하네스 변경 이력
+
+| 날짜       | 변경 내용                                                                  | 대상                       | 사유                                                     |
+|------------|---------------------------------------------------------------------------|----------------------------|----------------------------------------------------------|
+| 2025-12    | 초기 에이전트 6개 + 스킬 3개 구성                                         | 전체                       | lockr-server DDD 자동화 기반                             |
+| 2026-03    | spec, adr 스킬 추가                                                       | skills/                    | 기능 기획 → 구현 워크플로우 체계화                       |
+| 2026-04-04 | tactical/strategic-design ACL 보강                                         | skills/                    | cufit ACL 분석 피드백 반영                                |
+| 2026-04-04 | generate-event-flow.sh 버그 수정                                           | scripts/                   | awk dedup이 mermaid end 태그 제거하던 문제               |
+| 2026-04-05 | Docs 하네스 구축 (generate-domain-docs.sh, ADR 0002-0004, hooks 추가)      | scripts/, docs/, hooks/    | 반자동 문서 생성 시스템                                  |
+| 2026-04-06 | 하네스 감사 — 파일/CLAUDE.md 동기화 확인, 변경 이력 추가                   | CLAUDE.md                  | harness 플러그인 도입, 진화 추적                         |
+| 2026-04-10 | Rules(라우터) + 도메인 CLAUDE.md 2계층 하네스 구축                          | rules/, domain/*/CLAUDE.md | BC별 컨텍스트 분리, 순수 라우터, 비즈니스 규칙 직접 기술 |
+
 ## 개발 워크플로우
 
 ```
-1. /spec {기능명} → PRD + TDD Plan 생성
-2. /adr {설계 결정} → Aggregate 경계 등 아키텍처 결정 기록
-3. TDD Plan Phase별 구현 (tactical-design 스킬 자동 참조)
-4. 구현 후 반드시 리뷰:
+1. /adr {설계 결정} → Aggregate 경계 등 아키텍처 결정 기록
+2. TDD Plan Phase별 구현 (tactical-design 스킬 자동 참조)
+3. 구현 후 반드시 리뷰:
    └─ @code-reviewer → 코드 품질 리뷰
    └─ @domain-audit {도메인명} → DDD 아키텍처 준수 검증
-5. bash .claude/scripts/check-domain-test-coverage.sh → 테스트 누락 확인
-6. bash .claude/scripts/generate-event-flow.sh → 이벤트 다이어그램 갱신
+4. bash .claude/scripts/check-domain-test-coverage.sh → 테스트 누락 확인
+5. bash .claude/scripts/generate-event-flow.sh → 이벤트 다이어그램 갱신
 ```
 
 ## Seed 데이터 (로컬 개발용)

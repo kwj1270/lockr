@@ -27,6 +27,12 @@
             "command": "bash .claude/hooks/check-feature-drift.sh",
             "timeout": 5,
             "statusMessage": "Cucumber feature 동기화 확인 중..."
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/check-club-claudemd-drift.sh",
+            "timeout": 5,
+            "statusMessage": "Club CLAUDE.md 동기화 확인 중..."
           }
         ]
       }

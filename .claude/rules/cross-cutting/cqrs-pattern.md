@@ -1,5 +1,5 @@
 ---
-paths:
+globs:
   - "src/main/java/com/official/lockr/domain/**/*.java"
 ---
 
