@@ -2,7 +2,6 @@ package com.official.lockr.domain.notification.infrastructure;
 
 import com.official.lockr.domain.notification.domain.Notification;
 import com.official.lockr.domain.notification.domain.NotificationRepository;
-import jakarta.annotation.Nullable;
 
 import java.util.HashMap;
 import java.util.List;
@@ -12,13 +11,16 @@ public class InMemoryNotificationRepository implements NotificationRepository {
 
     private final Map<String, Notification> notifications = new HashMap<>();
 
+    public void clear() {
+        notifications.clear();
+    }
+
     @Override
     public Notification save(final Notification notification) {
         notifications.put(notification.getId(), notification);
         return notification;
     }
 
-    @Nullable
     @Override
     public Notification findById(final String id) {
         return notifications.get(id);
@@ -43,9 +45,18 @@ public class InMemoryNotificationRepository implements NotificationRepository {
 
     @Override
     public void softDeleteAllByUserId(final String userId) {
+        notifications.values().stream()
+                .filter(n -> n.getUserId().equals(userId))
+                .filter(n -> n.getDeletedAt() == null)
+                .forEach(Notification::softDelete);
     }
 
     @Override
     public void readAllByUserId(final String userId) {
+        notifications.values().stream()
+                .filter(n -> n.getUserId().equals(userId))
+                .filter(n -> !n.isRead())
+                .filter(n -> n.getDeletedAt() == null)
+                .forEach(Notification::markAsRead);
     }
 }

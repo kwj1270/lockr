@@ -19,6 +19,11 @@ public class FcmTokenService implements RegisterFcmTokenUseCase, DeleteFcmTokenU
 
     @Override
     public FcmToken register(final RegisterFcmTokenCommand command) {
+        final FcmToken existing = fcmTokenRepository.findByUserIdAndDeviceId(command.userId(), command.deviceId());
+        if (existing != null) {
+            existing.updateToken(command.token());
+            return fcmTokenRepository.save(existing);
+        }
         final FcmToken fcmToken = FcmToken.init(command.userId(), command.token(), command.deviceId());
         return fcmTokenRepository.save(fcmToken);
     }

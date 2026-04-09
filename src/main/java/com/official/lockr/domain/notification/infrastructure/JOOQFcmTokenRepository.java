@@ -42,6 +42,19 @@ public class JOOQFcmTokenRepository implements FcmTokenRepository {
     }
 
     @Override
+    public FcmToken findByUserIdAndDeviceId(final String userId, final String deviceId) {
+        final FcmTokensEntity entity = fcmTokensDao.ctx()
+                .selectFrom(FCM_TOKENS)
+                .where(FCM_TOKENS.USER_ID.eq(userId))
+                .and(FCM_TOKENS.DEVICE_ID.eq(deviceId))
+                .fetchOneInto(FcmTokensEntity.class);
+        if (entity == null) {
+            return null;
+        }
+        return toDomain(entity);
+    }
+
+    @Override
     public List<FcmToken> findByUserId(final String userId) {
         return fcmTokensDao.ctx()
                 .selectFrom(FCM_TOKENS)

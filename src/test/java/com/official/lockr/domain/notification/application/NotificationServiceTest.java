@@ -56,7 +56,7 @@ class NotificationServiceTest {
         when(notificationRepository.save(any(Notification.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // when
-        final Notification result = notificationService.markAsRead(new MarkAsReadNotificationCommand(notificationId));
+        final Notification result = notificationService.markAsRead(new MarkAsReadNotificationCommand(notificationId, "user-001"));
 
         // then
         assertThat(result.isRead()).isTrue();
@@ -69,9 +69,28 @@ class NotificationServiceTest {
         when(notificationRepository.findById(notificationId)).thenReturn(null);
 
         // when & then
-        assertThatThrownBy(() -> notificationService.markAsRead(new MarkAsReadNotificationCommand(notificationId)))
+        assertThatThrownBy(() -> notificationService.markAsRead(new MarkAsReadNotificationCommand(notificationId, "any-user")))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Notification not found: " + notificationId);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUserIdMismatch() {
+        // given
+        final String notificationId = "notification-001";
+        final ObjectNode data = objectMapper.createObjectNode();
+        final var now = LocalDateTime.now();
+        final Notification notification = Notification.from(
+                notificationId, "user-001", "club-001",
+                NotificationType.SCHEDULE_LINK_REQUEST,
+                "알림1", "내용1", data, false, "ACTION", "/action", now, now, null
+        );
+        when(notificationRepository.findById(notificationId)).thenReturn(notification);
+
+        // when & then
+        assertThatThrownBy(() -> notificationService.markAsRead(new MarkAsReadNotificationCommand(notificationId, "other-user")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Notification does not belong to user: other-user");
     }
 
     @Test

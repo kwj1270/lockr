@@ -7,12 +7,10 @@ import com.official.lockr.domain.notification.domain.Notification;
 import com.official.lockr.domain.notification.domain.NotificationRepository;
 import com.official.lockr.domain.notification.domain.NotificationType;
 import com.official.lockr.global.ddd.DomainEventPublisher;
-import jakarta.annotation.Nullable;
 import org.jooq.Configuration;
 import org.jooq.JSON;
 import org.jooq.generated.tables.daos.NotificationsDao;
 import org.jooq.generated.tables.pojos.NotificationsEntity;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +21,6 @@ import static java.util.Objects.isNull;
 import static org.jooq.generated.tables.NotificationsJOOQEntity.NOTIFICATIONS;
 import static org.jooq.impl.DSL.excluded;
 
-@ConditionalOnMissingBean(InMemoryNotificationRepository.class)
 @Repository
 public class JOOQNotificationRepository implements NotificationRepository {
 
@@ -72,7 +69,6 @@ public class JOOQNotificationRepository implements NotificationRepository {
                 .execute();
     }
 
-    @Nullable
     @Override
     public Notification findById(final String id) {
         final NotificationsEntity entity = notificationsDao.ctx()
@@ -155,7 +151,6 @@ public class JOOQNotificationRepository implements NotificationRepository {
         );
     }
 
-    @Nullable
     private JSON serializeData(final JsonNode data) {
         if (isNull(data)) {
             return null;
@@ -167,7 +162,6 @@ public class JOOQNotificationRepository implements NotificationRepository {
         }
     }
 
-    @Nullable
     private JsonNode deserializeData(final JSON data) {
         if (isNull(data)) {
             return null;

@@ -75,6 +75,9 @@ public class NotificationService implements CreateScheduleLinkNotificationUseCas
         if (isNull(notification)) {
             throw new IllegalArgumentException("Notification not found: " + command.notificationId());
         }
+        if (!notification.getUserId().equals(command.userId())) {
+            throw new IllegalArgumentException("Notification does not belong to user: " + command.userId());
+        }
         notification.markAsRead();
         return notificationRepository.save(notification);
     }
@@ -84,6 +87,9 @@ public class NotificationService implements CreateScheduleLinkNotificationUseCas
         final Notification notification = notificationRepository.findById(command.notificationId());
         if (isNull(notification)) {
             throw new IllegalArgumentException("Notification not found: " + command.notificationId());
+        }
+        if (!notification.getUserId().equals(command.userId())) {
+            throw new IllegalArgumentException("Notification does not belong to user: " + command.userId());
         }
         notification.softDelete();
         notificationRepository.save(notification);
@@ -99,28 +105,4 @@ public class NotificationService implements CreateScheduleLinkNotificationUseCas
         notificationRepository.readAllByUserId(command.userId());
     }
 
-    public void createScheduleLinkNotification(
-            final String targetClubId,
-            final String sourceScheduleId,
-            final String sourceClubId,
-            final String sourceClubName,
-            final String scheduleTitle,
-            final String scheduleTime
-    ) {
-        create(new CreateScheduleLinkNotificationCommand(
-                targetClubId, sourceScheduleId, sourceClubId, sourceClubName, scheduleTitle, scheduleTime
-        ));
-    }
-
-    public List<Notification> getUserNotifications(final String userId) {
-        return notificationRepository.findByUserId(userId);
-    }
-
-    public List<Notification> getClubNotifications(final String userId, final String clubId) {
-        return notificationRepository.findByUserIdAndClubId(userId, clubId);
-    }
-
-    public Notification markAsRead(final String notificationId) {
-        return markAsRead(new MarkAsReadNotificationCommand(notificationId));
-    }
 }

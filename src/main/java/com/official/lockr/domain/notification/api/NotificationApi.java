@@ -58,7 +58,7 @@ public class NotificationApi {
             @RequestAttribute("signInSession") final SignInSession signInSession
     ) {
         final Notification notification = markAsReadNotificationUseCase.markAsRead(
-                new MarkAsReadNotificationCommand(notificationId)
+                new MarkAsReadNotificationCommand(notificationId, signInSession.userId())
         );
         return ResponseEntity.ok(NotificationResponse.from(notification));
     }
@@ -68,7 +68,7 @@ public class NotificationApi {
             @PathVariable final String notificationId,
             @RequestAttribute("signInSession") final SignInSession signInSession
     ) {
-        deleteNotificationUseCase.delete(new DeleteNotificationCommand(notificationId));
+        deleteNotificationUseCase.delete(new DeleteNotificationCommand(notificationId, signInSession.userId()));
         return ResponseEntity.ok().build();
     }
 
