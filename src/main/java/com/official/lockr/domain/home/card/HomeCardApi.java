@@ -91,17 +91,17 @@ public class HomeCardApi {
             @RequestAttribute("signInSession") final SignInSession signInSession
     ) {
         // 최대 2개 제한
-        if (request.clubIds().size() > 2) {
+        if (request.clubs().size() > 2) {
             return ResponseEntity.badRequest().build();
         }
 
         // 가입하지 않은 클럽은 핀 설정 불가
-        for (String clubId : request.clubIds()) {
+        for (PinClubsRequest.PinClubItem item : request.clubs()) {
             boolean isMember = userPinnedClubsDao.ctx()
                     .fetchExists(
                             selectOne()
                                     .from(MEMBERS)
-                                    .where(MEMBERS.CLUB_ID.eq(clubId)
+                                    .where(MEMBERS.CLUB_ID.eq(item.clubId())
                                             .and(MEMBERS.USER_ID.eq(signInSession.userId()))
                                             .and(MEMBERS.DELETED_AT.isNull()))
                     );
@@ -117,13 +117,14 @@ public class HomeCardApi {
                 .execute();
 
         // 새 핀 생성
-        for (int i = 0; i < request.clubIds().size(); i++) {
-            String clubId = request.clubIds().get(i);
+        for (int i = 0; i < request.clubs().size(); i++) {
+            PinClubsRequest.PinClubItem item = request.clubs().get(i);
             userPinnedClubsDao.ctx()
                     .insertInto(USER_PINNED_CLUBS)
                     .set(USER_PINNED_CLUBS.ID, UUID.randomUUID().toString())
                     .set(USER_PINNED_CLUBS.USER_ID, signInSession.userId())
-                    .set(USER_PINNED_CLUBS.CLUB_ID, clubId)
+                    .set(USER_PINNED_CLUBS.CLUB_ID, item.clubId())
+                    .set(USER_PINNED_CLUBS.BACKGROUND_COLOR, item.backgroundColor())
                     .set(USER_PINNED_CLUBS.PIN_ORDER, i + 1)
                     .set(USER_PINNED_CLUBS.CREATED_AT, LocalDateTime.now())
                     .execute();
@@ -132,7 +133,9 @@ public class HomeCardApi {
         return ResponseEntity.ok().build();
     }
 
-    record PinClubsRequest(List<String> clubIds) {}
+    record PinClubsRequest(List<PinClubItem> clubs) {
+        record PinClubItem(String clubId, String backgroundColor) {}
+    }
 
     record HomeCardsResponse(List<HomeCardResponse> cards) {}
 
