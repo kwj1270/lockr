@@ -4,6 +4,11 @@ server:
       cookie:
         secure: false  # HTTP(localhost) 환경에서 쿠키 전송 허용
         same-site: lax  # Cross-site 요청에서 쿠키 전송 허용 (개발 환경)
+spring:
+  sql:
+    init:
+      mode: always
+      data-locations: file:./infra/mysql/seed/seed_data.sql
 logging:
   level:
     root: DEBUG
