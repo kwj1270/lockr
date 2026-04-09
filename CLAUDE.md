@@ -69,11 +69,11 @@ domain/{context}/{subdomain}/
 
 | 도메인 | 컨텍스트 위치 | 특성 |
 |--------|-------------|------|
-| club | `domain/club/CLAUDE.md` | 8 subdomains, 13 ARs — 가장 큰 BC |
-| auth | `domain/auth/CLAUDE.md` | SignIn AR, Token/OIDC |
-| users | `domain/users/CLAUDE.md` | Users AR, 탈퇴 이벤트 |
-| notification | `domain/notification/CLAUDE.md` | Notification AR, FCM |
-| shorts | `domain/shorts/CLAUDE.md` | Shorts AR, 신고/숨김 |
+| club | `domain/club/CLAUDE.md` | 가장 큰 BC, 다수 subdomain |
+| auth | `domain/auth/CLAUDE.md` | 인증/인가, OIDC |
+| users | `domain/users/CLAUDE.md` | 사용자 프로필, 탈퇴 이벤트 |
+| notification | `domain/notification/CLAUDE.md` | 푸시 알림, FCM |
+| shorts | `domain/shorts/CLAUDE.md` | 숏폼 콘텐츠 |
 | home | `domain/home/CLAUDE.md` | Query-only, 도메인 레이어 없음 |
 
 새 기능 구현 전 해당 도메인의 컨텍스트 문서를 먼저 확인할 것.
@@ -99,6 +99,7 @@ domain/{context}/{subdomain}/
 | `research` | `/research {주제}` | 도메인/기술 리서치 |
 | `tactical-design` | DDD, aggregate, entity, CQRS | DDD 전술적 설계 패턴 가이드 |
 | `strategic-design` | bounded context, context map, subdomain | DDD 전략적 설계 패턴 가이드 |
+| `build-feature` | `/build-feature {도메인} {기능}` | Plan → Implement → Audit 파이프라인 |
 
 ### Hooks (자동 실행, `.claude/hooks/`)
 
