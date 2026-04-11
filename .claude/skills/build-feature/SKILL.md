@@ -47,6 +47,8 @@ argument-hint: "{도메인명} {기능 설명}"
 
 **feature 이름 결정**: 도메인명과 기능 설명에서 kebab-case로 생성 (예: `notification-bulk-read`, `club-approval-workflow`)
 
+**`_workspace/` 생명주기**: 기능 완료 후에도 삭제하지 않고 보존한다. 계획서와 중간 산출물은 후속 수정·재감사·감사 추적에 활용된다. `.gitignore`에 `_workspace/`를 등록하여 커밋 대상에서 제외한다.
+
 ---
 
 ## Phase 1: Plan (feature-planner 에이전트)
@@ -122,6 +124,16 @@ Agent(
   "
 )
 ```
+
+### Phase 2 실패 처리
+
+executor 완료 후 `./gradlew compileJava compileTestJava`가 실패하면:
+
+| 시도 | 조치 |
+|------|------|
+| 1회차 | 에러 메시지를 executor에 전달하여 수정 재호출 |
+| 2회차 | 동일 — 다른 에러면 재시도, 같은 에러면 사용자에게 보고 |
+| 사용자 보고 | 컴파일 에러 전문 + 계획서 범위 초과 여부를 알리고 판단 요청 |
 
 ---
 

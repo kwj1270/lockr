@@ -44,6 +44,7 @@ out/
 
 ### Claude Code ###
 .claude/settings.local.json
+_workspace/
 .agents/
 state/
 caches/
