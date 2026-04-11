@@ -24,6 +24,12 @@
           },
           {
             "type": "command",
+            "command": "bash .claude/hooks/suggest-seed-update.sh",
+            "timeout": 5,
+            "statusMessage": "Seed 데이터 동기화 확인 중..."
+          },
+          {
+            "type": "command",
             "command": "bash .claude/hooks/check-feature-drift.sh",
             "timeout": 5,
             "statusMessage": "Cucumber feature 동기화 확인 중..."

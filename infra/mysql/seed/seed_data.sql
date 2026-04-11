@@ -899,6 +899,17 @@ FROM clubs c
 LEFT JOIN schedules s ON c.id = s.club_id
 GROUP BY c.id, c.name;
 
+-- =====================================================
+-- Banners (홈 배너 3개)
+-- =====================================================
+INSERT IGNORE INTO `banners` (`id`, `title`, `subtitle`, `placement`, `image_url`, `action_url`, `action_route`, `bg_color`, `text_color`, `icon_type`, `display_order`, `is_active`, `created_at`, `updated_at`) VALUES
+('01HXB00000000000000000001', '이번 주 일정을 확인하세요', '참여 여부를 미리 체크해 보세요', 'HOME_TOP', NULL, NULL, '/calendar', '#1F2937', '#FFFFFF', 'calendar', 1, 1, NOW(), NOW()),
+('01HXB00000000000000000002', '클럽원을 초대해 보세요', '함께하면 더 즐거운 운동', 'HOME_TOP', NULL, NULL, NULL, '#065F46', '#FFFFFF', 'users', 2, 1, NOW(), NOW()),
+('01HXB00000000000000000003', '새로운 시즌이 시작됩니다', '2026 봄 시즌 일정을 확인하세요', 'HOME_TOP', NULL, NULL, '/calendar', '#7C3AED', '#FFFFFF', 'megaphone', 3, 1, NOW(), NOW());
+
+SELECT '=== Banners ===' AS message;
+SELECT id, title, placement, display_order, is_active FROM banners ORDER BY display_order;
+
 SELECT '=== Club COMPLETED Matches ===' AS message;
 SELECT c.name AS club_name,
        COUNT(s.id) AS completed_match_count

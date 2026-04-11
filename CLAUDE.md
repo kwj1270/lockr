@@ -110,6 +110,7 @@ domain/{context}/{subdomain}/
 | `check-domain-purity` | domain/ 레이어에 jOOQ/Spring/Jakarta import 유입 |
 | `suggest-adr` | 새 의존성/마이그레이션/Aggregate 추가 시 ADR 작성 제안 |
 | `suggest-doc-regen` | domain/ 하위 Aggregate/Event/Enum 변경 시 문서 재생성 안내 |
+| `suggest-seed-update` | CREATE TABLE 마이그레이션 추가 시 seed_data.sql 동기화 제안 |
 | `check-feature-drift` | Api 파일 변경 시 대응 .feature 파일 동기화 알림, 새 도메인 feature 누락 감지 |
 | `check-claudemd-drift` | 모든 도메인 AggregateRoot 변경 시 해당 도메인 CLAUDE.md 동기화 확인 |
 
