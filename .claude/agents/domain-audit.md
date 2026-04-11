@@ -27,7 +27,8 @@ tools:
 
 ### Step 1. 도메인 CLAUDE.md 읽기
 
-감사 대상 도메인의 `CLAUDE.md`를 **먼저** 읽으세요:
+감사 대상 도메인의 `CLAUDE.md`를 **먼저** 읽으세요.
+해당 파일이 존재하지 않으면 "기준 5. CLAUDE.md 정합성"을 **FAIL** 처리하고 나머지 기준은 코드 기반으로 감사를 계속합니다.
 ```
 src/main/java/com/official/lockr/domain/{context}/CLAUDE.md
 ```
