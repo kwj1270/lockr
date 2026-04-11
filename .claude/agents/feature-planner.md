@@ -100,6 +100,15 @@ src/main/java/com/official/lockr/domain/{context}/CLAUDE.md
 ### Phase 5: Migration (필요시)
 - {구체적 작업 항목}
 
+### Phase 6: Test
+- InMemoryRepository (HashMap 기반, deepCopy, clear, findAll)
+- Domain 단위 테스트 (Aggregate 행위 메서드별 정상/예외 케이스)
+- Service 단위 테스트 (InMemoryRepository 사용, Spring 컨텍스트 없음)
+- Cucumber BDD feature 파일 (`src/test/resources/features/{subdomain}.feature`, `# language: ko`)
+- Cucumber StepDefinitions (`src/test/java/.../cucumber/steps/{Name}StepDefinitions.java`)
+  - 공통 스텝(사용자/클럽 존재, 오류 검증)은 CommonStepDefinitions에 이미 정의되어 있으므로 중복 정의 금지
+  - SharedState.getInstance()로 예외/에러메시지 공유
+
 ## 설계 결정
 - Aggregate 경계: (변경 있으면 명시)
 - 새 Event: (있으면 명시)

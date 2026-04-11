@@ -90,7 +90,7 @@ git diff --name-only
 - Repository.save()에서 `aggregate.publish(domainEventPublisher)` 호출
 - Request DTO에 `toCommand()` 메서드 포함
 - API URL은 kebab-case, 리소스는 복수형, GET/POST만 사용
-- 계획서에 테스트 항목이 포함되어 있으면 구현 후 해당 테스트도 작성한다
+- 계획서의 Test Phase에 따라 InMemoryRepository, Domain 단위 테스트, Service 단위 테스트를 반드시 작성한다. 계획서에 Test Phase가 없더라도 Aggregate가 있으면 최소한 Domain 단위 테스트를 작성한다
 - **계획서에 없는 코드를 추가하지 마세요.** 리팩터링, 개선, 주석 추가 금지.
 
 ## 이전 산출물이 있을 때
