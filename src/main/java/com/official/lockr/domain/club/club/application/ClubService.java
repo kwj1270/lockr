@@ -10,6 +10,7 @@ import com.official.lockr.domain.club.club.application.command.DelegatePresident
 import com.official.lockr.domain.club.club.application.command.FoundClubCommand;
 import com.official.lockr.domain.club.club.application.command.LeaveClubCommand;
 import com.official.lockr.domain.club.club.application.command.UpdateClubCommand;
+import com.official.lockr.domain.club.club.application.command.KickClubMemberCommand;
 import com.official.lockr.domain.club.club.application.command.UpdateMemberProfileImageCommand;
 import com.official.lockr.domain.club.club.application.usecase.AssignCoachUseCase;
 import com.official.lockr.domain.club.club.application.usecase.AssignMangerUseCase;
@@ -18,6 +19,7 @@ import com.official.lockr.domain.club.club.application.usecase.ChangeMemberRoleU
 import com.official.lockr.domain.club.club.application.usecase.ChangeVisibilityUseCase;
 import com.official.lockr.domain.club.club.application.usecase.DelegatePresidentUseCase;
 import com.official.lockr.domain.club.club.application.usecase.FoundClubUseCase;
+import com.official.lockr.domain.club.club.application.usecase.KickClubMemberUseCase;
 import com.official.lockr.domain.club.club.application.usecase.LeaveClubUseCase;
 import com.official.lockr.domain.club.club.application.usecase.RegisterClubMemberUseCase;
 import com.official.lockr.domain.club.club.application.usecase.UpdateClubUseCase;
@@ -34,7 +36,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 @Service
-public class ClubService implements FoundClubUseCase, RegisterClubMemberUseCase, AssignMangerUseCase, AssignCoachUseCase, UpdateMemberProfileImageUseCase, DelegatePresidentUseCase, ChangeMemberRoleUseCase, ChangeVisibilityUseCase, ChangeJoinMethodUseCase, LeaveClubUseCase, UpdateClubUseCase {
+public class ClubService implements FoundClubUseCase, RegisterClubMemberUseCase, AssignMangerUseCase, AssignCoachUseCase, UpdateMemberProfileImageUseCase, DelegatePresidentUseCase, ChangeMemberRoleUseCase, ChangeVisibilityUseCase, ChangeJoinMethodUseCase, LeaveClubUseCase, UpdateClubUseCase, KickClubMemberUseCase {
 
     private final ClubRepository clubRepository;
     private final UsersRepository usersRepository;
@@ -203,6 +205,16 @@ public class ClubService implements FoundClubUseCase, RegisterClubMemberUseCase,
             throw new IllegalStateException();
         }
         club.removeMember(command.userId());
+        clubRepository.save(club);
+    }
+
+    @Override
+    public void kick(final KickClubMemberCommand command) {
+        final Club club = clubRepository.findById(command.clubId());
+        if (isNull(club)) {
+            throw new IllegalStateException();
+        }
+        club.kickMember(command.requestUserId(), command.targetMemberId());
         clubRepository.save(club);
     }
 }

@@ -3,6 +3,7 @@ package com.official.lockr.domain.club.club.api;
 import com.official.lockr.domain.auth.signin.domain.SignInSession;
 import com.official.lockr.domain.club.club.api.dto.*;
 import com.official.lockr.domain.club.club.application.command.AddMemberCommand;
+import com.official.lockr.domain.club.club.application.command.KickClubMemberCommand;
 import com.official.lockr.domain.club.club.application.command.LeaveClubCommand;
 import com.official.lockr.domain.club.club.application.usecase.*;
 import com.official.lockr.domain.club.club.domain.Club;
@@ -29,6 +30,7 @@ public class ClubApi {
     private final ChangeJoinMethodUseCase changeJoinMethodUseCase;
     private final LeaveClubUseCase leaveClubUseCase;
     private final UpdateClubUseCase updateClubUseCase;
+    private final KickClubMemberUseCase kickClubMemberUseCase;
 
     public ClubApi(final FoundClubUseCase foundClubUseCase,
                    final RegisterClubMemberUseCase registerClubMemberUseCase,
@@ -40,7 +42,8 @@ public class ClubApi {
                    final ChangeVisibilityUseCase changeVisibilityUseCase,
                    final ChangeJoinMethodUseCase changeJoinMethodUseCase,
                    final LeaveClubUseCase leaveClubUseCase,
-                   final UpdateClubUseCase updateClubUseCase
+                   final UpdateClubUseCase updateClubUseCase,
+                   final KickClubMemberUseCase kickClubMemberUseCase
     ) {
         this.foundClubUseCase = foundClubUseCase;
         this.registerClubMemberUseCase = registerClubMemberUseCase;
@@ -53,6 +56,7 @@ public class ClubApi {
         this.changeJoinMethodUseCase = changeJoinMethodUseCase;
         this.leaveClubUseCase = leaveClubUseCase;
         this.updateClubUseCase = updateClubUseCase;
+        this.kickClubMemberUseCase = kickClubMemberUseCase;
     }
 
     @PostMapping
@@ -136,6 +140,16 @@ public class ClubApi {
             @RequestBody final UpdateClubRequest request
     ) {
         return ResponseEntity.ok(updateClubUseCase.update(request.toCommand(clubId, signInSession.userId())));
+    }
+
+    @PostMapping("/{clubId}/members/{memberId}/remove")
+    public ResponseEntity<Void> kickMember(
+            @RequestAttribute("signInSession") final SignInSession signInSession,
+            @PathVariable final String clubId,
+            @PathVariable final String memberId
+    ) {
+        kickClubMemberUseCase.kick(new KickClubMemberCommand(clubId, signInSession.userId(), memberId));
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{clubId}/leave")

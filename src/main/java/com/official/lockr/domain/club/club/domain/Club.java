@@ -69,6 +69,20 @@ public class Club extends AggregateRoot {
         this.addEvent(new RemovedClubMemberEvent(this.id, userId));
     }
 
+    public void kickMember(final String requestUserId, final String targetMemberId) {
+        if (!isPresidency(requestUserId)) {
+            throw new IllegalArgumentException("회장 또는 부회장만 멤버를 강퇴할 수 있습니다.");
+        }
+        final Member target = members.stream()
+                .filter(it -> it.isEqual(targetMemberId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 멤버입니다."));
+        if (target.isSame(requestUserId)) {
+            throw new IllegalArgumentException("자기 자신을 강퇴할 수 없습니다.");
+        }
+        removeMember(target.getUserId());
+    }
+
     public boolean isEqual(final String id) {
         return this.id.equals(id);
     }
