@@ -30,9 +30,9 @@
           },
           {
             "type": "command",
-            "command": "bash .claude/hooks/check-club-claudemd-drift.sh",
+            "command": "bash .claude/hooks/check-claudemd-drift.sh",
             "timeout": 5,
-            "statusMessage": "Club CLAUDE.md 동기화 확인 중..."
+            "statusMessage": "도메인 CLAUDE.md 동기화 확인 중..."
           }
         ]
       }

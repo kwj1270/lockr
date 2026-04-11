@@ -86,10 +86,12 @@ domain/{context}/{subdomain}/
 |----------|-------------|------|
 | `domain-audit` | 도메인감사, DDD검사, 도메인규칙 | CQRS/DDD 아키텍처 준수 감사 |
 | `event-tracer` | 이벤트추적, 도메인이벤트, 이벤트흐름 | Domain Event 발행/구독 추적 |
+| `feature-planner` | (build-feature 내부) | 기능 구현 계획서 생성 (코드 작성 안 함) |
+| `feature-executor` | (build-feature 내부) | 계획서 기반 기능 구현 |
 | `migration-sync` | 마이그레이션동기화, DB동기화, JOOQ | Flyway + jOOQ 동기화 |
-| `new-domain` | 새도메인, 도메인생성, 도메인추가 | 새 도메인 스캐폴딩 |
+| `new-domain` | 새도메인, 도메인생성, 도메인추가 | 새 도메인 CQRS 레이어 설계 (코드 작성 안 함) |
 | `test-runner` | 서버테스트, gradle test | 테스트 실행 및 결과 분석 |
-| `test-scaffold` | 테스트스캐폴딩, 테스트생성 | 테스트 코드 자동 생성 |
+| `test-scaffold` | 테스트스캐폴딩, 테스트갭 | 테스트 커버리지 갭 분석 및 우선순위 리포트 |
 
 ### 스킬 (`.claude/skills/`)
 
@@ -99,7 +101,7 @@ domain/{context}/{subdomain}/
 | `research` | `/research {주제}` | 도메인/기술 리서치 |
 | `tactical-design` | DDD, aggregate, entity, CQRS | DDD 전술적 설계 패턴 가이드 |
 | `strategic-design` | bounded context, context map, subdomain | DDD 전략적 설계 패턴 가이드 |
-| `build-feature` | `/build-feature {도메인} {기능}` | Plan → Implement → Audit 파이프라인 |
+| `build-feature` | `/build-feature {도메인} {기능}` | Plan → Implement → Audit 3-에이전트 파이프라인 |
 
 ### Hooks (자동 실행, `.claude/hooks/`)
 
@@ -109,15 +111,44 @@ domain/{context}/{subdomain}/
 | `suggest-adr` | 새 의존성/마이그레이션/Aggregate 추가 시 ADR 작성 제안 |
 | `suggest-doc-regen` | domain/ 하위 Aggregate/Event/Enum 변경 시 문서 재생성 안내 |
 | `check-feature-drift` | Api 파일 변경 시 대응 .feature 파일 동기화 알림, 새 도메인 feature 누락 감지 |
-| `check-club-claudemd-drift` | club 도메인 AggregateRoot 변경 시 club/CLAUDE.md 동기화 확인 |
+| `check-claudemd-drift` | 모든 도메인 AggregateRoot 변경 시 해당 도메인 CLAUDE.md 동기화 확인 |
 
 ### 스크립트 (수동 실행, `.claude/scripts/`)
 
 | 스크립트 | 명령어 | 역할 |
 |---------|--------|------|
 | Domain Docs | `bash .claude/scripts/generate-domain-docs.sh` | Event Flow + Aggregate Overview + 용어사전 통합 생성 |
-| Event Flow | `bash .claude/scripts/generate-event-flow.sh` | 이벤트 발행/구독 Mermaid 다이어그램 생성 |
 | 테스트 커버리지 | `bash .claude/scripts/check-domain-test-coverage.sh` | Aggregate 비즈니스 메서드 테스트 누락 리포트 |
+
+### 하네스 디렉토리 구조
+
+```
+.claude/
+├── agents/
+│   ├── domain-audit.md
+│   ├── event-tracer.md
+│   ├── feature-planner.md          # build-feature Phase 1
+│   ├── feature-executor.md         # build-feature Phase 2
+│   ├── migration-sync.md
+│   ├── new-domain.md
+│   ├── test-runner.md
+│   └── test-scaffold.md
+├── skills/
+│   ├── adr/SKILL.md
+│   ├── build-feature/SKILL.md      # 오케스트레이터 (planner → executor → audit)
+│   ├── research/SKILL.md
+│   ├── tactical-design/
+│   │   ├── SKILL.md
+│   │   └── references/ (LAYERS, CQRS, DDD-TACTICAL)
+│   └── strategic-design/
+│       ├── SKILL.md
+│       └── references/ (BOUNDED-CONTEXT, CONTEXT-MAPPING, EVENT-STORMING)
+├── hooks/ (5개 — domain-purity, adr, doc-regen, feature-drift, claudemd-drift)
+├── rules/
+│   ├── routers/ (6개 — 도메인별 CLAUDE.md 라우터)
+│   └── cross-cutting/ (5개 — test, tdd, db, api, cqrs)
+└── scripts/ (generate-domain-docs, check-domain-test-coverage)
+```
 
 ## docs/ 구조
 
@@ -153,6 +184,8 @@ docs/
 | 2026-04-05 | Docs 하네스 구축 (generate-domain-docs.sh, ADR 0002-0004, hooks 추가)      | scripts/, docs/, hooks/    | 반자동 문서 생성 시스템                                  |
 | 2026-04-06 | 하네스 감사 — 파일/CLAUDE.md 동기화 확인, 변경 이력 추가                   | CLAUDE.md                  | harness 플러그인 도입, 진화 추적                         |
 | 2026-04-10 | Rules(라우터) + 도메인 CLAUDE.md 2계층 하네스 구축                          | rules/, domain/*/CLAUDE.md | BC별 컨텍스트 분리, 순수 라우터, 비즈니스 규칙 직접 기술 |
+| 2026-04-11 | Hook 범용화 + 중복 스크립트 제거 + settings.local.json 정리                 | hooks/, scripts/, settings | club-only drift→전도메인, event-flow.sh 중복 제거, 임시 규칙 정리 |
+| 2026-04-11 | build-feature 3-에이전트 파이프라인으로 리팩터링                             | agents/, skills/build-feature | Plan/Implement/Audit 역할 분리 (feature-planner, feature-executor 추가) |
 
 ## 개발 워크플로우
 
@@ -163,7 +196,7 @@ docs/
    └─ @code-reviewer → 코드 품질 리뷰
    └─ @domain-audit {도메인명} → DDD 아키텍처 준수 검증
 4. bash .claude/scripts/check-domain-test-coverage.sh → 테스트 누락 확인
-5. bash .claude/scripts/generate-event-flow.sh → 이벤트 다이어그램 갱신
+5. bash .claude/scripts/generate-domain-docs.sh → 도메인 문서 갱신
 ```
 
 ## Seed 데이터 (로컬 개발용)
