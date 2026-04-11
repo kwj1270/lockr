@@ -1,11 +1,13 @@
 package com.official.lockr.domain.club.fee.application;
 
+import com.official.lockr.domain.club.fee.application.command.DeferFeeRecordCommand;
 import com.official.lockr.domain.club.fee.application.command.MarkPaidFeeRecordCommand;
 import com.official.lockr.domain.club.fee.application.command.MarkUnpaidFeeRecordCommand;
 import com.official.lockr.domain.club.fee.application.command.NotifyUnpaidFeeCommand;
 import com.official.lockr.domain.club.fee.application.command.SetFeePolicyCommand;
 import com.official.lockr.domain.club.fee.application.command.UpdateFeeRecordCommand;
 import com.official.lockr.domain.club.fee.application.command.UpdateFeeRecordMemoCommand;
+import com.official.lockr.domain.club.fee.application.usecase.DeferFeeRecordUseCase;
 import com.official.lockr.domain.club.fee.application.usecase.MarkPaidFeeRecordUseCase;
 import com.official.lockr.domain.club.fee.application.usecase.MarkUnpaidFeeRecordUseCase;
 import com.official.lockr.domain.club.fee.application.usecase.NotifyUnpaidFeeUseCase;
@@ -30,7 +32,7 @@ import static java.util.Objects.nonNull;
 
 @Service
 public class FeeService implements SetFeePolicyUseCase, UpdateFeeRecordUseCase, NotifyUnpaidFeeUseCase,
-        MarkPaidFeeRecordUseCase, MarkUnpaidFeeRecordUseCase, UpdateFeeRecordMemoUseCase {
+        MarkPaidFeeRecordUseCase, MarkUnpaidFeeRecordUseCase, UpdateFeeRecordMemoUseCase, DeferFeeRecordUseCase {
 
     private final FeeClub feeClub;
     private final FeePolicyRepository feePolicyRepository;
@@ -165,6 +167,22 @@ public class FeeService implements SetFeePolicyUseCase, UpdateFeeRecordUseCase, 
         }
 
         record.updateMemo(command.memo());
+        feeRecordRepository.save(record);
+    }
+
+    @Override
+    public void defer(final DeferFeeRecordCommand command) {
+        feeClub.validateClubExists(command.clubId());
+        requireFeePermission(command.clubId(), command.userId());
+
+        FeeRecord record = feeRecordRepository.findByClubIdAndMemberIdAndYearAndMonth(
+                command.clubId(), command.memberId(), command.year(), command.month()
+        );
+        if (isNull(record)) {
+            record = FeeRecord.create(command.clubId(), command.memberId(), command.year(), command.month());
+        }
+
+        record.markDeferred(command.userId());
         feeRecordRepository.save(record);
     }
 

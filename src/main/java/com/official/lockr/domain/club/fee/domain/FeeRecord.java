@@ -1,5 +1,6 @@
 package com.official.lockr.domain.club.fee.domain;
 
+import com.official.lockr.domain.club.fee.domain.event.FeeRecordDeferredEvent;
 import com.official.lockr.domain.club.fee.domain.event.FeeRecordMarkedPaidEvent;
 import com.official.lockr.global.ddd.AggregateRoot;
 
@@ -46,6 +47,18 @@ public class FeeRecord extends AggregateRoot {
         this.paidAt = LocalDateTime.now();
         this.updatedBy = updatedBy;
         addEvent(new FeeRecordMarkedPaidEvent(this.id, this.clubId, this.memberId, this.year, this.month));
+    }
+
+    public void markDeferred(final String updatedBy) {
+        if (this.status == FeeStatus.PAID) {
+            throw new IllegalStateException("이미 납부된 기록은 유예 처리할 수 없습니다.");
+        }
+        if (this.status == FeeStatus.DEFERRED) {
+            return;
+        }
+        this.status = FeeStatus.DEFERRED;
+        this.updatedBy = updatedBy;
+        addEvent(new FeeRecordDeferredEvent(this.id, this.clubId, this.memberId, this.year, this.month));
     }
 
     public void markUnpaid() {

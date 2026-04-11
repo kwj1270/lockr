@@ -74,7 +74,24 @@ publisher ≠ consumer인 경계 횡단 이벤트만 기록.
 | validateAmount | 회비 금액 0원 이상 | IllegalArgumentException |
 | validateDueDay | 납부 기한 1~28일 | IllegalArgumentException |
 | FeeRecord.markPaid | 이미 PAID면 early return (멱등) | — |
+| FeeRecord.markDeferred | UNPAID→DEFERRED만 허용. PAID→DEFERRED는 IllegalStateException. DEFERRED→DEFERRED는 early return (멱등) | IllegalStateException |
 | notifyUnpaid | 같은 월 미납 알림 최대 3회 | IllegalStateException |
+
+#### FeeRecord 상태 전이 정책
+
+| 전이 | 메서드 | 허용 여부 |
+|------|--------|----------|
+| UNPAID → PAID | markPaid | 허용 |
+| UNPAID → DEFERRED | markDeferred | 허용 |
+| DEFERRED → PAID | markPaid | 허용 |
+| DEFERRED → UNPAID | markUnpaid | 허용 |
+| PAID → UNPAID | markUnpaid | 허용 |
+| PAID → DEFERRED | markDeferred | 불허 (IllegalStateException) |
+
+#### DEFERRED 알림 정책
+
+- 유예(DEFERRED) 상태 멤버는 `notifyUnpaid` 발송 대상에서 제외 (UNPAID만 필터링하므로 자동 제외).
+- 납부율 계산(`FeeQueryApi`)에서 DEFERRED 멤버는 PAID로 카운트되지 않음 (미납으로 처리).
 
 ### ChatRoom
 | 메서드 | 규칙 | 위반 시 |

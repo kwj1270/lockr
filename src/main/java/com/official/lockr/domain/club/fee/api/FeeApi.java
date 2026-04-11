@@ -1,12 +1,14 @@
 package com.official.lockr.domain.club.fee.api;
 
 import com.official.lockr.domain.auth.signin.domain.SignInSession;
+import com.official.lockr.domain.club.fee.api.dto.DeferFeeRecordRequest;
 import com.official.lockr.domain.club.fee.api.dto.MarkPaidRequest;
 import com.official.lockr.domain.club.fee.api.dto.MarkUnpaidRequest;
 import com.official.lockr.domain.club.fee.api.dto.NotifyUnpaidRequest;
 import com.official.lockr.domain.club.fee.api.dto.SetFeePolicyRequest;
 import com.official.lockr.domain.club.fee.api.dto.UpdateFeeRecordMemoRequest;
 import com.official.lockr.domain.club.fee.api.dto.UpdateFeeRecordRequest;
+import com.official.lockr.domain.club.fee.application.usecase.DeferFeeRecordUseCase;
 import com.official.lockr.domain.club.fee.application.usecase.MarkPaidFeeRecordUseCase;
 import com.official.lockr.domain.club.fee.application.usecase.MarkUnpaidFeeRecordUseCase;
 import com.official.lockr.domain.club.fee.application.usecase.NotifyUnpaidFeeUseCase;
@@ -26,19 +28,22 @@ public class FeeApi {
     private final MarkPaidFeeRecordUseCase markPaidFeeRecordUseCase;
     private final MarkUnpaidFeeRecordUseCase markUnpaidFeeRecordUseCase;
     private final UpdateFeeRecordMemoUseCase updateFeeRecordMemoUseCase;
+    private final DeferFeeRecordUseCase deferFeeRecordUseCase;
 
     public FeeApi(final SetFeePolicyUseCase setFeePolicyUseCase,
                   final UpdateFeeRecordUseCase updateFeeRecordUseCase,
                   final NotifyUnpaidFeeUseCase notifyUnpaidFeeUseCase,
                   final MarkPaidFeeRecordUseCase markPaidFeeRecordUseCase,
                   final MarkUnpaidFeeRecordUseCase markUnpaidFeeRecordUseCase,
-                  final UpdateFeeRecordMemoUseCase updateFeeRecordMemoUseCase) {
+                  final UpdateFeeRecordMemoUseCase updateFeeRecordMemoUseCase,
+                  final DeferFeeRecordUseCase deferFeeRecordUseCase) {
         this.setFeePolicyUseCase = setFeePolicyUseCase;
         this.updateFeeRecordUseCase = updateFeeRecordUseCase;
         this.notifyUnpaidFeeUseCase = notifyUnpaidFeeUseCase;
         this.markPaidFeeRecordUseCase = markPaidFeeRecordUseCase;
         this.markUnpaidFeeRecordUseCase = markUnpaidFeeRecordUseCase;
         this.updateFeeRecordMemoUseCase = updateFeeRecordMemoUseCase;
+        this.deferFeeRecordUseCase = deferFeeRecordUseCase;
     }
 
     @PostMapping("/fee-policies")
@@ -102,6 +107,17 @@ public class FeeApi {
             @RequestBody final UpdateFeeRecordMemoRequest request
     ) {
         updateFeeRecordMemoUseCase.updateMemo(request.toCommand(clubId, signInSession.userId(), memberId));
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/fee-records/{memberId}/defer")
+    public ResponseEntity<Void> defer(
+            @RequestAttribute("signInSession") final SignInSession signInSession,
+            @PathVariable final String clubId,
+            @PathVariable final String memberId,
+            @RequestBody final DeferFeeRecordRequest request
+    ) {
+        deferFeeRecordUseCase.defer(request.toCommand(clubId, signInSession.userId(), memberId));
         return ResponseEntity.ok().build();
     }
 }
