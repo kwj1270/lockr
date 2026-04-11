@@ -2,11 +2,13 @@ package com.official.lockr.domain.notification.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.official.lockr.domain.notification.application.command.CreateFeeUnpaidNotificationCommand;
 import com.official.lockr.domain.notification.application.command.CreateScheduleLinkNotificationCommand;
 import com.official.lockr.domain.notification.application.command.DeleteAllNotificationsCommand;
 import com.official.lockr.domain.notification.application.command.DeleteNotificationCommand;
 import com.official.lockr.domain.notification.application.command.MarkAsReadNotificationCommand;
 import com.official.lockr.domain.notification.application.command.ReadAllNotificationsCommand;
+import com.official.lockr.domain.notification.application.usecase.CreateFeeUnpaidNotificationUseCase;
 import com.official.lockr.domain.notification.application.usecase.CreateScheduleLinkNotificationUseCase;
 import com.official.lockr.domain.notification.application.usecase.DeleteAllNotificationsUseCase;
 import com.official.lockr.domain.notification.application.usecase.DeleteNotificationUseCase;
@@ -23,8 +25,9 @@ import java.util.List;
 import static java.util.Objects.isNull;
 
 @Service
-public class NotificationService implements CreateScheduleLinkNotificationUseCase, MarkAsReadNotificationUseCase,
-        DeleteNotificationUseCase, DeleteAllNotificationsUseCase, ReadAllNotificationsUseCase {
+public class NotificationService implements CreateFeeUnpaidNotificationUseCase, CreateScheduleLinkNotificationUseCase,
+        MarkAsReadNotificationUseCase, DeleteNotificationUseCase, DeleteAllNotificationsUseCase,
+        ReadAllNotificationsUseCase {
 
     private final NotificationRepository notificationRepository;
     private final NotificationTargetQuery notificationTargetQuery;
@@ -38,6 +41,32 @@ public class NotificationService implements CreateScheduleLinkNotificationUseCas
         this.notificationRepository = notificationRepository;
         this.notificationTargetQuery = notificationTargetQuery;
         this.objectMapper = objectMapper;
+    }
+
+    @Override
+    public void create(final CreateFeeUnpaidNotificationCommand command) {
+        if (command.targetUserIds().isEmpty()) {
+            return;
+        }
+
+        final ObjectNode data = objectMapper.createObjectNode();
+        data.put("year", command.year());
+        data.put("month", command.month());
+        data.put("sentBy", command.sentBy());
+
+        for (final String userId : command.targetUserIds()) {
+            final Notification notification = Notification.init(
+                    userId,
+                    command.clubId(),
+                    NotificationType.FEE_UNPAID_REMINDER,
+                    "회비 미납 안내",
+                    command.year() + "년 " + command.month() + "월 회비가 미납 상태입니다. 확인해주세요.",
+                    data,
+                    "VIEW_FEE_RECORDS",
+                    "/clubs/" + command.clubId() + "/fee-records"
+            );
+            notificationRepository.save(notification);
+        }
     }
 
     @Override
