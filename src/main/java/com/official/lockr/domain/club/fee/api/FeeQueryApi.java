@@ -48,7 +48,9 @@ public class FeeQueryApi {
                 record.getDueDay(),
                 record.getBankName(),
                 record.getAccountNumber(),
-                record.getAccountHolder()
+                record.getAccountHolder(),
+                record.getCreatedAt(),
+                record.getUpdatedAt()
         ));
     }
 
@@ -70,7 +72,9 @@ public class FeeQueryApi {
                             FEE_RECORDS.YEAR,
                             FEE_RECORDS.MONTH,
                             FEE_RECORDS.STATUS,
-                            FEE_RECORDS.MEMO
+                            FEE_RECORDS.MEMO,
+                            FEE_RECORDS.PAID_AT,
+                            FEE_RECORDS.UPDATED_BY
                     )
                     .from(FEE_RECORDS)
                     .leftJoin(MEMBERS).on(MEMBERS.ID.eq(FEE_RECORDS.MEMBER_ID))
@@ -84,7 +88,9 @@ public class FeeQueryApi {
                             r.get(FEE_RECORDS.YEAR),
                             r.get(FEE_RECORDS.MONTH),
                             r.get(FEE_RECORDS.STATUS),
-                            r.get(FEE_RECORDS.MEMO)
+                            r.get(FEE_RECORDS.MEMO),
+                            r.get(FEE_RECORDS.PAID_AT),
+                            r.get(FEE_RECORDS.UPDATED_BY)
                     ));
         } else {
             final String myMemberId = resolveMemberId(clubId, signInSession.userId());
@@ -95,7 +101,9 @@ public class FeeQueryApi {
                             FEE_RECORDS.YEAR,
                             FEE_RECORDS.MONTH,
                             FEE_RECORDS.STATUS,
-                            FEE_RECORDS.MEMO
+                            FEE_RECORDS.MEMO,
+                            FEE_RECORDS.PAID_AT,
+                            FEE_RECORDS.UPDATED_BY
                     )
                     .from(FEE_RECORDS)
                     .leftJoin(MEMBERS).on(MEMBERS.ID.eq(FEE_RECORDS.MEMBER_ID))
@@ -110,7 +118,9 @@ public class FeeQueryApi {
                             r.get(FEE_RECORDS.YEAR),
                             r.get(FEE_RECORDS.MONTH),
                             r.get(FEE_RECORDS.STATUS),
-                            r.get(FEE_RECORDS.MEMO)
+                            r.get(FEE_RECORDS.MEMO),
+                            r.get(FEE_RECORDS.PAID_AT),
+                            r.get(FEE_RECORDS.UPDATED_BY)
                     ));
         }
 

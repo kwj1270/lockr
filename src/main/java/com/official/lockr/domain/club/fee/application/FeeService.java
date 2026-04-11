@@ -1,10 +1,16 @@
 package com.official.lockr.domain.club.fee.application;
 
+import com.official.lockr.domain.club.fee.application.command.MarkPaidFeeRecordCommand;
+import com.official.lockr.domain.club.fee.application.command.MarkUnpaidFeeRecordCommand;
 import com.official.lockr.domain.club.fee.application.command.NotifyUnpaidFeeCommand;
 import com.official.lockr.domain.club.fee.application.command.SetFeePolicyCommand;
 import com.official.lockr.domain.club.fee.application.command.UpdateFeeRecordCommand;
+import com.official.lockr.domain.club.fee.application.command.UpdateFeeRecordMemoCommand;
+import com.official.lockr.domain.club.fee.application.usecase.MarkPaidFeeRecordUseCase;
+import com.official.lockr.domain.club.fee.application.usecase.MarkUnpaidFeeRecordUseCase;
 import com.official.lockr.domain.club.fee.application.usecase.NotifyUnpaidFeeUseCase;
 import com.official.lockr.domain.club.fee.application.usecase.SetFeePolicyUseCase;
+import com.official.lockr.domain.club.fee.application.usecase.UpdateFeeRecordMemoUseCase;
 import com.official.lockr.domain.club.fee.application.usecase.UpdateFeeRecordUseCase;
 import com.official.lockr.domain.club.fee.domain.BankAccount;
 import com.official.lockr.domain.club.fee.domain.FeeClub;
@@ -23,7 +29,8 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 @Service
-public class FeeService implements SetFeePolicyUseCase, UpdateFeeRecordUseCase, NotifyUnpaidFeeUseCase {
+public class FeeService implements SetFeePolicyUseCase, UpdateFeeRecordUseCase, NotifyUnpaidFeeUseCase,
+        MarkPaidFeeRecordUseCase, MarkUnpaidFeeRecordUseCase, UpdateFeeRecordMemoUseCase {
 
     private final FeeClub feeClub;
     private final FeePolicyRepository feePolicyRepository;
@@ -111,6 +118,54 @@ public class FeeService implements SetFeePolicyUseCase, UpdateFeeRecordUseCase, 
                 command.clubId(), command.year(), command.month(), command.userId(), unpaidMemberIds
         );
         feeNotificationRepository.save(notification);
+    }
+
+    @Override
+    public void markPaid(final MarkPaidFeeRecordCommand command) {
+        feeClub.validateClubExists(command.clubId());
+        requireFeePermission(command.clubId(), command.userId());
+
+        FeeRecord record = feeRecordRepository.findByClubIdAndMemberIdAndYearAndMonth(
+                command.clubId(), command.memberId(), command.year(), command.month()
+        );
+        if (isNull(record)) {
+            record = FeeRecord.create(command.clubId(), command.memberId(), command.year(), command.month());
+        }
+
+        record.markPaid(command.userId());
+        feeRecordRepository.save(record);
+    }
+
+    @Override
+    public void markUnpaid(final MarkUnpaidFeeRecordCommand command) {
+        feeClub.validateClubExists(command.clubId());
+        requireFeePermission(command.clubId(), command.userId());
+
+        FeeRecord record = feeRecordRepository.findByClubIdAndMemberIdAndYearAndMonth(
+                command.clubId(), command.memberId(), command.year(), command.month()
+        );
+        if (isNull(record)) {
+            record = FeeRecord.create(command.clubId(), command.memberId(), command.year(), command.month());
+        }
+
+        record.markUnpaid();
+        feeRecordRepository.save(record);
+    }
+
+    @Override
+    public void updateMemo(final UpdateFeeRecordMemoCommand command) {
+        feeClub.validateClubExists(command.clubId());
+        requireFeePermission(command.clubId(), command.userId());
+
+        FeeRecord record = feeRecordRepository.findByClubIdAndMemberIdAndYearAndMonth(
+                command.clubId(), command.memberId(), command.year(), command.month()
+        );
+        if (isNull(record)) {
+            record = FeeRecord.create(command.clubId(), command.memberId(), command.year(), command.month());
+        }
+
+        record.updateMemo(command.memo());
+        feeRecordRepository.save(record);
     }
 
     private void requireFeePolicy(final String clubId) {

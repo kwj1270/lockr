@@ -41,10 +41,12 @@ public class JOOQFeeRecordRepository implements FeeRecordRepository {
                 .set(FEE_RECORDS.YEAR, record.getYear())
                 .set(FEE_RECORDS.MONTH, record.getMonth())
                 .set(FEE_RECORDS.STATUS, record.getStatus().name())
+                .set(FEE_RECORDS.PAID_AT, record.getPaidAt())
                 .set(FEE_RECORDS.MEMO, record.getMemo())
                 .set(FEE_RECORDS.UPDATED_BY, record.getUpdatedBy())
                 .onDuplicateKeyUpdate()
                 .set(FEE_RECORDS.STATUS, record.getStatus().name())
+                .set(FEE_RECORDS.PAID_AT, record.getPaidAt())
                 .set(FEE_RECORDS.MEMO, record.getMemo())
                 .set(FEE_RECORDS.UPDATED_BY, record.getUpdatedBy())
                 .execute();
@@ -90,6 +92,7 @@ public class JOOQFeeRecordRepository implements FeeRecordRepository {
                 entity.getYear(),
                 entity.getMonth(),
                 FeeStatus.valueOf(entity.getStatus()),
+                entity.getPaidAt(),
                 entity.getUpdatedBy(),
                 entity.getMemo()
         );
