@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/clubs/{clubId}/fee")
+@RequestMapping("/api/v1/clubs/{clubId}")
 public class FeeApi {
 
     private final SetFeePolicyUseCase setFeePolicyUseCase;
@@ -26,7 +26,7 @@ public class FeeApi {
         this.notifyUnpaidFeeUseCase = notifyUnpaidFeeUseCase;
     }
 
-    @PutMapping("/fee-policy")
+    @PostMapping("/fee-policies")
     public ResponseEntity<Void> setPolicy(
             @RequestAttribute("signInSession") final SignInSession signInSession,
             @PathVariable final String clubId,
@@ -36,7 +36,7 @@ public class FeeApi {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/fee-records/{memberId}")
+    @PostMapping("/fee-records/{memberId}")
     public ResponseEntity<Void> updateRecord(
             @RequestAttribute("signInSession") final SignInSession signInSession,
             @PathVariable final String clubId,

@@ -18,7 +18,7 @@ import static org.jooq.generated.tables.FeeRecordsJOOQEntity.FEE_RECORDS;
 import static org.jooq.generated.tables.MembersJOOQEntity.MEMBERS;
 
 @RestController
-@RequestMapping("/api/v1/clubs/{clubId}/fee")
+@RequestMapping("/api/v1/clubs/{clubId}")
 public class FeeQueryApi {
 
     private final FeePoliciesDao feePoliciesDao;
@@ -29,7 +29,7 @@ public class FeeQueryApi {
         this.feeRecordsDao = new FeeRecordsDao(configuration);
     }
 
-    @GetMapping("/fee-policy")
+    @GetMapping("/fee-policies")
     public ResponseEntity<FeePolicyResponse> getFeePolicy(
             @RequestAttribute("signInSession") final SignInSession signInSession,
             @PathVariable final String clubId
