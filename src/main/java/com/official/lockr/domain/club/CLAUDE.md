@@ -28,12 +28,16 @@ publisher ≠ consumer인 경계 횡단 이벤트만 기록.
 | UpdatedScheduleEvent | schedule | feed | 피드 메타데이터 갱신 |
 | CancelledScheduleEvent | schedule | feed | 피드 상태 갱신 |
 | ApprovedApplicationEvent | recruitment | club | 클럽 멤버 추가 |
+| FeePolicyChangedEvent    | fee | (없음, 내부 기록용) | 회비 정책 변경 기록 |
+| FeeRecordMarkedPaidEvent | fee | (없음, 내부 기록용) | 납부 완료 기록 |
+| UnpaidFeeNotifiedEvent   | fee | notification | 미납 회원에게 푸시 알림 |
 
 ## Cross-Domain Dependencies
 
 | 외부 도메인 | 방향 | Event/참조 | 설명 |
 |------------|------|-----------|------|
 | notification | club → notification | Schedule 이벤트 | 일정 알림 발송 |
+| notification | fee → notification | UnpaidFeeNotifiedEvent | 미납 회비 알림 발송 |
 | users | users → club (간접) | WithdrawnUserEvent | 탈퇴 시 멤버 정리 가능 |
 
 ## 비즈니스 규칙
@@ -42,6 +46,7 @@ publisher ≠ consumer인 경계 횡단 이벤트만 기록.
 | 메서드 | 규칙 | 위반 시 |
 |--------|------|--------|
 | removeMember | 운영진은 탈퇴 불가, 먼저 역할 해제 | IllegalStateException |
+| kickMember | 회장/부회장만 강퇴 가능, 대상 멤버 존재 필수, 자기 자신 강퇴 불가 | IllegalArgumentException |
 | delegatePresident | 회장만 위임 가능, 대상은 클럽 멤버여야 함 | IllegalArgumentException |
 | changeMemberRole | 회장/부회장만 변경 가능, 회장 역할은 변경 불가 | IllegalArgumentException |
 | changeVisibility/changeJoinMethod/updateInfo | 회장/부회장만 가능 | IllegalArgumentException |
@@ -69,6 +74,7 @@ publisher ≠ consumer인 경계 횡단 이벤트만 기록.
 | validateAmount | 회비 금액 0원 이상 | IllegalArgumentException |
 | validateDueDay | 납부 기한 1~28일 | IllegalArgumentException |
 | FeeRecord.markPaid | 이미 PAID면 early return (멱등) | — |
+| notifyUnpaid | 같은 월 미납 알림 최대 3회 | IllegalStateException |
 
 ### ChatRoom
 | 메서드 | 규칙 | 위반 시 |
