@@ -6,3 +6,4 @@
 | [0002](0002-jooq-over-jpa.md) | JPA 대신 jOOQ 선택 | 승인됨 | 2026-04-04 | 전체 |
 | [0003](0003-ulid-for-ids.md) | Entity ID로 ULID 선택 | 승인됨 | 2026-04-04 | 전체 |
 | [0004](0004-simplified-cqrs.md) | Simplified CQRS 패턴 채택 | 승인됨 | 2026-04-04 | 전체 |
+| [0006](0006-outbox-event-sourcing.md) | Outbox/Inbox 범용 이벤트 인프라 + CloudEvents | 승인됨 | 2026-04-23 | global/outbox, global/inbox |
