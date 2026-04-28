@@ -135,6 +135,73 @@ public class JOOQClubRepository implements ClubRepository {
 ## 예외 케이스
 - Query에서 이벤트 발행이 필요한 경우 → Command로 분류하거나 Query + Event 형태로 처리
 
+---
+
+## Event 흐름 (Spring 이벤트 / Kafka Listener)
+
+Command 흐름과 별개의 트랜잭션 컨벤션을 갖는다. **inbox 멱등 가드와 doHandle 비즈니스 로직의 원자성** 보장이 핵심.
+
+```
+[Event 흐름]
+EventPublisher → IntegrationDomainEvent → Outbox → OutboxProcessor
+                                                       ↓
+                            ApplicationEventPublisher.publishEvent()
+                                                       ↓
+                IdempotentEventHandler<E> (In-adapter, @Transactional 소유)
+                                                       ↓
+                              doHandle() → useCase.handle() (Service POJO)
+                                                       ↓
+                                        Repository (REQUIRED join)
+```
+
+### 트랜잭션 위치 — In-adapter 소유 (Command 흐름과 다른 갈래)
+
+| 흐름 | 트랜잭션 소유 | 근거 |
+|------|------------|------|
+| **Command** | Out-adapter (`JOOQ*Repository.save`) | 단일 Aggregate save = 단일 트랜잭션. Service POJO 유지 |
+| **Event** | **In-adapter (`IdempotentEventHandler.onApplicationEvent`)** | inbox 가드 + doHandle 비즈니스 로직 원자성 보장 |
+
+이 분기는 의도된 결정이다. Out-adapter만 트랜잭션 두면 inbox INSERT와 비즈니스 Repository.save가
+별도 트랜잭션이 되어 doHandle 실패 시 inbox row만 commit → 이벤트 영구 유실.
+근거 + 대안 비교는 **ADR-0008 (트랜잭션 위치 — In-adapter 선택 근거 섹션)** 참조.
+
+### 헥사고날 어댑터 분류 정리
+
+- **In-adapter (Driving)**: 외부 → 도메인. HTTP Controller, EventListener, Kafka Listener
+- **Out-adapter (Driven)**: 도메인 → 외부. JOOQ Repository, HttpClient, FCM 발송기
+- `infrastructure/` 패키지는 두 종류 모두 담음. 분류는 패키지가 아닌 **트래픽 방향**
+
+### 구현 패턴
+
+```java
+// In-adapter (infrastructure/) — 트랜잭션 + 멱등 가드 (베이스가 흡수)
+@Component
+public class FeeNotificationEventConsumer extends IdempotentEventHandler<UnpaidFeeNotifiedEvent> {
+    private final HandleUnpaidFeeNotifiedUseCase useCase;
+
+    public FeeNotificationEventConsumer(InboxRepository inbox, HandleUnpaidFeeNotifiedUseCase useCase) {
+        super(inbox);
+        this.useCase = useCase;
+    }
+
+    @Override protected String consumerName() { return "fee.unpaid_notification"; }
+
+    @Override protected void doHandle(UnpaidFeeNotifiedEvent event) {
+        useCase.handle(event);   // Service에 단순 위임
+    }
+}
+
+// Service (POJO, @Transactional X) — 비즈니스 로직만
+@Service
+public class FeeNotificationEventService implements HandleUnpaidFeeNotifiedUseCase {
+    @Override public void handle(UnpaidFeeNotifiedEvent event) {
+        // 비즈니스 로직만 — 트랜잭션은 IdempotentEventHandler가 시작한 것에 join
+    }
+}
+```
+
+자식 Consumer는 `consumerName()` + `doHandle()` + 생성자만 구현하면 된다. `@EventListener`, `@Transactional` boilerplate는 베이스가 흡수.
+
 ## REFERENCE CODE
 
 새 기능 구현 시 아래 파일들을 참고하여 일관된 스타일 유지:

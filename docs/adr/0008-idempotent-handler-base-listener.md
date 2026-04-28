@@ -90,6 +90,63 @@ public class FeeNotificationEventConsumer extends IdempotentEventHandler<UnpaidF
 - `onApplicationEvent()`는 Spring AOP proxy를 통해 호출되므로 `@Transactional`이 self-invocation 없이 정상 동작한다.
 - 새 Consumer 구현 시 boilerplate가 0이므로 누락 위험이 구조적으로 제거된다.
 
+## 트랜잭션 위치 — In-adapter 선택 근거 (헥사고날 컨벤션 분기)
+
+본 ADR은 **In-adapter (Consumer)**가 `@Transactional`을 소유하는 결정이다.
+이는 우리 프로젝트 Command 흐름의 *"Out-adapter (Repository.save)만 트랜잭션 소유"* 컨벤션과
+의도적으로 다른 갈래이며, **Event 흐름의 별도 컨벤션**으로 명시한다.
+
+### 헥사고날 어댑터 분류 정리
+
+- **In-adapter (Driving)**: 외부 → 도메인. HTTP Controller, EventListener, Kafka Listener 등
+- **Out-adapter (Driven)**: 도메인 → 외부. JOOQ Repository, HttpClient, FCM 발송기 등
+- `infrastructure/` 패키지는 두 종류 모두 담음. 분류는 패키지가 아닌 **트래픽 방향**.
+
+### 두 흐름의 트랜잭션 컨벤션 분기
+
+| 흐름 | 진입점 | 트랜잭션 소유 | 근거 |
+|------|--------|------------|------|
+| **Command** (HTTP/CLI) | Api Controller → UseCase → Service(POJO) | Out-adapter (`JOOQ*Repository.save`) | 단일 Aggregate save = 단일 트랜잭션. Service POJO 유지 |
+| **Event** (Spring/Kafka 이벤트) | `IdempotentEventHandler` (In-adapter) | **In-adapter (`@Transactional` on `onApplicationEvent`)** | inbox 멱등 가드와 doHandle 비즈니스 로직의 원자성 보장 |
+
+### Event 흐름이 In-adapter에 트랜잭션을 두는 이유
+
+검토한 대안과 기각 근거:
+
+1. **Service에 `@Transactional`** — 헥사고날 정설이지만 *"Service POJO"* 컨벤션 위배.
+2. **Out-adapter (Repository.save)만 트랜잭션** — `inbox.insertIfAbsent`와 비즈니스 `Repository.save`가
+   각자 다른 트랜잭션이 되어 inbox 가드 의도 깨짐 (doHandle 실패 시 inbox row만 commit → 이벤트 영구 유실).
+3. **In-adapter 트랜잭션 (채택)** — Service POJO 컨벤션 유지하면서 inbox + doHandle 원자성 보장.
+
+### 진화 경로 (다음 단계)
+
+본 ADR은 *"트랜잭션 위치"*를 In-adapter로 확정하지만, **doHandle 안의 비즈니스 로직은 Service(POJO)로 추출**하는 것을 권장한다:
+
+```java
+// In-adapter: 트랜잭션 + 멱등 가드 (이번 ADR로 확정)
+public abstract class IdempotentEventHandler<E> { ... }
+
+// 자식: Service에 위임만 (다음 진화 단계)
+@Component
+public class FeeNotificationEventConsumer extends IdempotentEventHandler<UnpaidFeeNotifiedEvent> {
+    private final HandleUnpaidFeeNotifiedUseCase useCase;
+    @Override protected void doHandle(UnpaidFeeNotifiedEvent event) {
+        useCase.handle(event);  // ← Service 위임
+    }
+}
+
+// Service (POJO, @Transactional X)
+@Service
+public class FeeNotificationEventService implements HandleUnpaidFeeNotifiedUseCase {
+    public void handle(UnpaidFeeNotifiedEvent event) {
+        // 비즈니스 로직만
+    }
+}
+```
+
+이 분리는 (a) 비즈니스 책임 격리, (b) Kafka 전환 시 In-adapter만 교체하면 되는 헥사고날 가치를 보존한다.
+다음 IntegrationDomainEvent Consumer 도입 시점에 자연스럽게 적용한다.
+
 ## 결과
 
 - `FeeNotificationEventConsumer`에서 `onEvent()`, `@EventListener`, `@Transactional` 완전 제거.
