@@ -81,12 +81,16 @@ public abstract class IdempotentEventHandler<E extends IntegrationDomainEvent>
 }
 ```
 
-### 가상 미래 구현체 (ADR 코드 예시 — 실제 파일 아님)
+### 미래 구현체 — 학습 참조용
 
-**`CompensatingRedisIdempotentExecutor`** — Redis SETNX + 보상 패턴:
+**`CompensatingRedisIdempotentExecutor`** — Redis SETNX + 보상 패턴 (**실제 파일로 보존**, `@Profile("redis-inbox")` 격리):
+
+위치: `src/main/java/com/official/lockr/global/inbox/CompensatingRedisIdempotentExecutor.java`
+
+운영 환경 자동 활성화 안 됨. `redis-inbox` 프로파일 활성 시에만 Bean 등록되어 학습 검증용으로 사용 가능. RDB 트랜잭션과의 차이(진짜 ACID 아님, 보상 + TTL 기반 best-effort 멱등성)는 클래스 Javadoc에 상세 기록.
 
 ```java
-// 가상 예시 — 실제 파일 아님
+// CompensatingRedisIdempotentExecutor.java
 public class CompensatingRedisIdempotentExecutor implements IdempotentExecutor {
     private final RedisTemplate<String, String> redis;
 
