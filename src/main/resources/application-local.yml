@@ -9,6 +9,45 @@ spring:
     init:
       mode: always
       data-locations: file:./infra/mysql/seed/seed_data.sql
+
+# Chaos Monkey — local 프로파일에서만 활성화. Outbox/Inbox 회복력 학습 목적.
+# watchedCustomServices로 outbox/inbox 메서드만 타겟팅 — 다른 도메인 영향 없음.
+chaos:
+  monkey:
+    enabled: true
+    watcher:
+      component: false
+      repository: false
+      rest-controller: false
+      service: false
+      controller: false
+    assaults:
+      level: 5  # 5번 호출 중 1번 주입
+      latency-active: true
+      latency-range-start: 1000
+      latency-range-end: 3000
+      exceptions-active: true
+      kill-application-active: false
+      watched-custom-services:
+        - com.official.lockr.global.outbox.OutboxProcessor.process
+        - com.official.lockr.global.outbox.OutboxDomainEventPublisher.publish
+        - com.official.lockr.global.outbox.JOOQOutboxRepository.insert
+        - com.official.lockr.global.outbox.JOOQOutboxRepository.findUnprocessed
+        - com.official.lockr.global.outbox.JOOQOutboxRepository.markProcessed
+        - com.official.lockr.global.inbox.JOOQInboxRepository.insertIfAbsent
+        - com.official.lockr.global.inbox.IdempotentEventHandler.handle
+
+# Chaos Monkey actuator endpoint 노출 — 런타임 토글 가능 (POST /prefer/chaosmonkey/disable)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus,chaosmonkey
+  endpoint:
+    chaosmonkey:
+      access: unrestricted
+
 logging:
   level:
     root: DEBUG
+    de.codecentric.spring.boot.chaos.monkey: INFO

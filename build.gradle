@@ -49,6 +49,7 @@ dependencies {
     implementation 'org.springframework.security:spring-security-crypto'
 
     implementation 'io.micrometer:micrometer-registry-prometheus'
+    implementation 'de.codecentric:chaos-monkey-spring-boot:3.2.2'
     implementation 'com.github.f4b6a3:ulid-creator:5.2.4'
     implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
     implementation 'io.jsonwebtoken:jjwt-impl:0.13.0'

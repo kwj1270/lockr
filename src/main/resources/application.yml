@@ -60,6 +60,12 @@ firebase:
   credentials:
     path: ${FIREBASE_CREDENTIALS_PATH:firebase-service-account.json}
 
+# Chaos Monkey — 기본 비활성. 운영 환경에서 절대 활성화 금지.
+# 활성화는 local 프로파일에서만 명시적으로 수행 (application-local.yml 참조).
+chaos:
+  monkey:
+    enabled: false
+
 logging:
   level:
     root: INFO
