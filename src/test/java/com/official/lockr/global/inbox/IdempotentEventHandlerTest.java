@@ -3,6 +3,7 @@ package com.official.lockr.global.inbox;
 import com.official.lockr.global.ddd.IntegrationDomainEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.PayloadApplicationEvent;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ class IdempotentEventHandlerTest {
     void shouldHandleFirstEventAndInsertInbox() {
         final TestIntegrationEvent event = new TestIntegrationEvent("evt-001", "agg-001");
 
-        handler.handle(event);
+        handler.onApplicationEvent(new PayloadApplicationEvent<>(handler, event));
 
         assertThat(handledEvents).hasSize(1);
         assertThat(handledEvents.get(0).eventId()).isEqualTo("evt-001");
@@ -38,8 +39,8 @@ class IdempotentEventHandlerTest {
     void shouldSkipDuplicateEvent() {
         final TestIntegrationEvent event = new TestIntegrationEvent("evt-001", "agg-001");
 
-        handler.handle(event);
-        handler.handle(event);
+        handler.onApplicationEvent(new PayloadApplicationEvent<>(handler, event));
+        handler.onApplicationEvent(new PayloadApplicationEvent<>(handler, event));
 
         assertThat(handledEvents).hasSize(1);
     }
@@ -49,7 +50,7 @@ class IdempotentEventHandlerTest {
         final TestIntegrationEvent event = new TestIntegrationEvent("evt-001", "agg-001");
         handler.throwOnDoHandle = true;
 
-        assertThatThrownBy(() -> handler.handle(event))
+        assertThatThrownBy(() -> handler.onApplicationEvent(new PayloadApplicationEvent<>(handler, event)))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage("doHandle failed");
     }

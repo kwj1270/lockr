@@ -34,7 +34,8 @@ publisher ≠ consumer인 경계 횡단 이벤트만 기록.
 
 > [Integration·Outbox] 표시 이벤트는 `IntegrationDomainEvent`로, `domain_event_outbox`에 영속 후
 > `OutboxProcessor`가 폴링하여 `ApplicationEventPublisher`로 재발행. Consumer는 `IdempotentEventHandler`
-> 상속 + `@EventListener` 진입점으로 inbox 멱등성 가드 필수. 그 외 이벤트는 in-process sync.
+> 상속만으로 충분. `@EventListener` / `@Transactional` boilerplate 불필요 — 베이스가 `ApplicationListener`로
+> 진입점을 직접 소유 (ADR-0008). 그 외 이벤트는 in-process sync.
 
 ## Cross-Domain Dependencies
 

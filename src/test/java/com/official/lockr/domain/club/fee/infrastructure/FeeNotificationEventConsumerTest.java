@@ -7,6 +7,7 @@ import com.official.lockr.global.inbox.InMemoryInboxRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.PayloadApplicationEvent;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -35,7 +36,7 @@ class FeeNotificationEventConsumerTest {
     }
 
     @Test
-    @DisplayName("동일한 eventId로 handle()을 두 번 호출해도 doHandle() 내부 로직은 1회만 실행되어야 한다")
+    @DisplayName("동일한 eventId로 onApplicationEvent()를 두 번 호출해도 doHandle() 내부 로직은 1회만 실행되어야 한다")
     void shouldBeIdempotentOnDuplicateEventId() {
         when(feeClub.findUserIdsByMemberIds(anyString(), anyList()))
                 .thenReturn(List.of("user-1", "user-2"));
@@ -51,8 +52,8 @@ class FeeNotificationEventConsumerTest {
                 LocalDateTime.now()
         );
 
-        consumer.handle(event);
-        consumer.handle(event);
+        consumer.onApplicationEvent(new PayloadApplicationEvent<>(consumer, event));
+        consumer.onApplicationEvent(new PayloadApplicationEvent<>(consumer, event));
 
         verify(createFeeUnpaidNotificationUseCase, times(1)).create(any());
     }

@@ -127,6 +127,25 @@ for each:
 
 `consumerName`은 **symbolic name**(`{bc}.{purpose}` 형식)으로 리팩터링에 강건.
 
+베이스가 `ApplicationListener<PayloadApplicationEvent<E>>`를 구현하므로 구현체는
+`consumerName()` + `doHandle()` + 생성자만 작성하면 된다. `@EventListener` / `@Transactional` boilerplate 불필요.
+
+```java
+// 구현 예시 (ADR-0008 이후 단순화된 패턴)
+@Component
+public class FeeNotificationEventConsumer extends IdempotentEventHandler<UnpaidFeeNotifiedEvent> {
+
+    public FeeNotificationEventConsumer(InboxRepository inbox, ...) { super(inbox); ... }
+
+    @Override protected String consumerName() { return "fee.unpaid_notification"; }
+
+    @Override
+    protected void doHandle(UnpaidFeeNotifiedEvent event) {
+        // 비즈니스 처리만 구현
+    }
+}
+```
+
 ### 7. OutboxEventTypeRegistry
 
 `eventType` 문자열 → `Class<? extends IntegrationDomainEvent>` 매핑. 각 도메인은 `@Configuration`에서 자신의 이벤트 타입을 등록한다.
@@ -164,6 +183,7 @@ for each:
 ## Follow-up
 
 - 도메인별 Outbox 편입 로드맵 (`auth/sms`, `club/fee`, `users` 등).
+- **[완료] ADR-0008**: `IdempotentEventHandler`의 진입점 흡수 — `ApplicationListener` 구현으로 self-invocation 함정 구조적 제거.
 - `OutboxEventTypeRegistry` 자동 등록 — 이벤트 타입이 10+로 늘어 누락 위험이 커지면 `@EventType` 어노테이션 + classpath 스캔 기반 자동 디스커버리 도입.
 - Outbox Processor 멀티노드 지원 — 단계적 도입:
     1. 멀티 인스턴스 운영 직전: `ShedLock` (Redis 기반)으로 `@SchedulerLock` 적용 → leader-only 폴링.
