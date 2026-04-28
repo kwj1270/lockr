@@ -24,6 +24,7 @@
 | 외부 도메인 | 방향 | Event | 설명 |
 |------------|------|-------|------|
 | club | club → notification | Schedule 이벤트 | 일정 생성/변경 시 푸시 알림 발송 |
+| club | fee → notification | UnpaidFeeNotifiedEvent (Integration·Outbox) | 미납 회비 푸시 알림 발송 (CreateFeeUnpaidNotificationUseCase) |
 
 ## 비즈니스 규칙
 

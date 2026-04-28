@@ -190,7 +190,7 @@ class FeeRecordTest {
         void shouldHaveRequiredFields() {
             List<String> memberIds = List.of("member-1", "member-2");
 
-            UnpaidFeeNotifiedEvent event = new UnpaidFeeNotifiedEvent("club-1", 2025, 4, "sender-1", memberIds, LocalDateTime.now());
+            UnpaidFeeNotifiedEvent event = new UnpaidFeeNotifiedEvent("event-id-1", "aggregate-id-1", "club-1", 2025, 4, "sender-1", memberIds, LocalDateTime.now());
 
             assertThat(event.clubId()).isEqualTo("club-1");
             assertThat(event.year()).isEqualTo(2025);

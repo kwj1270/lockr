@@ -30,7 +30,11 @@ publisher ≠ consumer인 경계 횡단 이벤트만 기록.
 | ApprovedApplicationEvent | recruitment | club | 클럽 멤버 추가 |
 | FeePolicyChangedEvent    | fee | (없음, 내부 기록용) | 회비 정책 변경 기록 |
 | FeeRecordMarkedPaidEvent | fee | (없음, 내부 기록용) | 납부 완료 기록 |
-| UnpaidFeeNotifiedEvent   | fee | notification | 미납 회원에게 푸시 알림 |
+| UnpaidFeeNotifiedEvent   | fee | notification | 미납 회원에게 푸시 알림 [Integration·Outbox] |
+
+> [Integration·Outbox] 표시 이벤트는 `IntegrationDomainEvent`로, `domain_event_outbox`에 영속 후
+> `OutboxProcessor`가 폴링하여 `ApplicationEventPublisher`로 재발행. Consumer는 `IdempotentEventHandler`
+> 상속 + `@EventListener` 진입점으로 inbox 멱등성 가드 필수. 그 외 이벤트는 in-process sync.
 
 ## Cross-Domain Dependencies
 

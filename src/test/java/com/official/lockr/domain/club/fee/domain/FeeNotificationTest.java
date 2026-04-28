@@ -58,6 +58,11 @@ class FeeNotificationTest {
             assertThat(event.sentBy()).isEqualTo("sender-1");
             assertThat(event.memberIds()).containsExactly("member-1", "member-2");
             assertThat(event.occurredAt()).isNotNull();
+            assertThat(event.eventId()).isNotNull();
+            assertThat(event.aggregateId()).isNotNull();
+            assertThat(event.aggregateId()).isEqualTo(notification.getId());
+            assertThat(event.eventType()).isEqualTo("com.official.lockr.club.fee.unpaid_notified");
+            assertThat(event.source()).isEqualTo("lockr://club/fee");
         }
     }
 

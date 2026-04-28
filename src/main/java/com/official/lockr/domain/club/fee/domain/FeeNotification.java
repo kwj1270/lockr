@@ -22,9 +22,10 @@ public class FeeNotification extends AggregateRoot {
     public static FeeNotification init(final String clubId, final int year, final int month,
                                        final String sentBy, final List<String> memberIds) {
         final String id = generateUlid();
+        final String eventId = generateUlid();
         final LocalDateTime now = LocalDateTime.now();
         final FeeNotification notification = new FeeNotification(id, clubId, year, month, sentBy, memberIds, now);
-        notification.addEvent(new UnpaidFeeNotifiedEvent(clubId, year, month, sentBy, memberIds, now));
+        notification.addEvent(new UnpaidFeeNotifiedEvent(eventId, id, clubId, year, month, sentBy, memberIds, now));
         return notification;
     }
 

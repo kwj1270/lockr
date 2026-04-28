@@ -1,0 +1,39 @@
+### Step 1 — 로그인
+POST http://127.0.0.1:8080/api/v1/auth/sign_in/admin
+Content-Type: application/json
+Authorization: test
+X-DEVICE-ID: 1
+X-DEVICE-NAME: woozi's local
+X-DEVICE-OS: mac-os
+
+{
+  "id": "admin",
+  "password": "test1234"
+}
+> {%
+    client.global.set("SESSION_COOKIE", response.headers.valueOf("Set-Cookie"));
+%}
+
+### Step 2 — 미납 알림 트리거
+# {{clubId}} 는 seed 데이터 기준 FC 강남 클럽 ID로 교체하여 실행
+POST http://127.0.0.1:8080/api/v1/clubs/{{clubId}}/fee-records/notify
+Content-Type: application/json
+Cookie: {{SESSION_COOKIE}}
+
+{
+  "year": 2026,
+  "month": 4
+}
+
+###
+# Outbox 관측 방법:
+#
+# 1. 서버 로그:
+#    - OutboxEventTypeRegistry 기동 로그: "OutboxEventTypeRegistry initialized: 1 event types registered."
+#    - OutboxProcessor 폴링 로그: 이벤트 처리 및 재시도 동작 확인
+#
+# 2. DB 직접 확인:
+#    SELECT * FROM domain_event_outbox ORDER BY created_at DESC LIMIT 5;
+#
+# 3. Inbox 중복 방어 확인:
+#    SELECT * FROM domain_event_inbox WHERE consumer_name = 'fee.unpaid_notification';
