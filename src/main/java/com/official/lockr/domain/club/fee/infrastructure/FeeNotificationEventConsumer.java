@@ -5,7 +5,7 @@ import com.official.lockr.domain.club.fee.domain.event.UnpaidFeeNotifiedEvent;
 import com.official.lockr.domain.notification.application.command.CreateFeeUnpaidNotificationCommand;
 import com.official.lockr.domain.notification.application.usecase.CreateFeeUnpaidNotificationUseCase;
 import com.official.lockr.global.inbox.IdempotentEventHandler;
-import com.official.lockr.global.inbox.InboxRepository;
+import com.official.lockr.global.inbox.IdempotentExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -27,11 +27,11 @@ public class FeeNotificationEventConsumer extends IdempotentEventHandler<UnpaidF
     private final CreateFeeUnpaidNotificationUseCase createFeeUnpaidNotificationUseCase;
 
     public FeeNotificationEventConsumer(
-            final InboxRepository inbox,
+            final IdempotentExecutor executor,
             final FeeClub feeClub,
             final CreateFeeUnpaidNotificationUseCase createFeeUnpaidNotificationUseCase
     ) {
-        super(inbox);
+        super(executor);
         this.feeClub = feeClub;
         this.createFeeUnpaidNotificationUseCase = createFeeUnpaidNotificationUseCase;
     }

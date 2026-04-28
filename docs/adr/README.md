@@ -9,3 +9,4 @@
 | [0006](0006-outbox-event-sourcing.md) | Outbox/Inbox 범용 이벤트 인프라 + CloudEvents | 승인됨 | 2026-04-23 | global/outbox, global/inbox |
 | [0007](0007-chaos-monkey-for-outbox-resilience.md) | Chaos Monkey 도입 — Outbox/Inbox 회복력 학습 검증 | 승인됨 (학습) | 2026-04-28 | global/outbox, global/inbox |
 | [0008](0008-idempotent-handler-base-listener.md) | IdempotentEventHandler — ApplicationListener 진입점 흡수 | 승인됨 | 2026-04-28 | global/inbox |
+| [0009](0009-idempotent-executor-abstraction.md) | IdempotentExecutor — 추상-도구 분리 (도구 격리) | 승인됨 (학습) | 2026-04-29 | global/inbox |

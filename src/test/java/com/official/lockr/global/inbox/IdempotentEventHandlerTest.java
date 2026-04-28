@@ -14,15 +14,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class IdempotentEventHandlerTest {
 
-    private InMemoryInboxRepository inboxRepository;
+    private InMemoryIdempotentExecutor executor;
     private List<TestIntegrationEvent> handledEvents;
     private TestIdempotentEventHandler handler;
 
     @BeforeEach
     void setUp() {
-        inboxRepository = new InMemoryInboxRepository();
+        executor = new InMemoryIdempotentExecutor();
         handledEvents = new ArrayList<>();
-        handler = new TestIdempotentEventHandler(inboxRepository, handledEvents);
+        handler = new TestIdempotentEventHandler(executor, handledEvents);
     }
 
     @Test
@@ -60,9 +60,9 @@ class IdempotentEventHandlerTest {
         private final List<TestIntegrationEvent> handledEvents;
         boolean throwOnDoHandle = false;
 
-        public TestIdempotentEventHandler(final InboxRepository inbox,
-                                           final List<TestIntegrationEvent> handledEvents) {
-            super(inbox);
+        public TestIdempotentEventHandler(final IdempotentExecutor executor,
+                                          final List<TestIntegrationEvent> handledEvents) {
+            super(executor);
             this.handledEvents = handledEvents;
         }
 

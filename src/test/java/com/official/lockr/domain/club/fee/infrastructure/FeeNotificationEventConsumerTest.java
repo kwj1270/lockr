@@ -3,7 +3,7 @@ package com.official.lockr.domain.club.fee.infrastructure;
 import com.official.lockr.domain.club.fee.domain.FeeClub;
 import com.official.lockr.domain.club.fee.domain.event.UnpaidFeeNotifiedEvent;
 import com.official.lockr.domain.notification.application.usecase.CreateFeeUnpaidNotificationUseCase;
-import com.official.lockr.global.inbox.InMemoryInboxRepository;
+import com.official.lockr.global.inbox.InMemoryIdempotentExecutor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,17 +22,17 @@ import static org.mockito.Mockito.when;
 
 class FeeNotificationEventConsumerTest {
 
-    private InMemoryInboxRepository inboxRepository;
+    private InMemoryIdempotentExecutor executor;
     private FeeClub feeClub;
     private CreateFeeUnpaidNotificationUseCase createFeeUnpaidNotificationUseCase;
     private FeeNotificationEventConsumer consumer;
 
     @BeforeEach
     void setUp() {
-        inboxRepository = new InMemoryInboxRepository();
+        executor = new InMemoryIdempotentExecutor();
         feeClub = mock(FeeClub.class);
         createFeeUnpaidNotificationUseCase = mock(CreateFeeUnpaidNotificationUseCase.class);
-        consumer = new FeeNotificationEventConsumer(inboxRepository, feeClub, createFeeUnpaidNotificationUseCase);
+        consumer = new FeeNotificationEventConsumer(executor, feeClub, createFeeUnpaidNotificationUseCase);
     }
 
     @Test

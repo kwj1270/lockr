@@ -147,6 +147,8 @@ public class FeeNotificationEventService implements HandleUnpaidFeeNotifiedUseCa
 이 분리는 (a) 비즈니스 책임 격리, (b) Kafka 전환 시 In-adapter만 교체하면 되는 헥사고날 가치를 보존한다.
 다음 IntegrationDomainEvent Consumer 도입 시점에 자연스럽게 적용한다.
 
+> **2026-04-29 진화 완료**: ADR-0009에서 `IdempotentExecutor` 인터페이스 추출로 도구 격리. 베이스에서 `@Transactional`이 제거되고 `TransactionalRdbIdempotentExecutor`로 이동.
+
 ## 결과
 
 - `FeeNotificationEventConsumer`에서 `onEvent()`, `@EventListener`, `@Transactional` 완전 제거.

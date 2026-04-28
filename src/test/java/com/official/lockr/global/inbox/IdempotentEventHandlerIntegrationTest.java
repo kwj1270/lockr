@@ -23,12 +23,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Spring 컨텍스트에서 publishEvent → onApplicationEvent → @Transactional AOP 경로 검증.
+ * Spring 컨텍스트에서 publishEvent → onApplicationEvent → IdempotentExecutor AOP 경로 검증.
  *
  * <p>self-invocation 회귀 방지: 베이스의 onApplicationEvent()가 Spring AOP proxy를 통해
  * 올바르게 진입점이 됨을 확인한다.
  *
- * <p>최소 Spring 컨텍스트(AOP + 이벤트 발행만)를 구성하여 Firebase/DB/Flyway 의존성 없이 실행한다.
+ * <p>옵션 B 채택: TransactionalRdbIdempotentExecutor → InMemoryInboxRepository 위임 경로를
+ * 통합 테스트로 검증하여 도구 격리 효과를 실제로 확인한다.
  * InMemoryInboxRepository를 사용하므로 트랜잭션 롤백 시나리오는 예외 전파 여부로 검증한다.
  */
 @SpringBootTest(classes = {
@@ -120,14 +121,22 @@ class IdempotentEventHandlerIntegrationTest {
 
         @Bean
         TestInboxRepositoryHolder testInboxRepositoryHolder() {
-            final InMemoryInboxRepository inbox = new InMemoryInboxRepository();
-            final TestEventConsumer consumer = new TestEventConsumer(inbox);
-            return new TestInboxRepositoryHolder(inbox, consumer);
+            final InMemoryInboxRepository inboxRepository = new InMemoryInboxRepository();
+            // 옵션 B: TransactionalRdbIdempotentExecutor → InMemoryInboxRepository 위임 경로 검증
+            final TransactionalRdbIdempotentExecutor executor =
+                    new TransactionalRdbIdempotentExecutor(inboxRepository);
+            final TestEventConsumer consumer = new TestEventConsumer(executor);
+            return new TestInboxRepositoryHolder(inboxRepository, consumer);
         }
 
         @Bean
         InboxRepository inboxRepository(final TestInboxRepositoryHolder holder) {
             return holder.inboxRepository();
+        }
+
+        @Bean
+        IdempotentExecutor idempotentExecutor(final InboxRepository inboxRepository) {
+            return new TransactionalRdbIdempotentExecutor(inboxRepository);
         }
 
         @Bean
@@ -182,8 +191,8 @@ class IdempotentEventHandlerIntegrationTest {
         private final List<String> handledEventIds = new ArrayList<>();
         volatile boolean failOnNext = false;
 
-        TestEventConsumer(final InboxRepository inbox) {
-            super(inbox);
+        TestEventConsumer(final IdempotentExecutor executor) {
+            super(executor);
         }
 
         @Override

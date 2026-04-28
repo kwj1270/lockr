@@ -179,8 +179,8 @@ EventPublisher → IntegrationDomainEvent → Outbox → OutboxProcessor
 public class FeeNotificationEventConsumer extends IdempotentEventHandler<UnpaidFeeNotifiedEvent> {
     private final HandleUnpaidFeeNotifiedUseCase useCase;
 
-    public FeeNotificationEventConsumer(InboxRepository inbox, HandleUnpaidFeeNotifiedUseCase useCase) {
-        super(inbox);
+    public FeeNotificationEventConsumer(IdempotentExecutor executor, HandleUnpaidFeeNotifiedUseCase useCase) {
+        super(executor);
         this.useCase = useCase;
     }
 
