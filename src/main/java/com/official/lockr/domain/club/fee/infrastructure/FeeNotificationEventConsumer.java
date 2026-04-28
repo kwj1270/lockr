@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -36,6 +37,14 @@ public class FeeNotificationEventConsumer extends IdempotentEventHandler<UnpaidF
         return "fee.unpaid_notification";
     }
 
+    // @Transactional 필수 — handle() 내부 self-invocation으로 부모의 @Transactional이 무력화되므로
+    // 외부 진입점인 onEvent에서 트랜잭션을 시작해야 inbox.insertIfAbsent(MANDATORY)가 join할 수 있다.
+    @Transactional
+    @EventListener
+    public void onEvent(final UnpaidFeeNotifiedEvent event) {
+        handle(event);
+    }
+
     @Override
     protected void doHandle(final UnpaidFeeNotifiedEvent event) {
         final List<String> userIds = feeClub.findUserIdsByMemberIds(event.clubId(), event.memberIds());
@@ -49,10 +58,5 @@ public class FeeNotificationEventConsumer extends IdempotentEventHandler<UnpaidF
                 event.sentBy(),
                 userIds
         ));
-    }
-
-    @EventListener
-    public void onEvent(final UnpaidFeeNotifiedEvent event) {
-        handle(event);
     }
 }
